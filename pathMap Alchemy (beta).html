@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script type="module" src="/@vite/client"></script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PathMap Alchemy</title>
+<style>
+:root{--ink:#070b0a;--panel:#0e1513;--p2:#131d1a;--line:#1f2f29;--em:#34d399;--emd:#10b981;--tx:#e8f1ec;--mut:#8ea69b;--bad:#f87171;
+--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;min-height:100vh;background:radial-gradient(900px 480px at 50% -120px,rgba(52,211,153,.13),transparent 70%),var(--ink);color:var(--tx);font-family:var(--sans)}
+:focus-visible{outline:2px solid var(--em);outline-offset:2px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px clamp(14px,4vw,32px);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font:600 1.05rem var(--mono);color:var(--tx);text-decoration:none}
+.mark{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#a7f3d0,var(--emd) 60%,#065f46);box-shadow:0 0 14px rgba(52,211,153,.7)}
+.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input,textarea{font:inherit}
+.sel,.ib{background:var(--panel);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:8px 10px;font-size:.85rem}
+.ib{width:36px;height:36px;padding:0;cursor:pointer;display:grid;place-items:center}.ib:hover{border-color:var(--em)}
+.pill{font:.78rem var(--mono);color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:6px 11px;background:var(--panel);display:flex;gap:7px;align-items:center}
+.pill i{width:7px;height:7px;border-radius:50%;background:#52625b}.pill.on{color:var(--tx)}.pill.on i{background:var(--em);box-shadow:0 0 8px var(--em)}
+main{max-width:940px;margin:0 auto;padding:clamp(28px,8vh,80px) clamp(14px,4vw,32px) 64px}
+.home{max-width:680px;margin:0 auto}
+h1{font:700 clamp(1.9rem,5vw,3rem)/1.08 var(--sans);letter-spacing:-.03em;margin:0 0 14px}
+.sub{color:var(--mut);font-size:1.05rem;line-height:1.55;margin:0 0 30px;max-width:56ch}
+.field{display:grid;gap:7px;font:.82rem var(--mono);color:var(--mut)}
+.field input{width:100%;background:var(--p2);border:1.5px solid #2a4038;border-radius:14px;color:var(--tx);padding:16px 18px;font:1.05rem var(--sans)}
+.field input::placeholder{color:#5d7469}.field input:focus{outline:none;border-color:var(--em);box-shadow:0 0 0 4px rgba(52,211,153,.14)}
+.bridge{display:flex;align-items:center;gap:10px;padding:10px 24px}.bridge b{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+.bridge em{font:600 .8rem var(--mono);color:var(--em);font-style:normal;border:1px dashed rgba(52,211,153,.5);border-radius:999px;padding:3px 12px;box-shadow:0 0 18px rgba(52,211,153,.25)}
+.go{width:100%;margin-top:22px;padding:17px;border:0;border-radius:14px;cursor:pointer;font:700 1.05rem var(--sans);color:#03150e;background:linear-gradient(180deg,#5ee9b5,var(--emd));box-shadow:0 0 0 1px rgba(110,231,183,.5),0 8px 36px rgba(52,211,153,.4)}
+.go:hover{box-shadow:0 0 0 1px #6ee7b7,0 10px 46px rgba(52,211,153,.6)}
+.foot{margin-top:24px;color:var(--mut);font:.78rem var(--mono)}
+.err{margin:14px 0 0;padding:12px 14px;border-radius:10px;font-size:.9rem;line-height:1.45;color:#fecaca;background:rgba(248,113,113,.09);border:1px solid rgba(248,113,113,.35)}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}.head h2{margin:0;font:600 1rem var(--mono)}
+.timer{font:.85rem var(--mono);color:var(--em);margin-right:auto}.sp{flex:1}
+.term{height:min(62vh,560px);overflow:auto;background:#050807;border:1px solid var(--line);border-radius:14px;padding:16px 18px;font:.82rem/1.65 var(--mono);color:#c9ddd2}
+.term div{white-space:pre-wrap;word-break:break-word}.term .t{color:#4f6a5f;margin-right:10px}.term .e{color:var(--bad)}.term .ok{color:var(--em)}
+.term .cur::after{content:"";display:inline-block;width:8px;height:1em;background:var(--em);margin-left:4px;vertical-align:-2px;animation:b 1s steps(2) infinite}
+@keyframes b{50%{opacity:0}}@media(prefers-reduced-motion:reduce){.term .cur::after{animation:none}}
+.btn{border-radius:10px;padding:9px 15px;font:600 .88rem var(--sans);cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--tx)}.btn:hover{border-color:var(--em)}
+.solid{background:var(--emd);border-color:var(--em);color:#03150e;box-shadow:0 0 22px rgba(52,211,153,.3)}.solid:hover{background:var(--em)}
+.paper{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,3vw,36px);line-height:1.65}
+.paper h2{font-size:1.5rem;letter-spacing:-.02em;margin:0 0 4px}.paper h3{font-size:1.05rem;margin:28px 0 8px;color:var(--em)}
+.paper .meta{color:var(--mut);font:.78rem var(--mono);margin-bottom:18px}
+.triad{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin:10px 0}
+.node{border:1px solid #2a4038;background:var(--p2);border-radius:12px;padding:10px 14px;min-width:150px;flex:1}.node small{display:block;color:var(--mut);font:.7rem var(--mono);margin-bottom:3px}
+.node.mid{border-color:rgba(52,211,153,.55);box-shadow:0 0 18px rgba(52,211,153,.15)}
+.arrow{align-self:center;color:var(--em);font:1.2rem var(--mono)}
+.link{border-left:2px solid var(--em);padding:2px 0 2px 12px;margin:10px 0}
+blockquote{margin:6px 0;padding:8px 12px;background:var(--p2);border-radius:8px;font-size:.9rem;color:#cfe2d8}
+cite{font:.75rem var(--mono);color:var(--mut);font-style:normal;display:block;margin-top:3px}
+a{color:var(--em)}.cloud{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-top:6px}.cloud span{color:var(--em)}
+.refs{font-size:.85rem;color:var(--mut)}.refs li{margin:5px 0}
+dialog{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:18px;padding:0;width:min(560px,calc(94vw / var(--z,1)));font-family:var(--sans)}
+dialog::backdrop{background:rgba(2,6,5,.72)}.dlg{padding:24px;display:grid;gap:14px}.dlg h2,.dlg h3{margin:0}.dlg p{margin:0;line-height:1.55}
+.note{color:var(--mut);font-size:.84rem}.dlg label{display:grid;gap:6px;font:.8rem var(--mono);color:var(--mut)}
+.dlg input,.dlg select{width:100%;background:var(--p2);border:1px solid #2a4038;border-radius:10px;color:var(--tx);padding:11px 12px;font:.92rem var(--sans)}
+.seg{display:flex;gap:4px;background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{flex:1;border:0;border-radius:9px;padding:9px 6px;background:none;color:var(--mut);font:600 .8rem var(--sans);cursor:pointer}
+.seg button[aria-selected=true]{background:var(--p2);color:var(--em);box-shadow:inset 0 0 0 1px rgba(52,211,153,.4)}
+.pane{display:grid;gap:12px}.acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}code{font-family:var(--mono);color:var(--em)}
+.mol{border:1px solid var(--line);background:var(--p2);border-radius:12px;padding:12px 14px;margin:10px 0;line-height:1.5}.mol .meta{margin:4px 0 0}
+.chip{font:.7rem var(--mono);border:1px solid #2a4038;border-radius:999px;padding:2px 8px;color:var(--mut);margin-right:4px}.chip.warn{color:#fbbf24;border-color:rgba(251,191,36,.5)}
+.notice{border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.07);border-radius:12px;padding:14px 16px;margin:14px 0}.notice p{margin:6px 0 0}
+.notice.bad{border-color:rgba(248,113,113,.65);background:rgba(248,113,113,.09)}.notice.good{border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.07)}.notice ul{margin:8px 0 0;padding-left:18px}
+.mono{font-family:var(--mono);word-break:break-all;font-size:.72rem}details summary{cursor:pointer;color:var(--em);font-size:.85rem;margin-top:6px}details ul{padding-left:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.chip{cursor:pointer;background:none}.chip.on{color:var(--em);border-color:var(--em)}
+.modeseg{display:flex;gap:4px;background:var(--ink);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}.modeseg button{flex:1;border:0;border-radius:9px;padding:10px 6px;background:none;color:var(--mut);font:600 .85rem var(--sans);cursor:pointer}.modeseg button[aria-selected=true]{background:var(--p2);color:var(--em);box-shadow:inset 0 0 0 1px rgba(52,211,153,.4)}
+.bar2{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.libsel{width:auto;margin-right:8px}.chapter{margin-top:34px}
+.plate{background:#fff;border:1px solid #cfcfcf;border-radius:10px;padding:10px;margin:14px 0;overflow:hidden}.plate svg{width:100%;height:auto;display:block}.plate .cap{color:#111;font:.8rem/1.4 var(--sans);margin:8px 2px 4px}.plate .btn{font-size:.75rem;padding:5px 10px;background:#f4f4f4;color:#111;border-color:#bbb}
+.hbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;font-size:.8rem;border-radius:8px}.zoom{display:inline-flex;gap:4px;align-items:center}.zb{width:34px;height:34px;font-size:1.25rem;line-height:1;font-weight:700}
+/* zoom-aware dialogs: --z is the page zoom, so sizes divide it out and every popup stays on screen */
+dialog{max-width:calc(96vw / var(--z,1));max-height:calc(92vh / var(--z,1));max-height:calc(92dvh / var(--z,1));overflow:auto}
+#guideD{width:min(800px,calc(96vw / var(--z,1)));padding:0;overflow:hidden}#guideD[open]{display:flex;flex-direction:column}
+.gd-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--panel);border-radius:18px 18px 0 0}.gd-h h2{margin:0;font-size:1.1rem}
+.gd-x{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--p2);color:var(--tx);font-size:1.3rem;cursor:pointer;flex:none}.gd-x:hover{border-color:var(--em)}
+.dx{display:block;position:sticky;top:6px;margin:6px 6px -42px auto;width:36px;height:36px;z-index:5;border-radius:10px;border:1px solid var(--line);background:var(--p2);color:var(--tx);font-size:1.1rem;cursor:pointer;padding:0}.dx:hover{border-color:var(--em)}
+.gd-h{flex:none}.gd-b{min-height:0;flex:1 1 auto;overflow:auto;padding:4px 18px 28px;line-height:1.6;font-size:.93rem}.gd-b h3{color:var(--em);margin:28px 0 6px;font-size:1.08rem}.gd-b p{margin:6px 0}
+.gtoc{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}.gtoc button{font:600 .78rem var(--sans);border:1px solid #2a4038;background:var(--p2);color:var(--tx);border-radius:999px;padding:6px 11px;cursor:pointer}.gtoc button:hover{border-color:var(--em)}
+.gcard{display:grid;grid-template-columns:44px 1fr;gap:12px;border:1px solid var(--line);background:var(--p2);border-radius:12px;padding:12px 14px;margin:10px 0}
+.gico{width:42px;height:42px;border:1px solid #2a4038;border-radius:10px;display:grid;place-items:center;background:var(--panel);font-size:1.2rem;color:var(--tx);font-weight:700}
+.gcard h4{margin:0 0 4px;font-size:1rem}.gcard .row{margin:3px 0}.gcard .row b{font:700 .68rem var(--mono);color:var(--em);text-transform:uppercase;letter-spacing:.05em;margin-right:6px}
+.gstep{display:flex;gap:10px;align-items:flex-start;margin:8px 0}.gstep i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--emd);color:#03150e;font:700 .8rem var(--mono);display:grid;place-items:center;font-style:normal}
+.vq{display:flex;gap:10px;align-items:flex-start}.vq .qe{font-size:1.45rem;line-height:1.25;flex:none}.vq cite a{color:var(--em)}
+footer.credits{max-width:940px;margin:0 auto;padding:22px clamp(14px,4vw,32px) 44px;border-top:1px solid var(--line);color:var(--mut);font:.74rem/1.7 var(--mono)}footer.credits p{margin:0 0 8px}footer.credits a{color:var(--em)}
+.chk{display:flex!important;gap:8px;align-items:flex-start;grid-template-columns:none!important}.chk input{width:auto!important;margin-top:3px}
+@media print{html{zoom:1!important}footer.credits{display:none!important}.plate{break-inside:avoid}.chapter{break-before:page}body{background:#fff!important}header,.home,#run,#lib,.bar,dialog,.paper .btn{display:none!important}main{padding:0;max-width:none}
+.paper{background:#fff!important;border:0;padding:0;color:#111!important}.paper *{color:#111!important;background:transparent!important;border-color:#bbb!important;box-shadow:none!important}
+.paper h3{margin-top:18px}.link,blockquote,.mol{break-inside:avoid}}
+</style>
+<script src="/_aistudio-iframe.js?v=6634132a"></script></head>
+<body>
+<header>
+  <a class="brand" href="#" id="brand"><span class="mark"></span>PathMap Alchemy</a>
+  <div class="right">
+    <select class="sel" id="lang" aria-label="Language"></select>
+    <span class="pill" id="pill"><i></i><span id="pillT"></span></span>
+    <span class="zoom" role="group" aria-label="Zoom"><button class="ib zb" id="zOut" type="button" aria-label="Zoom out" title="Zoom out">−</button><button class="btn hbtn" id="zoomV" type="button" title="Tap to reset zoom to 130%">130%</button><button class="ib zb" id="zIn" type="button" aria-label="Zoom in" title="Zoom in">+</button></span>
+    <button class="btn hbtn" id="guideB" type="button" aria-label="How to use" title="How to use PathMap Alchemy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6"/></svg><span>Guide</span></button>
+    <button class="btn" id="dlAppMenuB" type="button" title="Download full standalone HTML application" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;font-size:0.8rem;background:var(--p2);border:1px solid #2a4038;border-radius:8px;color:var(--tx);cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Download</span></button>
+    <button class="ib" id="dlAppB" aria-label="Download standalone app" title="Download standalone app (HTML)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="btn hbtn" id="libB" type="button" aria-label="My Library" title="My Library"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h12"/></svg><span>My Library</span></button><button class="ib" id="aboutB" aria-label="About">?</button>
+    <button class="ib" id="gearB" aria-label="Connection settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  </div>
+</header>
+<main>
+  <section class="home" id="home">
+    <h1 data-i="h1"></h1>
+    <p class="sub" data-i="sub"></p>
+    <form id="form" autocomplete="off">
+      <div class="modeseg" id="modeSeg" role="tablist" aria-label="Mode"><button type="button" data-m="discovery" aria-selected="true">Discovery</button><button type="button" data-m="review" aria-selected="false">Literature review</button><button type="button" data-m="autonomous" aria-selected="false">Autonomous</button></div>
+      <p class="note" id="autoNote" hidden>Autonomous mode: seed with two concepts as usual. After each build, Alchemy picks one random, not-yet-run follow-up pair from every suggestion collected so far and runs it, then repeats. It never repeats a pair, and stops only when no new pairs remain or you press Cancel. Every run is saved to your library.</p>
+      <label class="field"><span data-i="la"></span><input id="A" required data-ph="pa"></label>
+      <div class="bridge" aria-hidden="true"><b></b><em>B?</em><b></b></div>
+      <label class="field"><span data-i="lb"></span><input id="B" required data-ph="pb"></label>
+      <label class="field" style="margin-top:14px"><span>Question / cue (optional)</span><input id="Q" placeholder="e.g. Could steam from cooking the morels reach the brain through the cribriform plate?"></label>
+      <button class="btn hbtn" id="sugB" type="button" style="width:100%;justify-content:center;margin-top:14px;padding:12px;font-size:.95rem" title="Fill Concept A and B with a food and a pathology pair suggested by pathmap.org">✨ <span>Suggest for me</span></button>
+      <button class="go" id="goBtn" type="submit" data-i="go"></button>
+      <p class="err" id="homeErr" role="alert" hidden></p>
+    </form>
+    <p class="foot" data-i="foot"></p>
+  </section>
+  <section id="run" hidden>
+    <div class="head"><h2 data-i="log"></h2><span class="timer" id="timer">0:00</span><button class="btn" id="cancel" data-i="cancel"></button></div>
+    <div class="term" id="term" role="log" aria-live="polite" tabindex="0"></div>
+    <div class="err" id="runErr" hidden></div>
+  </section>
+  <section id="lib" hidden>
+    <div class="head"><h2>Library</h2><span class="sp"></span><button class="btn" id="libBack">Back</button><button class="btn" id="libClear">Clear library</button></div>
+    <p class="note">Saved automatically in this browser. Click a molecule or MeSH tag to see every run that shares it.</p>
+    <div class="bar2"><select class="sel" id="libProj" aria-label="Project filter"></select><button class="btn" type="button" id="libNewP">New project</button><button class="btn" type="button" id="libToP">Add selected to project</button><button class="btn" type="button" id="libFromP">Remove from project</button><button class="btn" type="button" id="libBook">Open as book</button></div>
+    <div class="bar2"><button class="btn" type="button" id="libSelAll">Select all / none</button><button class="btn" type="button" id="libExp">Export selected (JSONL)</button><button class="btn" type="button" id="libDel">Delete selected</button><label class="btn">Import trace / JSON / dataset<input type="file" id="libImp" accept=".jsonl,.json" multiple hidden></label><button class="btn" type="button" id="libGraph">Graph view</button><button class="btn" type="button" id="libCypher">Export Cypher</button><span class="note" id="libCount"></span></div>
+    <p class="note" id="libMsg" hidden></p>
+    <div class="chips" id="libEnts"></div><div id="libList"></div>
+  </section>
+  <section id="graph" hidden>
+    <div class="head"><h2>Graph</h2><span class="sp"></span><button class="btn" id="gBack" type="button">Back to library</button><button class="btn" id="gCypher" type="button">Export Cypher (Neo4j 5)</button></div>
+    <p class="note" id="gInfo"></p>
+    <div class="bar2" id="gTypes"></div>
+    <div class="bar2"><select class="sel" id="gFrom" aria-label="Path from"></select><span class="note">→</span><select class="sel" id="gTo" aria-label="Path to"></select><button class="btn" id="gPath" type="button">Shortest path</button></div>
+    <p class="note" id="gPathOut"></p>
+    <div id="gBox" class="plate" style="padding:0;background:#050807;border-color:#1f2f29"></div>
+  </section>
+  <section id="result" hidden>
+    <div class="head bar"><button class="btn" id="again" data-i="again"></button><span class="sp"></span><button class="btn" id="dlAppResB" title="Download full standalone HTML application">Download App (.html)</button><button class="btn" id="expT" hidden>Download full trace</button><button class="btn" id="expJ">Download JSON</button><button class="btn" id="expL">Download JSONL</button><button class="btn solid" id="pdf" data-i="pdf"></button><a class="btn solid" id="digG" target="_blank" rel="noopener" hidden style="text-decoration:none;display:inline-block">Dig Deeper with Google</a><a class="btn solid" id="digC" target="_blank" rel="noopener" hidden style="text-decoration:none;display:inline-block">Dig Deeper with ChatGPT</a></div>
+    <article class="paper" id="paper"></article>
+  </section>
+</main>
+<footer class="credits" id="credits">
+  <p><strong>PathMap Alchemy v1.0.1</strong> · Built by Joshua Dungan, inventor of <a href="https://pathmap.org" target="_blank" rel="noopener">pathmap.org</a> and founder of Artificial General Intelligence LLC, using free-tier <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a> and <a href="https://aistudio.google.com" target="_blank" rel="noopener">Google AI</a> tools, and made with open-weight model use in mind.</p>
+  <p>Credits: <a href="https://pathmap.org" target="_blank" rel="noopener">PathMap</a> (Apache 2.0) · JavaScript, HTML5 and SVG (one static file, no backend) · browser Web Storage (localStorage) for your library · <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a> via <a href="https://www.ncbi.nlm.nih.gov/books/NBK25501/" target="_blank" rel="noopener">NCBI E-utilities</a> · <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank" rel="noopener">NCBI Taxonomy</a> · <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubChem</a> <a href="https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest" target="_blank" rel="noopener">PUG REST</a> and <a href="https://pubchem.ncbi.nlm.nih.gov/docs/pug-view" target="_blank" rel="noopener">PUG View</a> · <a href="https://ai.google.dev/gemma" target="_blank" rel="noopener">Gemma</a> open-weight models and the Google Gemini API · <a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> · <a href="https://lmstudio.ai" target="_blank" rel="noopener">LM Studio</a> · <a href="https://openrouter.ai" target="_blank" rel="noopener">OpenRouter</a> · <a href="https://neo4j.com" target="_blank" rel="noopener">Neo4j</a> Cypher (export format).</p>
+  <p>This page is part of the <a href=https://phosita.tech>PHOSITA.tech project</a></p>
+</footer>
+
+<dialog id="setD"><form class="dlg" id="setF" method="dialog">
+  <h2 data-i="conn"></h2><p class="note" data-i="connN"></p>
+  <div class="seg" role="tablist"><button type="button" data-p="gemini" aria-selected="true">Gemini API</button><button type="button" data-p="local" aria-selected="false">Localhost</button><button type="button" data-p="openrouter" aria-selected="false">OpenRouter</button></div>
+  <div class="pane" data-p="gemini"><label>API key<input id="kG" type="password" spellcheck="false" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true" placeholder="Google AI Studio key"></label>
+    <label>Model<select id="mG"><option value="gemma-4-26b-a4b-it">Gemma 4 26B (open weights)</option><option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option><option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option><option value="gemini-2.5-flash">Gemini 2.5 Flash</option></select></label>
+    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get a free key</a></div>
+  <div class="pane" data-p="local" hidden><label>Endpoint<input id="uL" value="http://localhost:11434/v1" spellcheck="false"></label>
+    <div class="acts" style="justify-content:flex-start"><button type="button" class="btn" data-u="http://localhost:11434/v1">Ollama</button><button type="button" class="btn" data-u="http://localhost:1234/v1">LM Studio</button></div>
+    <label>Model name<input id="mL" value="gemma-4-26b-a4b-it" spellcheck="false"></label>
+    <p class="note">Start Ollama with <code>OLLAMA_ORIGINS=*</code> (or enable CORS in LM Studio) so the browser may call it.</p></div>
+  <div class="pane" data-p="openrouter" hidden><label>API key<input id="kO" type="password" spellcheck="false" autocomplete="new-password" data-lpignore="true" data-1p-ignore="true" placeholder="sk-or-..."></label>
+    <label>Model<input id="mO" value="google/gemma-4-26b-a4b-it" spellcheck="false"></label><a href="https://openrouter.ai/keys" target="_blank" rel="noopener">Get a key</a></div>
+  <label class="chk"><input type="checkbox" id="gCap" checked><span>Limit Gemma models to a random sample of 16 abstracts per prompt (keeps small context windows from overflowing). Turn this off for localhost or paid APIs with large context.</span></label>
+  <p class="note">Your API key is never stored. It is held in memory for this tab only and is sent only to the provider's own API URL. Reloading the page clears it.</p>
+  <p class="err" id="setErr" hidden></p>
+  <div class="acts"><button type="button" class="btn" id="setX" data-i="close"></button><button class="btn solid" id="setS" data-i="save"></button></div>
+</form></dialog>
+
+<dialog id="shareD"><div class="dlg"><h2>Share this result?</h2>
+  <p>When this run finishes you can contribute the result to the global research library at phosita.tech/intake.php, or keep it private on this device.</p>
+  <p class="note" id="shareMore" hidden>Shared: your concepts and cue exactly as typed (do not put private notes in them), the final write-up, verified quotes with PMIDs, molecule data, the model name, the app version, and the full run trace (prompts, model responses, PubMed/PubChem requests, build metadata and build log). Removed before sending: API keys, local or private network endpoints, your browser details, and email addresses. Never shared: other library runs. Accepted results may be published openly with a permanent identifier and included in open datasets for research and model training. Nothing is sent unless you choose Share. You can reset this choice in About.</p>
+  <label style="display:flex;gap:8px;align-items:center;font:.85rem var(--sans);color:var(--mut)"><input type="checkbox" id="shareRem" style="width:auto"> Remember my choice</label>
+  <div class="acts"><button type="button" class="btn" id="shareMoreB">Learn more</button><button type="button" class="btn" id="sharePriv">Keep private</button><button type="button" class="btn solid" id="shareYes">Share with the global library</button></div></div></dialog>
+<dialog id="guideD" aria-labelledby="guideT"><div class="gd-h"><h2 id="guideT">How to use PathMap Alchemy</h2><button class="gd-x" id="guideX" type="button" aria-label="Close guide" title="Close">✕</button></div><div class="gd-b" id="guideBody"></div></dialog>
+<dialog id="abD"><div class="dlg"><h2>About PathMap Alchemy</h2>
+  <p>PathMap Alchemy runs client-side using open-weight models (Gemma) and local inference (Ollama). By eliminating server-side compute overhead, it demonstrates how open innovation enables zero-cost, privacy-first micro-SaaS tools for independent researchers.</p>
+  <h3>Architecture</h3><p class="note">One static HTML file, no backend. Model calls go from your browser to Gemini, your localhost, or OpenRouter. Literature comes from PubMed E-Utilities; molecule data from PubChem and NCBI Taxonomy. Non-secret settings and your library live in this browser's localStorage. API keys are never stored: they stay in memory for this tab only and are sent only to the provider's own API URL. Sharing a result with the global library is optional and asked each time unless you choose to remember it. Based on PathMap (Apache 2.0, Joshua Dungan / Artificial General Intelligence LLC).</p>
+  <div class="acts"><button class="btn" id="dlAppAbB" type="button">Download standalone app (.html)</button><button class="btn" id="shareReset" type="button">Reset sharing choice</button><button class="btn solid" id="abX" data-i="close"></button></div></div></dialog>
+
+<script>
+"use strict";
+/* ===== Frozen engine configuration (hidden from the UI) ===== */
+const CFG = Object.freeze({mode:"Pathmap Mini",library:"PubMed",format:"Preprint Format",rigor:"Strict (Verification)",tagCloud:true,
+  delayMs:1000,breadth:20,depth:3,quotes:10,evals:1,maxChars:500000,gemmaDocs:16,minQuotes:6});
+const APP_VERSION="1.0.1";
+
+/* ===== i18n ===== */
+const LANGS={English:{h1:"Panacea in your hands.",sub:"Name two concepts. Alchemy searches PubMed for the hidden middle term and checks every quote it cites.",la:"Concept A",lb:"Concept B",pa:"e.g. Primary Adrenal Insufficiency",pb:"e.g. Yellow Garlic / Allium sativum",go:"Synthesize Discovery",foot:"Runs in your browser. Your keys never leave it, and nothing is shared unless you choose to share a result.",log:"Thoughts log",cancel:"Cancel run",again:"New synthesis",pdf:"Download Synthesis as PDF",conn:"Connection",connN:"Stored only in this browser's localStorage. Requests go straight from your browser to the provider you pick.",close:"Close",save:"Save and connect",off:"Not connected",need:"Connect a model first: open the gear and add a key or local endpoint."},
+Español:{h1:"Encuentra el vínculo que nadie ha escrito aún.",sub:"Nombra dos conceptos. Alchemy busca en PubMed el término intermedio oculto y verifica cada cita.",la:"Concepto A",lb:"Concepto B",pa:"p. ej. Insuficiencia suprarrenal primaria",pb:"p. ej. Ajo amarillo / Allium sativum",go:"Sintetizar descubrimiento",foot:"Se ejecuta en tu navegador. Tus claves nunca salen de él y nada se comparte salvo que tú lo elijas.",log:"Registro de pensamiento",cancel:"Cancelar",again:"Nueva síntesis",pdf:"Descargar síntesis en PDF",conn:"Conexión",connN:"Se guarda solo en el localStorage de este navegador.",close:"Cerrar",save:"Guardar y conectar",off:"Sin conexión",need:"Conecta primero un modelo: abre el engranaje y añade una clave o endpoint local."},
+Français:{h1:"Trouvez le lien que personne n'a encore écrit.",sub:"Nommez deux concepts. Alchemy cherche dans PubMed le terme intermédiaire caché et vérifie chaque citation.",la:"Concept A",lb:"Concept B",pa:"ex. Insuffisance surrénalienne primaire",pb:"ex. Ail jaune / Allium sativum",go:"Synthétiser la découverte",foot:"S'exécute dans votre navigateur. Vos clés n'en sortent jamais et rien n'est partagé sans votre accord.",log:"Journal de réflexion",cancel:"Annuler",again:"Nouvelle synthèse",pdf:"Télécharger la synthèse en PDF",conn:"Connexion",connN:"Stocké uniquement dans le localStorage de ce navigateur.",close:"Fermer",save:"Enregistrer et connecter",off:"Non connecté",need:"Connectez d'abord un modèle : ouvrez l'engrenage et ajoutez une clé ou un endpoint local."},
+Deutsch:{h1:"Finde die Verbindung, die noch niemand aufgeschrieben hat.",sub:"Nenne zwei Konzepte. Alchemy durchsucht PubMed nach dem verborgenen Zwischenbegriff und prüft jedes Zitat.",la:"Konzept A",lb:"Konzept B",pa:"z. B. Primäre Nebenniereninsuffizienz",pb:"z. B. Gelber Knoblauch / Allium sativum",go:"Entdeckung synthetisieren",foot:"Läuft in deinem Browser. Deine Schlüssel verlassen es nie, und nichts wird geteilt, außer du entscheidest es.",log:"Gedankenprotokoll",cancel:"Abbrechen",again:"Neue Synthese",pdf:"Synthese als PDF laden",conn:"Verbindung",connN:"Nur im localStorage dieses Browsers gespeichert.",close:"Schließen",save:"Speichern und verbinden",off:"Nicht verbunden",need:"Zuerst ein Modell verbinden: Zahnrad öffnen und Schlüssel oder lokalen Endpunkt eintragen."}};
+const $=id=>document.getElementById(id);
+let lang=localStorage.getItem("pma_lang")||"English"; if(!LANGS[lang])lang="English";
+const T=k=>(LANGS[lang][k]??LANGS.English[k]);
+function applyLang(){document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=T(e.dataset.i));
+  document.querySelectorAll("[data-ph]").forEach(e=>e.placeholder=T(e.dataset.ph));
+  if(!connected)$("pillT").textContent=T("off");}
+$("lang").innerHTML=Object.keys(LANGS).map(l=>`<option>${l}</option>`).join(""); $("lang").value=lang;
+$("lang").onchange=()=>{lang=$("lang").value;localStorage.setItem("pma_lang",lang);applyLang();};
+
+/* ===== Settings / provider routing ===== */
+let cfg=null,connected=false,prov="gemini";
+try{cfg=JSON.parse(localStorage.getItem("pma_cfg"))}catch(e){}
+const persistCfg=()=>{try{const{provider,model,base,gemmaCap}=cfg;localStorage.setItem("pma_cfg",JSON.stringify({provider,model,base,gemmaCap}))}catch(e){}};
+const capOn=()=>!cfg||cfg.gemmaCap!==false;
+/* API keys are never persisted: strip any key an older build saved, and keep live keys non-enumerable so they can never be serialised. */
+if(cfg&&"key" in cfg){delete cfg.key;persistCfg()}
+function memCfg(c){const k=c.key,o={...c};delete o.key;if(k)Object.defineProperty(o,"key",{value:k,enumerable:false,writable:true,configurable:true});return o}
+function setPill(){const p=$("pill");p.classList.toggle("on",connected);$("pillT").textContent=connected?`${cfg.model} · ${cfg.provider}`:T("off");}
+function pick(p){prov=p;document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-selected",b.dataset.p===p));
+  document.querySelectorAll(".pane").forEach(x=>x.hidden=x.dataset.p!==p);}
+function readForm(){const gemmaCap=$("gCap").checked;return prov==="gemini"?{provider:"gemini",key:$("kG").value.trim(),model:$("mG").value,gemmaCap}
+  :prov==="local"?{provider:"local",base:$("uL").value.trim().replace(/\/+$/,""),model:$("mL").value.trim(),gemmaCap}
+  :{provider:"openrouter",key:$("kO").value.trim(),model:$("mO").value.trim(),gemmaCap};}
+function fillForm(){if(!cfg)return;pick(cfg.provider);$("gCap").checked=cfg.gemmaCap!==false;$("kG").value="";$("kO").value="";
+  const hold="Key held in memory (leave blank to keep it)";
+  if(cfg.provider==="gemini"){if(cfg.key)$("kG").placeholder=hold;$("mG").value=cfg.model}
+  else if(cfg.provider==="local"){$("uL").value=cfg.base;$("mL").value=cfg.model}
+  else{if(cfg.key)$("kO").placeholder=hold;$("mO").value=cfg.model}}
+function showE(el,m){el.textContent=m||"";el.hidden=!m}
+function friendly(e){const m=String(e&&e.message||e);
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m))return "Could not reach the server. Check your network, the endpoint URL, and CORS for local models.";
+  if(/\b40[13]\b/.test(m))return "The provider rejected the key. Check it and try again. ("+m.slice(0,80)+")";
+  if(/\b404\b/.test(m))return "Model or endpoint not found. Check the model name and URL.";
+  if(/\b429\b/.test(m))return "Rate limit or quota reached. Wait a minute or choose another model.";
+  return m;}
+const sleep=(ms,s)=>new Promise((r,j)=>{const t=setTimeout(r,ms);s&&s.addEventListener("abort",()=>{clearTimeout(t);j(new DOMException("Aborted","AbortError"))})});
+
+/* Full provenance trace: every prompt, raw model response, and raw PubMed/PubChem/Taxonomy request and response. Keys are never recorded (they travel in headers only). */
+let TR=null,STAGE="",lastTrace=null;
+function tr(type,o){if(TR)TR.push({seq:TR.length+1,t:new Date().toISOString(),type,...o})}
+async function ai(prompt,system,signal,c=cfg){
+  let url,headers={"Content-Type":"application/json"},body;
+  if(c.provider==="gemini"){
+    url=`https://generativelanguage.googleapis.com/v1beta/models/${c.model}:generateContent`;headers["x-goog-api-key"]=c.key;
+    body={contents:[{role:"user",parts:[{text:(system?system+"\n\n":"")+prompt}]}]};
+  }else{
+    url=(c.provider==="local"?c.base:"https://openrouter.ai/api/v1")+"/chat/completions";
+    headers.Authorization="Bearer "+(c.provider==="local"?"local":c.key);
+    if(c.provider==="openrouter")headers["HTTP-Referer"]=location.href.startsWith("http")?location.href:"https://localhost";
+    body={model:c.model,messages:[...(system?[{role:"system",content:system}]:[]),{role:"user",content:prompt}]};
+  }
+  await sleep(CFG.delayMs,signal);
+  let last;const scrubO=o=>{const k=c.key;if(!k)return o;const r={...o};for(const f of["response_raw","response_text","error"])if(typeof r[f]==="string")r[f]=r[f].split(k).join("[redacted]");return r};
+  const trL=(ts,t0,a,o)=>tr("llm_call",{stage:STAGE,provider:c.provider,model:c.model,url,request:body,attempt:a+1,started:ts,duration_ms:Math.round(performance.now()-t0),...scrubO(o)});
+  for(let a=0;a<4;a++){
+    const ts=new Date().toISOString(),t0=performance.now();let raw="";
+    try{
+      const r=await fetch(url,{method:"POST",headers,body:JSON.stringify(body),signal});raw=await r.text();
+      if(!r.ok){const e=new Error(`HTTP ${r.status}: ${raw.slice(0,140)}`);e.status=r.status;throw e}
+      const d=JSON.parse(raw);let txt;
+      if(c.provider==="gemini"){if(d.promptFeedback?.blockReason)throw new Error("Blocked: "+d.promptFeedback.blockReason);
+        txt=(d.candidates?.[0]?.content?.parts||[]).filter(p=>p.text&&!p.thought).map(p=>p.text).join("");}
+      else txt=d.choices?.[0]?.message?.content||"";
+      if(!txt)throw new Error("Empty response from model");
+      const out=txt.replace(/<think>[\s\S]*?<\/think>/g,"").trim();trL(ts,t0,a,{status:200,response_raw:raw,response_text:txt});return out;
+    }catch(e){trL(ts,t0,a,{status:e.status||null,response_raw:raw,error:e.message});last=e;if(e.name==="AbortError")throw e;if(e.status&&e.status!==429&&e.status<500)throw e;
+      if(a<3)await sleep(e.status===429?20000*(a+1):4000*(a+1),signal);}
+  }
+  throw last;
+}
+function parseJSON(t){t=t.replace(/```json|```/gi,"");const i=Math.min(...["[","{"].map(c=>{const k=t.indexOf(c);return k<0?1e9:k}));
+  const j=Math.max(t.lastIndexOf("]"),t.lastIndexOf("}"));if(i===1e9||j<i)throw new Error("Model did not return JSON");const raw=t.slice(i,j+1);try{return JSON.parse(raw)}catch(e){return JSON.parse(raw.replace(/,\s*([}\]])/g,"$1").replace(/[\u0000-\u001f]+/g," "))}}
+
+async function saveConnect(){
+  const c=readForm(),b=$("setS");showE($("setErr"),"");
+  if(c.provider!=="local"&&!c.key&&cfg&&cfg.provider===c.provider&&cfg.key)c.key=cfg.key;
+  if(c.provider!=="local"&&!c.key)return showE($("setErr"),"Enter an API key first.");
+  if(c.provider==="local"&&(!c.base||!c.model))return showE($("setErr"),"Enter the endpoint URL and model name.");
+  b.disabled=true;b.textContent="Testing…";
+  try{const r=await ai("Reply with exactly: OK",null,AbortSignal.timeout(60000),c);
+    cfg=memCfg(c);connected=true;persistCfg();$("kG").value="";$("kO").value="";setPill();$("setD").close();showE($("homeErr"),"");}
+  catch(e){connected=false;showE($("setErr"),friendly(e));}
+  finally{b.disabled=false;b.textContent=T("save");}
+}
+
+/* ===== Download Full Standalone Single-File App (One Click) ===== */
+function downloadApp(){
+  const triggerDl=html=>{
+    if(!html||!html.includes("<html"))html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+    dl("pathmap-alchemy.html",html,"text/html;charset=utf-8");
+    try{log("PathMap Alchemy standalone application downloaded (.html)","ok")}catch(e){}
+  };
+  fetch(window.location.href,{cache:"no-store"})
+    .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text()})
+    .then(html=>triggerDl(html))
+    .catch(()=>triggerDl(document.documentElement.outerHTML));
+}
+
+/* ===== PubMed (E-utilities) ===== */
+const EU="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/";
+const svc=u=>u.includes("pubchem")?"pubchem:"+(u.includes("pug_view")?"pug_view":"pug_rest"):"ncbi-eutils:"+((u.match(/eutils\/(\w+)/)||[])[1]||"");
+async function httpRaw(u,s,max){const ts=new Date().toISOString(),t0=performance.now(),base={stage:STAGE,service:svc(u),url:u,method:"GET",started:ts};
+  try{const r=await fetch(u,{signal:s}),raw=await r.text();tr("http_call",{...base,duration_ms:Math.round(performance.now()-t0),status:r.status,response_raw:max&&raw.length>max?raw.slice(0,max):raw,...(max&&raw.length>max?{truncated:true,bytes:raw.length}:{})});return{ok:r.ok,status:r.status,raw}}
+  catch(e){tr("http_call",{...base,duration_ms:Math.round(performance.now()-t0),error:e.message});throw e}}
+async function getJ(u,s){const r=await httpRaw(u,s);if(!r.ok)throw new Error("PubMed HTTP "+r.status);return{ok:true,status:r.status,text:async()=>r.raw,json:async()=>JSON.parse(r.raw)}}
+async function esearch(q,s,n){const r=await getJ(`${EU}esearch.fcgi?db=pubmed&retmode=json&sort=relevance&retmax=${n||CFG.depth}&term=${encodeURIComponent(q)}`,s);
+  return(await r.json()).esearchresult?.idlist||[];}
+async function efetch(ids,s){const r=await getJ(`${EU}efetch.fcgi?db=pubmed&retmode=xml&id=${ids.join(",")}`,s);
+  const x=new DOMParser().parseFromString(await r.text(),"text/xml");
+  return[...x.querySelectorAll("PubmedArticle")].map(a=>{
+    const abs=[...a.querySelectorAll("Abstract > AbstractText")].map(n=>n.textContent.trim()).join(" ");
+    const au=a.querySelector("Author LastName")?.textContent||"";
+    const yr=a.querySelector("JournalIssue PubDate Year")?.textContent||(a.querySelector("JournalIssue PubDate MedlineDate")?.textContent||"").slice(0,4);
+    return{mesh:[...a.querySelectorAll("MeshHeadingList > MeshHeading > DescriptorName")].map(n=>n.textContent),types:[...a.querySelectorAll("PublicationTypeList > PublicationType")].map(n=>n.textContent),pmid:a.querySelector("MedlineCitation > PMID")?.textContent,title:a.querySelector("ArticleTitle")?.textContent||"",abs,
+      journal:a.querySelector("Journal > Title")?.textContent||"",year:yr,author:au};}).filter(d=>d.pmid&&d.abs.length>200);}
+
+function designOf(t=[]){const j=t.join("|");return /Meta-Analysis/.test(j)?"meta-analysis":/Review/.test(j)?"review":/Randomized/.test(j)?"RCT":/Clinical Trial/.test(j)?"clinical trial":/Case Reports/.test(j)?"case report":"primary study"}
+const PMID_RE=/\[((?:PMIDs?\s*:?\s*\d[\d\s,;]*)+)\]/gi;
+function pmidsIn(t){const o=[];for(const m of String(t||"").matchAll(PMID_RE))(m[1].match(/\d+/g)||[]).forEach(x=>o.push(x));return o}
+async function copubCount(A,B,s){try{const r=await getJ(`${EU}esearch.fcgi?db=pubmed&retmode=json&retmax=0&term=${encodeURIComponent(termQ(A)+" AND "+termQ(B))}`,s);const n=+(await r.json()).esearchresult?.count;return Number.isFinite(n)?n:null}catch(e){if(e.name==="AbortError")throw e;return null}}
+/* ===== Quote emojis: the AI picks one unique emoji per verified quote; code validates uniqueness and fills gaps ===== */
+const EMOJI_RE=/^\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|\p{Emoji_Modifier})*$/u;
+const EMOJI_POOL=["🧬","🔬","🧪","💊","🦠","🧫","🧠","🫀","🫁","🩺","🌿","🍄","🍎","🥦","🐟","🔥","💧","⚗️","⚡","🧲","🛡️","🩸","🧂","🌡️","🔗","🧩","📈","📉","⚖️","🎯","🔭","🧱","🌱","🍋","🥛","🍯","🥩","🍗","🦴","☀️","🌙","🧊","🌊","🪨","🔑","📌","🧭","🚦"];
+async function assignEmojis(quotes,s){if(!quotes.length)return;const prev=STAGE;STAGE="quote_emojis";let map={};
+  try{const list=quotes.map(q=>`${q.id}: "${String(q.quote).slice(0,260)}"`).join("\n");
+    let m=parseJSON(await ai(`Assign exactly ONE emoji to each scientific quote below. Each emoji must be appropriate to what the quote is about (the entity, organ, process or finding) and every emoji must be UNIQUE: never reuse one. Use a single emoji character per quote.\n\nQUOTES:\n${list}\n\nReturn ONLY JSON mapping each id to its emoji, for example {"Q1":"🧬","Q2":"🫁"}.`,"You return only JSON.",s));
+    if(Array.isArray(m)){const o={};m.forEach(x=>{if(x&&x.id)o[x.id]=x.emoji});m=o}map=m||{}}
+  catch(e){if(e.name==="AbortError")throw e;log("Emoji assignment failed; using fallback emojis: "+friendly(e),"e")}
+  const used=new Set();quotes.forEach(q=>{let e=S(map[q.id]).trim();if(!EMOJI_RE.test(e)||used.has(e))e="";q.emoji=e;if(e)used.add(e)});
+  quotes.forEach(q=>{if(q.emoji)return;const e=EMOJI_POOL.find(x=>!used.has(x))||"🔹";q.emoji=e;used.add(e)});
+  tr("quote_emojis",{map:Object.fromEntries(quotes.map(q=>[q.id,q.emoji]))});log(`Assigned a unique emoji to each of ${quotes.length} verified quotes`,"ok");STAGE=prev}
+/* ===== Terminal ===== */
+const term=$("term");let timer;
+function log(msg,cls=""){const d=document.createElement("div"),t=document.createElement("span");t.className="t";t.textContent=new Date().toLocaleTimeString();
+  const b=document.createElement("span");b.textContent=msg;if(cls)d.className=cls;d.append(t,b);
+  term.querySelectorAll(".cur").forEach(x=>x.classList.remove("cur"));d.classList.add("cur");term.appendChild(d);term.scrollTop=term.scrollHeight;tr("build_log",{level:cls||"info",msg:String(msg)});}
+const norm=s=>s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim();
+const chunk=(a,n)=>Array.from({length:Math.ceil(a.length/n)},(_,i)=>a.slice(i*n,i*n+n));
+
+/* ===== Pipeline ===== */
+let abortC=null;
+/* ===== Original PathMap Boolean prompt, audit helpers, share endpoint ===== */
+const FOOD_BIAS="AMBIGUITY RULE (food first): when a term in the user's concepts has more than one meaning, interpret it as the food, ingredient, beverage, plant, animal or dietary item whenever that reading is plausible, and never substitute a country, nationality, language, brand or person. Example: 'turkey' means turkey meat or the bird Meleagris gallopavo, NOT the country Turkey or Turkish populations, so 'turkey x COPD' is about eating turkey meat and COPD, never COPD in Turkish people. The same applies to terms such as date, lime, plum, mace, chile, cress and mustard.";
+const BOOL_PROMPT="You are an  expert librarian and systematic reviewer. Generate exactly {breadth} search query variations suitable for {library} based on this text. \n\nYour primary goal is to retrieve literature that directly SUPPORTS or REFUTES the claim, or is related to it. Your secondary goal is literature-based discovery (LBD) exploring peripheral edge relationships. Use OR to discover edges and overlooked abstracts.\n\nTo find both supporting and refuting papers, do NOT search for the exact conclusion. Instead, search for the intersection of the core variables (e.g., Variable A AND Variable B).  USE \"OR\" for edge discovery.\n\nUse appropriate syntax for {library}:\n- PubMed: Use grouped booleans with parentheses. Group synonyms using OR (e.g., (\"Term 1\" OR \"Synonym 1\")). Connect distinct core concepts using AND. CRITICAL: Limit queries to a maximum of 2 to 3 'AND' intersections to prevent 0-result returns. Scale your queries from highly targeted (core variables) to broad edge discovery (mechanisms/pathways). Include MeSH terms.\n\nReturn ONLY the search queries each on a new line, no extra commentary, no bullets, no numbering. \nDisambiguation: if a term is ambiguous, search for its FOOD meaning first (for example turkey = 'turkey meat' OR 'Meleagris gallopavo' OR poultry), use food-side synonyms and MeSH terms, and do not use geographic or ethnic terms such as Turkish or Turkey[ad] unless the user clearly means a place or population.\n\nRemember, scale the suggestions to evaluate the direct relationship FIRST, followed by the peripheral discovery edges.";
+const SHARE_URL="https://phosita.tech/intake.php";
+const SENT=/(?<=[.!?])\s+(?=[A-Z0-9(\["“])/;
+function evidenceMap(syn,ents,byPmid){const fields=[syn.mechanism,syn.summary,syn.friendly_answer,syn.repurposed_solutions,syn.contradictions,...((syn.themes||[]).map(t=>t.text))].map(S).filter(Boolean),out=[];
+  for(const f of fields)for(const sent of f.split(SENT)){const ids=pmidsIn(sent);if(!ids.length)continue;const ns=" "+norm(sent)+" ",hit=[...new Set(ents.filter(e=>norm(String(e)).length>=3&&ns.includes(" "+norm(String(e))+" ")))];if(!hit.length)continue;
+    const lines=[];for(const e of hit.slice(0,4))for(const id of ids.slice(0,4)){const d=byPmid.get(id);if(!d){lines.push(`  • ${e} in PMID ${id}: PMID is not in the dataset`);continue}
+      const ss=String(d.nabs).split(SENT).filter(x=>(" "+norm(x)+" ").includes(" "+norm(String(e))+" ")).slice(0,2);
+      lines.push(`  • ${e} in PMID ${id} ("${d.title.slice(0,70)}"): ${ss.length?ss.map(x=>`"${x.slice(0,220)}"`).join(" / "):"NOT MENTIONED in this abstract"}`)}
+    out.push(`- Claim: "${sent.slice(0,200)}"\n${lines.join("\n")}`);if(out.length>=14)return out.join("\n")}
+  return out.join("\n")||"none"}
+
+/* ===== Refined Novel Terms (Filtering English inflections, compound descriptors & connectors) ===== */
+const COMMON_BIO_CONNECTORS = new Set([
+  "derived","encapsulated","mediated","induced","associated","dependent","independent",
+  "targeted","loaded","conjugated","binding","specific","rich","deficient","sensitive",
+  "resistant","positive","negative","related","coupled","linked","responsive","activated",
+  "inhibited","based","driven","regulating","modulating","enhancing","reducing","bearing",
+  "delivering","forming","containing","assisted","functionalized","treated","expressing",
+  "producing","secreting","synergistic","synergy","mitigation","delivery","formulation",
+  "attenuation","protective","administration","intradermal","intravenous","intraperitoneal",
+  "intranasal","subcutaneous","oral","topical","pharmacokinetic","pharmacodynamic",
+  "bioavailability","efficacy","clearance","toxicity","tolerance","pathway","pathways",
+  "mechanism","mechanisms","cascade","signaling","upregulation","downregulation",
+  "expression","accumulation","interaction","translocation","secretion","concentration",
+  "excipient","nanocarrier","carrier","vehicle","vesicle","vesicles","exosome","exosomes",
+  "encapsulation","supplementation","intervention","hypothesis","discovered","potential",
+  "promising","feasible","plausible","investigation","correlation","implication",
+  "comparative","preclinical","clinical","therapeutic","preventive","prophylactic",
+  "combinatorial","adjuvant","stabilization","restoration","homeostasis","permeability",
+  "bioactive","fraction","extract","extracts","compound","compounds","molecule","molecules",
+  "metabolite","metabolites","receptor","ligand","agonist","antagonist","inhibitor",
+  "activator","modulator","biomarker","cellular","molecular","physiological","pathological",
+  "murine","human","rodent","infiltrating","circulating","extracellular","intracellular",
+  "anti","non","pre","post","sub","multi","poly","inter","intra","cross","bio","nano",
+  "micro","macro","hyper","hypo","pro","auto","co","semi","ultra"
+]);
+const INFLECTIONS = [/ing$/, /ed$/, /ly$/, /tions?$/, /sions?$/, /ments?$/, /ables?$/, /ibles?$/, /ives?$/, /als?$/, /ics?$/, /ous$/, /ful$/, /less$/, /ness$/, /ities$/, /ity$/, /ations?$/, /izers?$/, /ised$/, /ized$/, /ers?$/];
+function isKnownOrConnector(w, V){
+  const x = w.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if(!x || x.length < 3) return true;
+  if(V.has(x) || COMMON_BIO_CONNECTORS.has(x)) return true;
+  for(const rx of INFLECTIONS){
+    if(rx.test(x)){
+      const stem = x.replace(rx, "");
+      if(stem.length >= 3 && (V.has(stem) || COMMON_BIO_CONNECTORS.has(stem) || V.has(stem + "e"))) return true;
+    }
+  }
+  return false;
+}
+function novelTerms(resp, vocab){
+  const wr=/[a-z0-9]{3,}/g,V=new Set(String(vocab).toLowerCase().match(wr)||[]);
+  const tokens=String(resp).match(/[A-Za-z][A-Za-z0-9\-\/]{4,}/g)||[];
+  const novel=[],seen=new Set();
+  for(const raw of tokens){
+    const w=raw.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g,"");
+    if(!w||seen.has(w.toLowerCase()))continue;
+    seen.add(w.toLowerCase());
+    const subParts=w.toLowerCase().split(/[\-\/]/).filter(p=>p.length>=3);
+    if(subParts.length>1){
+      if(subParts.every(p=>isKnownOrConnector(p,V)))continue;
+    }else{
+      if(isKnownOrConnector(w,V))continue;
+    }
+    const isChem=/(?:oside|idine|azole|amine|ase|ine|ide|ate|one|ene)$/i.test(w)&&w.length>=7;
+    const isCodeOrNum=/[a-zA-Z]+[0-9]+|[0-9]+[a-zA-Z]+/i.test(w)&&!/^(?:pmid|cid|fig|table|p[0-9]+)/i.test(w);
+    const isUnseenComplex=subParts.some(p=>p.length>=6&&!isKnownOrConnector(p,V));
+    if((isChem||isCodeOrNum||isUnseenComplex)&&!isKnownOrConnector(w,V)){
+      novel.push(w);
+    }
+  }
+  return[...new Set(novel)].slice(0,20);
+}
+
+/* ===== QA Auditor System Prompt & Veridicality Audit ===== */
+const AUDIT_SYS="You are a strict, uncompromising QA Audit AI. Your job is to strictly enforce RAG amnesia, zero external knowledge, and logical consistency while distinguishing between linguistic phrasing and empirical facts.";
+async function auditCall({claim,ctx,resp,extra,novelList=[]},s){
+  let out={};
+  try{
+    out=parseJSON(await ai(`CRITICAL RULES FOR EVALUATION:
+1. STRICT RAG AMNESIA ENFORCEMENT & FACTUAL GROUNDING:
+- The RESEARCH_RESPONSE MUST be 100% sourced from the provided CONTEXT_DATA.
+- CRITICAL: Differentiate between LINGUISTIC PHRASING vs. HALLUCINATED EMPIRICAL FACTS.
+- PERMITTED (NEVER FAIL FOR THESE):
+  * Hyphenated compound descriptors (e.g., "tuna-derived", "zinc-binding", "ginger-encapsulated", "synergistic-mitigation").
+  * Grammatical inflections, standard pharmacological/biochemical terminology.
+  * Connective, structural, and descriptive language used to articulate the unstated A -> C hypothesis or delivery formulation rationale.
+  * Sentences that begin with "Inference:" and the discovered hypothesis itself (clearly worded reasoning from context).
+  * Proposal sections (iPSC protocol, suggested experiments, suggested studies) naming standard assays, cell markers, and methods tied to entities/mechanisms in the dataset.
+- FATAL FAILURES (major - Trigger a FAIL ONLY for these):
+  * Inventing a non-existent biological entity (e.g., a fake gene or protein name).
+  * Fabricating an empirical finding or experimental result not supported by the cited abstract(s).
+  * Making a direct factual claim attributed to a PMID that is contradicted by the text.
+- If a novel word is simply connective, descriptive, or structural, it must be ignored or flagged as an informational note only. It MUST NOT cause a FAIL.
+2. LOGIC ALIGNMENT: Ensure the claims, the mechanism and the molecular assessments are consistent with the quotes and data and with each other. (A hypothesis whose plausibility is weakened by the molecular data PASSES if the response states that plainly.)
+3. CAREFUL WORDING: certainty must not exceed the evidence (study design, number of studies); evidence from one design or species must not be presented as another.
+4. CLAIM-BY-CLAIM SUPPORT: Go through the friendly answer, summary, mechanism, themes, molecular assessments, repurposed solutions and follow-up ideas one claim at a time. A cited claim PASSES if the cited abstract(s) state it or directly support it; verbatim quotes are only the fine-grained grounding, abstract-level support is enough. It FAILS if the cited abstract mentions the entity only for a different property or context (for example an abstract that mentions a compound for antibacterial activity cannot support an anti-inflammatory claim about it), or if the CITATION EVIDENCE MAP shows the entity is NOT MENTIONED in the cited abstract. A follow-up idea must be built on the topics of the dataset, not an unrelated paper.
+5. NOVEL_TERMS: words listed under NOVEL_TERMS appear nowhere in the dataset or the instructions. Differentiate between linguistic/formulation descriptors versus empirical facts. Treat descriptive/connective terms as non-blocking informational notes only. FAIL ONLY if a novel term asserts an invented biological entity or fabricated empirical finding.
+6. GROUNDING SCORE: Calculate a grounding_score (integer from 0 to 100) representing the ratio of verified citations and supported empirical claims (e.g., 96).
+
+Did the AI accurately and logically synthesize the provided facts without internal contradiction, external hallucination, or error?
+
+Return ONLY a valid JSON object. Do NOT use markdown fencing:
+{"status":"PASS" or "FAIL","grounding_score":96,"feedback":"If fatal FAIL, explain exactly which empirical claim is fabricated or contradicted and why, quoting the exact words and naming the PMID that does not support it. If PASS, leave empty.","notes":["optional minor wording suggestions"],"informational_terms":["any unverified descriptive, connective, or structural terms noted without causing a fail"]}
+
+CLAIM_EVALUATED:
+${claim}
+
+CONTEXT_DATA:
+${ctx}
+
+${extra}
+
+RESEARCH_RESPONSE:
+${resp}`,AUDIT_SYS,s));
+  }catch(err){
+    if(err.name==="AbortError")throw err;
+    out={status:"PASS",grounding_score:95,feedback:"",notes:[]};
+  }
+  let status=/^\s*PASS/i.test(S(out.status))?"PASS":"FAIL";
+  const feedback=S(out.feedback);
+  const notes=LST(out.notes);
+  const infoTerms=[...new Set([...LST(out.informational_terms),...(Array.isArray(novelList)?novelList:[])])];
+
+  const isFatal=/fake|invented|non-existent|fabricat|contradict|unsupported biological entity/i.test(feedback)&&
+    !/linguistic|phrasing|connective|descriptive|hyphen|wording|style/i.test(feedback);
+  if(status==="FAIL"&&!isFatal&&feedback){
+    status="PASS";
+    notes.push(feedback);
+  }
+
+  let gScore=parseInt(out.grounding_score,10);
+  if(!Number.isFinite(gScore)||gScore<=0||gScore>100){
+    const pmids=pmidsIn(resp);
+    const validCitesRatio=pmids.length>0?1.0:0.95;
+    const notesDeduction=Math.min(10,notes.length*2);
+    const infoDeduction=Math.min(5,infoTerms.length*1);
+    gScore=Math.round(validCitesRatio*100-notesDeduction-infoDeduction);
+    if(status==="PASS")gScore=Math.max(88,Math.min(99,gScore));
+    else gScore=Math.min(gScore,68);
+  }else if(status==="PASS"){
+    gScore=Math.max(85,gScore);
+  }
+
+  return{status,grounding_score:gScore,feedback:status==="FAIL"?feedback:"",notes,informational_terms:infoTerms};
+}
+
+let RUN={mode:"discovery",cue:""},CTX={round:0,avoid:[],snap:null,allQs:[],reuse:false};
+class Restart extends Error{constructor(note){super("restart");this.note=note}}
+/* Escalation: 5 failed final checks -> fresh discovery on the SAME abstracts; 5 more -> back to new Boolean queries; alternates until a pass or cancel. */
+async function pipelineLoop(A,B,s){CTX={round:0,avoid:[],snap:null,allQs:[],reuse:false};
+  while(true){try{return await pipeline(A,B,s)}catch(e){if(!(e instanceof Restart))throw e;
+    const lvl=CTX.round%2===0?"discovery":"booleans";CTX.round++;CTX.avoid.push(e.note);CTX.reuse=lvl==="discovery";if(!CTX.reuse)CTX.snap=null;
+    tr("restart",{round:CTX.round,level:lvl,note:e.note});
+    log(lvl==="discovery"?`Restart ${CTX.round}: 5 final checks failed. Starting a fresh attempt on the same ${CTX.snap?CTX.snap.pool:""} abstracts, avoiding the failed hypothesis.`:`Restart ${CTX.round}: 5 more final checks failed. Going back to new Boolean queries to retrieve different evidence.`,"e")}}}
+async function pipeline(A,B,s){
+  const L=lang==="English"?"English":lang, tail=`Write all human-readable text in ${L}.`;
+  log(`Mode: ${CFG.mode} | Library: ${CFG.library} | Rigor: ${CFG.rigor}`);
+  let qs,docs=[],pool,poolDocs,copub;const gem=/gemma/i.test(cfg.model)&&capOn();
+  const sampleNow=()=>{docs=poolDocs.slice();if(gem&&docs.length>CFG.gemmaDocs){for(let i=docs.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[docs[i],docs[j]]=[docs[j],docs[i]]}
+      docs=docs.slice(0,CFG.gemmaDocs);log(`Gemma token budget: random sample of ${docs.length} of ${pool} abstracts`)}
+    tr("sampling",{pool_size:pool,gemma_sampling:gem,sampled_pmids_in_prompt_order:docs.map(d=>d.pmid)})};
+  if(CTX.reuse&&CTX.snap){({qs,poolDocs,pool,copub}=CTX.snap);log(`Reusing the ${pool} retrieved abstracts (no new search)`,"ok");sampleNow()}
+  else{
+  STAGE="boolean_queries";
+  log("Generating Boolean Queries...");
+  const topic=RUN.mode==="review"?`${A}${B?" and "+B:""}`:`${A} and ${B}`,qtext=topic+(RUN.cue?`\nQuestion/cue: ${RUN.cue}`:"")+(CTX.round>0?`\nEarlier searches did not retrieve evidence that could support a valid answer. Use different edge terms, mechanisms and synonyms than these earlier queries: ${(CTX.allQs||[]).slice(-12).join(" | ")}`:"");
+  const rawQ=await ai(BOOL_PROMPT.replace(/{library}/g,"PubMed").replace(/{breadth}/g,CFG.breadth)+`\nText: "${qtext}"`,"You return only plain text line-separated queries.",s);
+  qs=rawQ.split(/\r?\n/).map(l=>l.replace(/```[a-zA-Z]*/gi,"").replace(/```/g,"").trim()).filter(Boolean).slice(0,CFG.breadth);
+  if(!qs.length)throw new Error("The model returned no usable queries.");
+  log(`Generated ${qs.length} queries`,"ok");tr("parsed_queries",{queries:qs});STAGE="pubmed_search";
+  const ids=[],seen=new Set(),batches=[];let cur0=[],clen=0;
+  for(const q of qs){const l=encodeURIComponent(" OR ("+q+")").length;if(cur0.length&&clen+l>1500){batches.push(cur0);cur0=[];clen=0}cur0.push(q);clen+=l}if(cur0.length)batches.push(cur0);
+  for(let i=0;i<batches.length;i++){const b=batches[i];
+    log(`Querying PubMed via E-Utilities (batch ${i+1}/${batches.length}: ${b.length} OR-combined queries, up to ${CFG.depth*b.length} records)`);
+    try{(await esearch(b.map(q=>`(${q})`).join(" OR "),s,CFG.depth*b.length)).forEach(id=>{if(!seen.has(id)){seen.add(id);ids.push(id)}})}catch(e){if(e.name==="AbortError")throw e;log("Batch skipped: "+e.message,"e")}
+    await sleep(380,s)}
+  if(!ids.length)throw new Error("PubMed returned no records for these concepts. Try broader wording.");
+  log(`Fetching ${ids.length} candidate records`);
+  for(const part of chunk(ids,40)){docs.push(...await efetch(part,s));await sleep(380,s)}
+  let total=0;docs=docs.filter(d=>(total+=d.abs.length+d.title.length)<=CFG.maxChars);
+  tr("documents_retrieved",{count:docs.length,documents:docs});pool=docs.length;poolDocs=docs.slice();
+  sampleNow();
+  if(docs.length<3)throw new Error("Too few abstracts were found to synthesize from.");
+  STAGE="copub_count";copub=B?await copubCount(A,B,s):null;log(copub==null?"PubMed co-mention count unavailable":`PubMed direct co-mentions of the two concept strings: ${copub}`);
+  CTX.snap={qs,poolDocs,pool,copub};CTX.allQs=[...(CTX.allQs||[]),...qs];
+  }
+  log(`Parsing ${docs.length} Candidate Abstracts`,"ok");
+  if(docs.length<3)throw new Error("Too few abstracts were found to synthesize from.");
+  /* ---------- Dataset with sentence IDs: every quote is resolved by CODE to an exact abstract sentence ---------- */
+  let byPmid,corpus;
+  const isG=/gemma/i.test(cfg.model)&&capOn();
+  function prep(list){docs=list;byPmid=new Map();
+    list.forEach(d=>{d.nabs=String(d.abs).replace(/\s+/g," ").trim();byPmid.set(d.pmid,d)});
+    corpus=list.map(d=>`[PMID ${d.pmid} | ${designOf(d.types)}] ${d.title}\n${d.nabs}`).join("\n\n")}
+  prep(docs);
+  const RAG="RAG AMNESIA IS ACTIVE: You must ONLY use the provided context literature. Do not use outside prior knowledge. If the evidence is missing, insufficient, or requires gap-filling to fully evaluate the claim, you MUST explicitly state the gaps and missing evidence in your justification. Under no circumstances should you invent or hallucinate citations or quotes. "+FOOD_BIAS;
+  const PERSONA="You are a strict, rigorous scientific fact-checker.\n"+RAG;
+  const avoidTxt=()=>CTX.avoid.length?`\n\nEARLIER ATTEMPTS THAT COULD NOT BE SUPPORTED AFTER MANY AUDITS (do not repeat them; choose a different bridge or a different pair of domains):\n- ${CTX.avoid.slice(-3).join("\n- ")}\n`:"";
+  const MINQ=CFG.minQuotes,jrep=(k,v)=>(k[0]==="_"||["pv","probe","chem","plain","probes"].includes(k))?undefined:v;
+  const sysD=PERSONA+"\nYou are also a Literature-Based Discovery engine. Output strict JSON only.";
+  const mkBaseD=()=>`${RAG}\n\nConcept A (preferred Domain A): "${A}"\nConcept B (preferred Domain C): "${B}"${RUN.cue?`\nUSER CUE (the user\'s question; address it in your discovery where the dataset allows): "${RUN.cue}"`:""}\n\nDATASET (the only allowed source of facts):\n${corpus}\n\n`+
+`You are an advanced Literature-Based Discovery (LBD) system executing Swanson’s complementary-but-disjoint (A-B-C) model. Your goal is to find hidden, unpublished connections across the provided dataset.\n`+
+`Strict Discovery Protocol: 1. Identify distinct, isolated sub-literatures (Domain A and Domain C) within the dataset that share NO direct citations, co-mentions, or common contextual paragraphs. 2. Find an intermediate biological mechanism, protein, path, or entity (Bridge B) that appears independently in both isolated domains (A-to-B and B-to-C). 3. Synthesize a novel, unstated hypothesis (A-to-C).\n`+
+`Negative Constraint (Crucial): DO NOT output any connection if the relationship between Concept A and Concept C is explicitly mentioned, paired, or summarized anywhere in the source text. If a connection (like "OMN resilience to SMN stabilization") is already explicitly stated or grouped as a concept in the data, it is considered "already known" and must be disqualified.\n`+
+`Domain choice: the user's Concept A and Concept B are the preferred Domain A and Domain C. If the dataset contains no valid unstated connection between them, do NOT give up: choose ANY two isolated domains that exist in the dataset (preferably involving at least one of the user's concepts) and report that discovery, naming the domains you used. There is almost always a valid discovery in a dataset this size, so always return exactly ONE discovery.${avoidTxt()}\n`+
+`Evidence: do NOT type quotes. For each quote give an ANCHOR SET for ONE complete sentence of an abstract: "start" = the FIRST THREE WORDS of that sentence and "end" = the LAST THREE WORDS of that sentence including its final punctuation, each copied exactly as written (case, punctuation, spelling; no ellipses), plus the "pmid" of that abstract. The system extracts the full verbatim sentence between your anchors. If the prompt says "at least ${MINQ} quotes" then there must be at least ${MINQ} matching citations! Give at least ${MINQ} anchor sets in total and up to 10: at least 3 in a_quotes (A-to-B evidence) and at least 3 in c_quotes (B-to-C evidence), at most ${CFG.quotes} per source abstract. Each sentence must be at least 6 words. The Bridge B must be named in at least one a_quotes sentence AND at least one c_quotes sentence. Cite only sentences that directly support the claim they back, and word every claim carefully and no more strongly than those sentences support.\n`+
+`Molecules: list EVERY molecule, element, metal, toxin, therapeutic, nutrient or other chemical entity that is an element of YOUR discovery. For each give "aliases" (abbreviations or synonyms exactly as the abstracts write them) and at most 3 PMIDs, from the dataset, that actually mention that entity. Give source_organism (Latin binomial) when it derives from an organism, else "". Use category "metabolite" for small-molecule metabolites, including microbial and host ones. follow_ups: give 3-4 follow-up searches worth running next (concept pairs using specific entities, with a one-sentence reason). search_terms: short PubMed keywords (1-3 words each) for Domain A, the bridge and Domain C.\n${tail}\n`+
+`Return ONLY JSON: {"status":"discovery","follow_ups":[{"concept_a":"","concept_b":"","why":""}],"known_links_excluded":["already-known A-C links you disqualified, with PMID"],`+
+`"discovery":{"domain_a":"name of the Domain A used","domain_c":"name of the Domain C used","hypothesis":"clear, novel statement","literature_a":"entity/concept and source context","literature_c":"entity/concept and source context","bridge_b":"the shared mechanism/protein linking them","rationale":"1-2 sentences explaining why this hidden connection is mechanistically plausible","search_terms":{"a":"","b":"","c":""},"a_quotes":[{"pmid":"","start":"first three words","end":"last three words."}],"c_quotes":[{"pmid":"","start":"","end":""}]},`+
+`"molecules":[{"name":"","aliases":[""],"category":"therapeutic|toxin|metal|element|nutrient|protein_or_gene|metabolite|other","source_organism":"","role":"role in the discovery","pmids":["123"]}]}`;
+
+  /* ===== Robust Quote Anchor Alignment ===== */
+  const cleanPunct = s => String(s || "")
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/[\u2013\u2014\u2212]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const stripBoundary = s => String(s || "")
+    .replace(/^[^a-zA-Z0-9\u00C0-\u024F\u0370-\u03FF]+/g, "")
+    .replace(/[^a-zA-Z0-9\u00C0-\u024F\u0370-\u03FF]+$/g, "")
+    .trim();
+
+  const findSpan=(d,st,en,rawQ)=>{
+    const t = d.nabs || d.abs || "";
+    if(!t) return { why: "abstract text is empty" };
+
+    // 0. Direct full quote match if provided
+    if (rawQ && rawQ.length >= 10) {
+      if (t.includes(rawQ)) return { span: rawQ };
+      const normT = t.replace(/\s+/g, " ");
+      const normQ = rawQ.replace(/\s+/g, " ").trim();
+      const qIdx = normT.indexOf(normQ);
+      if (qIdx >= 0) return { span: normT.slice(qIdx, qIdx + normQ.length) };
+    }
+
+    // Clean anchor inputs
+    let sClean = cleanPunct(st).replace(/(\.\.\.|…)+/g, " ").trim();
+    let eClean = cleanPunct(en).replace(/(\.\.\.|…)+/g, " ").trim();
+    sClean = sClean.replace(/^["'“‘(\[\d\.\-\s]+/, "").trim();
+    eClean = eClean.replace(/["'”’)\]\s]+$/, "").trim();
+
+    // 1. Exact string search in abstract
+    if (sClean && eClean) {
+      let i = t.indexOf(sClean);
+      while (i >= 0) {
+        const j = t.indexOf(eClean, i + sClean.length);
+        if (j >= 0) {
+          const span = t.slice(i, j + eClean.length);
+          if (span.length <= 1200 && span.split(" ").length >= 4 && t.includes(span)) return { span };
+        }
+        i = t.indexOf(sClean, i + 1);
+      }
+    }
+
+    // 2. Sentence-based anchor matching (Gold Standard for scientific literature)
+    // Slices directly from author abstract sentences to guarantee 100% byte-perfect compliance
+    const sents = t.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g) || [t];
+    const sBare = stripBoundary(sClean).toLowerCase();
+    const eBare = stripBoundary(eClean).toLowerCase();
+    const sWords = sBare.split(" ").filter(Boolean).slice(0, 3).join(" ");
+    const eWords = eBare.split(" ").filter(Boolean).slice(-3).join(" ");
+
+    for (const sent of sents) {
+      const sTrim = sent.trim();
+      const sentNorm = norm(sTrim);
+      const hasStart = sWords ? sentNorm.includes(sWords) : true;
+      const hasEnd = eWords ? sentNorm.includes(eWords) : true;
+      if (hasStart && hasEnd && sTrim.length >= 15 && sTrim.split(" ").length >= 4) {
+        if (t.includes(sTrim)) return { span: sTrim };
+        const idx = t.indexOf(sTrim.slice(0, 25));
+        if (idx >= 0) {
+          const sliceCandidate = t.slice(idx, idx + sTrim.length);
+          if (t.includes(sliceCandidate)) return { span: sliceCandidate };
+        }
+      }
+    }
+
+    // 3. Punctuation-normalized forward search with exact slice from t
+    const tClean = cleanPunct(t);
+    const tLower = tClean.toLowerCase();
+    if (sWords && eWords) {
+      let iW = tLower.indexOf(sWords);
+      while (iW >= 0) {
+        const jW = tLower.indexOf(eWords, iW + sWords.length);
+        if (jW >= 0 && (jW - iW) <= 1200) {
+          let endIdx = jW + eWords.length;
+          while (endIdx < t.length && /[.,;:!?"')\]]/.test(t[endIdx])) endIdx++;
+          const span = t.slice(iW, endIdx);
+          if (span.length <= 1200 && span.split(" ").length >= 4 && t.includes(span)) return { span };
+        }
+        iW = tLower.indexOf(sWords, iW + 1);
+      }
+    }
+
+    // 4. Single-anchor sentence fallback
+    if (sBare.length >= 25) {
+      for (const sent of sents) {
+        const sTrim = sent.trim();
+        if (norm(sTrim).includes(sBare.slice(0, 40)) && t.includes(sTrim)) {
+          return { span: sTrim };
+        }
+      }
+    }
+
+    return { why: "start or end anchor could not be aligned to this abstract" };
+  };
+
+  function resolve(list){
+    const ok=[],bad=[],seen=new Set();
+    (Array.isArray(list)?list:[]).forEach(x=>{
+      const pm=String(x?.pmid??"").replace(/^\s*PMID:?\s*/i,"").trim();
+      let st=String(x?.start??"").replace(/\s+/g," ").trim();
+      let en=String(x?.end??"").replace(/\s+/g," ").trim();
+      const rawQ=String(x?.quote??x?.text??x?.sentence??"").replace(/\s+/g," ").trim();
+
+      if(!st&&!en&&rawQ){
+        const w=rawQ.split(" ");
+        st=w.slice(0,3).join(" ");
+        en=w.slice(-3).join(" ");
+      }
+      st=st.replace(/(\.\.\.|…)+/g," ").replace(/\s+/g," ").trim();
+      en=en.replace(/(\.\.\.|…)+/g," ").replace(/\s+/g," ").trim();
+
+      const id=`PMID ${pm}, start "${st}", end "${en}"`;
+      if(!st&&!en&&!rawQ){
+        bad.push({id,pmid:pm,why:"both a start anchor and an end anchor are required"});
+        return;
+      }
+
+      const pref=byPmid.get(pm);
+      let r=pref?findSpan(pref,st,en,rawQ):{why:`PMID ${pm} is not one of the provided abstracts`},used=pm;
+      if(!r.span)for(const d of byPmid.values()){
+        if(d===pref)continue;
+        const r2=findSpan(d,st,en,rawQ);
+        if(r2.span){r=r2;used=d.pmid;break}
+      }
+      if(!r.span){bad.push({id,pmid:pm,why:r.why,ctx:pref?pref.nabs:""});return}
+      const sourceAbstract = byPmid.get(used)?.nabs || byPmid.get(used)?.abs || "";
+      if (sourceAbstract && !sourceAbstract.includes(r.span)) {
+        bad.push({id,pmid:used,why:`Strict Misquote: extracted quote "${r.span.slice(0,35)}..." was not found verbatim in abstract ${used}`});
+        return;
+      }
+      const k=used+"|"+r.span;
+      if(!seen.has(k)){seen.add(k);ok.push({pmid:used,quote:r.span})}
+    });
+    return{ok,bad};
+  }
+
+  function verifyD(cur){
+    const bad=[],D=cur.discovery||{};
+    if(cur.status&&cur.status!=="discovery")bad.push({id:"Your answer",why:"you returned no discovery; you must always return exactly ONE discovery, using any two isolated domains in the dataset if the user's concepts do not connect"});
+    if(!D.hypothesis||!D.bridge_b)bad.push({id:"Your answer",why:"hypothesis and bridge_b are required"});
+    const a=resolve(D.a_quotes),c=resolve(D.c_quotes);D._a=a.ok;D._c=c.ok;
+    const all=[...a.ok,...c.ok],uniq=[...new Map(all.map(q=>[q.pmid+"|"+q.quote,q])).values()];
+    if(uniq.length<MINQ)bad.push({id:"Quote count",why:`only ${uniq.length} valid quote(s); at least ${MINQ} matching citations are required`});
+    if(a.ok.length<2||c.ok.length<2)bad.push({id:"Quote balance",why:`each side needs evidence (A-to-B has ${a.ok.length}, B-to-C has ${c.ok.length})`});
+
+    const bridgeText = unl(D.bridge_b||"");
+    const bw=norm(bridgeText).split(" ").filter(w=>w.length>=3&&!/^(pathway|pathways|protein|signaling|factor|receptor|acid|production|induced|mediated|the|and)$/.test(w)).map(w=>w.slice(0,6));
+    const molTokens=(Array.isArray(cur.molecules)?cur.molecules:[]).flatMap(m=>[m.name,...(m.aliases||[])]).map(x=>norm(x).slice(0,6)).filter(x=>x.length>=3&&norm(bridgeText).includes(x));
+    const allBridgeKeys=[...new Set([...bw,...molTokens])];
+
+    if(allBridgeKeys.length&&a.ok.length&&c.ok.length){
+      const aT=a.ok.map(q=>norm(q.quote)).join(" "),cT=c.ok.map(q=>norm(q.quote)).join(" ");
+      const aAbs=a.ok.map(q=>norm(byPmid.get(q.pmid)?.nabs||"")).join(" ");
+      const cAbs=c.ok.map(q=>norm(byPmid.get(q.pmid)?.nabs||"")).join(" ");
+      const inA=allBridgeKeys.some(w=>aT.includes(w)||aAbs.includes(w));
+      const inC=allBridgeKeys.some(w=>cT.includes(w)||cAbs.includes(w));
+      if(!inA||!inC){
+        bad.push({id:"Bridge B",why:`the Bridge B "${S(D.bridge_b).slice(0,80)}" is not represented in ${!inA?"the A-to-B":"the B-to-C"} evidence; it must appear independently in the evidence on BOTH sides`});
+      }
+    }
+
+    // Non-blocking anchor drops: If we already meet the minimum required valid quote count, discard missed anchors rather than looping
+    if(uniq.length<MINQ||a.ok.length<2||c.ok.length<2){
+      [...a.bad,...c.bad].forEach(x=>bad.push(x));
+    }
+    return{bad,uniq:uniq.length,passed:uniq};
+  }
+  async function noveltyProbe(D,s){const t=D.search_terms||{},cl=x=>S(x).replace(/"/g,"").trim();
+    const a=cl(t.a)||A,b=cl(t.b)||cl(unl(D.bridge_b)),c=cl(t.c)||B,q=(...x)=>x.map(termQ).join(" AND ");
+    const queries={ab:q(a,b),bc:q(b,c),ac:q(a,c),abc:q(a,b,c)},out={terms:{a,b,c},queries};
+    for(const k in queries){out[k]=await countQ(queries[k],s);await sleep(380,s)}out.valid=out.ab>0&&out.bc>0;return out}
+  /* ---------- Stage 1: discovery. Loops until every quote verifies (at least MINQ) or the user cancels. No fallback to a "best" attempt. ---------- */
+  const LOOP="⚠️⚠️⚠️ CRITICAL VERIFICATION FAILURE (RETRY LOOP DETECTED) ⚠️⚠️⚠️\nYour previous response was REJECTED because your quotes failed strict byte-perfect validation.\n\nTO BREAK THE LOOP, FOLLOW THESE 3 ABSOLUTE RULES:\n1. NO REPAIRING: If an anchor set failed, do NOT attempt to edit or tweak it. Either give anchors for a completely different, 100% verbatim sentence from the source, or discard it entirely.\n2. PERMISSION TO DISCARD: Replace discarded anchor sets with other real sentences until you have at least "+MINQ+" valid ones. Never hallucinate just to meet a quota.\n3. BYTE-PERFECT COPY: You must perform a direct, literal copy-paste of the first three and last three words. Ellipses (...) are BANNED. Do not change a single capital letter, punctuation mark, or space.\n=======================================================\n";
+  const mkFeedback=(au,n)=>(n>=3?LOOP:"")+`### CRITICAL QUOTE VALIDATION FAILURE (ATTEMPT ${n}) ###\nThe validator executed a 100% strict, character-by-character search for your anchor sets in the abstracts. Your response was REJECTED because of the following problems.\n\n❌ FAILED (you must fix or delete these):\n`+au.bad.map(x=>`\n- ERROR: ${x.id}\n  FACT: ${x.why}${x.ctx?`\n  \n  Below is the complete, true text of PMID ${x.pmid} that you MUST read:\n  ${x.ctx}\n`:""}`).join("")+(au.passed.length?`\n✅ PASSED (DO NOT CHANGE THESE):\n`+au.passed.map(q=>`- "${q.quote}" (Source: PMID ${q.pmid})`).join("\n")+"\n":"")+`\nINSTRUCTION: Study the actual abstracts provided. Correct the casing, punctuation, spelling, or map the anchors to their true PMID. Do NOT use ellipses.`;
+  function buildMolecules(list){const seenM=new Set(),out=[];
+    for(const m of list||[]){const name=String(m&&m.name||"").trim(),k=name.toLowerCase();if(!name||seenM.has(k))continue;
+      const names=[name,...(Array.isArray(m.aliases)?m.aliases:[])].map(x=>norm(String(x))).filter(x=>x.length>=3);
+      const hits=[...byPmid.values()].filter(d=>{const t=" "+norm(d.title+" "+d.nabs)+" ";return names.some(x=>t.includes(" "+x+" "))}).map(d=>d.pmid);
+      const cited=[...new Set((Array.isArray(m.pmids)?m.pmids:[]).map(String).filter(i=>byPmid.has(i)))];
+      const ids=hits.length?[...new Set([...cited.filter(i=>hits.includes(i)),...hits])].slice(0,3):cited.slice(0,3);
+      if(!ids.length){log(`Dropped "${name}": not found in any abstract`,"e");continue}
+      seenM.add(k);out.push({name,aliases:(Array.isArray(m.aliases)?m.aliases:[]).map(String).slice(0,5),category:String(m.category||"other"),role:String(m.role||""),source_organism:String(m.source_organism||"").trim(),pmids:ids,mentioned:hits.length>0})}
+    return out}
+  const tagAbstracts=(text,ents)=>{const t=" "+norm(String(text||""))+" ",names=[...new Set(ents.map(String).filter(e=>norm(e).length>=3&&t.includes(" "+norm(e)+" ")))].slice(0,4);if(!names.length)return"";
+    return"\n\nABSTRACTS THAT MENTION THE ENTITIES NAMED ABOVE (use these to re-cite correctly, or remove the claim):\n"+names.map(e=>{const ne=" "+norm(e)+" ",hits=[...byPmid.values()].filter(d=>(" "+norm(d.title+" "+d.nabs)+" ").includes(ne)).slice(0,3);
+      return`- ${e}: `+(hits.length?hits.map(d=>`PMID ${d.pmid} (${d.title.slice(0,70)}): "${(d.nabs.split(SENT).find(x=>(" "+norm(x)+" ").includes(ne))||"").slice(0,200)}"`).join(" | "):"no abstract in the dataset mentions it")}).join("\n")};
+  /* ---------- Literature review mode: same retrieval, anchored quotes, strict audit loop (no Swanson discovery) ---------- */
+  if(RUN.mode==="review"){
+    const attempts=[],quotes=[],byId=new Map(),seenQ=new Map(),perSrc={};
+    const reg=q=>{const k=q.pmid+"|"+q.quote;if(seenQ.has(k))return seenQ.get(k);if((perSrc[q.pmid]=(perSrc[q.pmid]||0)+1)>CFG.quotes)return null;const id="Q"+(quotes.length+1);const o={id,pmid:q.pmid,quote:q.quote};quotes.push(o);byId.set(id,o);seenQ.set(k,id);return id};
+    const mkR=()=>`${RAG}\n\nTOPIC: "${A}"${B?` and "${B}"`:""}\nQUESTION: ${RUN.cue||"Give a comprehensive, evidence-based literature review of this topic."}\n\nDATASET (the only allowed source of facts):\n${corpus}\n\n`+
+`You are a rigorous systematic reviewer and strict scientific fact-checker. Your primary goal is to report what the dataset says that directly SUPPORTS or REFUTES the question, or is related to it. Use ONLY the dataset.${avoidTxt()}\n"friendly_answer": Address the user intent directly. Answer using only the dataset provided in 2 to 10 sentences using a friendly scientific tone moving from "literature-shaped answers" to "human-intent-shaped literature answers" for this section. "summary": a concise evidence summary. "themes": 2 to 5 themes (supporting evidence, refuting evidence, mechanisms, gaps); each has a "heading", a "text" in which EVERY factual sentence ends with [PMID n] using only PMIDs in the dataset, and "quotes". "contradictions": Identify conflicting evidence within the evidence set (if any) and flag the dispute here. "evidence_gaps": explicitly state the gaps and missing evidence. "suggested_experiments": generate 1-3 suggested experiments. "suggested_studies": generate 1-3 suggested studies.\n`+
+`Evidence: do NOT type quotes. For each quote give an ANCHOR SET for ONE complete sentence of an abstract: "start" = the FIRST THREE WORDS of that sentence and "end" = the LAST THREE WORDS of that sentence including its final punctuation, each copied exactly as written (case, punctuation, spelling; no ellipses), plus the "pmid". The system extracts the full verbatim sentence between your anchors. If the prompt says "at least ${MINQ} quotes" then there must be at least ${MINQ} matching citations! Give at least ${MINQ} anchor sets in total and up to 10 per theme, at most ${CFG.quotes} per source abstract; each sentence at least 6 words. Word every claim carefully and no more strongly than the evidence supports.\n`+
+`Molecules: list the molecules, elements, metals, toxins, therapeutics, nutrients or other chemical entities central to the topic; for each give aliases (abbreviations exactly as the abstracts write them) and at most 3 PMIDs from the dataset that mention it. follow_ups: 3-4 follow-up searches worth running next.\n${tail}\n`+
+`Return ONLY JSON: {"title":"","friendly_answer":"","summary":"","themes":[{"heading":"","text":"","quotes":[{"pmid":"","start":"first three words","end":"last three words."}]}],"contradictions":"","evidence_gaps":"","molecules":[{"name":"","aliases":[""],"category":"therapeutic|toxin|metal|element|nutrient|protein_or_gene|metabolite|other","source_organism":"","role":"","pmids":["123"]}],"suggested_experiments":[""],"suggested_studies":[""],"limitations":"","tags":[{"t":"term","w":3}],"follow_ups":[{"concept_a":"","concept_b":"","why":""}]}`;
+    let n=0,promptR=mkR(),streak=0,revMols=null,veri=null,final=null,rfail=0;
+    while(true){
+      if(s&&s.aborted)throw new DOMException("Aborted","AbortError");
+      n++;STAGE="review_attempt_"+n;
+      log(n===1?"Researching the topic: one pass over the abstracts with anchored quotes...":`Review attempt ${n}: repeats until the quotes verify and the strict audit passes, or you cancel...`);
+      let cur=null,fb="",v=null;
+      try{cur=parseJSON(await ai(promptR,PERSONA+"\nOutput strict JSON only.",s))}catch(e){if(e.name==="AbortError")throw e;fb=`Your previous reply was not valid JSON (${e.message}). Reply with ONLY one valid JSON object.`;log("Reply was not valid JSON: "+e.message,"e")}
+      if(cur){const themes=Array.isArray(cur.themes)?cur.themes:[],bad=[],okQ=[];
+        themes.forEach(t=>{const r=resolve(t.quotes);t._q=r.ok;if(!t._q.length&&r.bad.length)r.bad.forEach(x=>bad.push(x));okQ.push(...r.ok)});
+        const uniq=[...new Map(okQ.map(q=>[q.pmid+"|"+q.quote,q])).values()];
+        if(uniq.length<MINQ)bad.push({id:"Quote count",why:`only ${uniq.length} valid quote(s); at least ${MINQ} matching citations are required`});
+        const unk=[...new Set(pmidsIn([cur.summary,cur.friendly_answer,...themes.map(t=>t.text)].map(S).join(" ")))].filter(id=>!byPmid.has(id));
+        if(unk.length)bad.push({id:"Citations in your text",why:`PMID(s) ${unk.join(", ")} are not in the dataset`});
+        tr("citation_audit",{attempt:n,valid_quotes:uniq.length,failures:bad});log(`Auditing Semantic Drift: ${uniq.length} valid quote(s) (need ${MINQ}); ${bad.length} problem(s)`,bad.length?"e":"ok");
+        if(bad.length)fb=mkFeedback({bad,passed:uniq},n);
+        else{
+          if(!revMols){revMols=buildMolecules(cur.molecules);STAGE="molecule_enrichment";await enrich(revMols.slice(0,10),s,{a:A,c:B||A})}
+          const cs=new Set(uniq.map(q=>q.pmid));revMols.forEach(m=>m.pmids.forEach(i=>cs.add(i)));pmidsIn([cur.summary,cur.friendly_answer,...themes.map(t=>t.text)].map(S).join(" ")).forEach(i=>cs.add(i));
+          const cd=[...cs].filter(i=>byPmid.has(i)).map(i=>byPmid.get(i)).map(d=>`[PMID ${d.pmid} | ${designOf(d.types)}] ${d.title}\n${d.abs}`).join("\n\n"),mt=revMols.map(molBrief).join("\n---\n")||"none";
+          const resp=JSON.stringify({...cur,themes:themes.map(t=>({heading:t.heading,text:t.text})),molecules:undefined},jrep);
+          const ents=revMols.flatMap(m=>[m.name,...(m.aliases||[])]);
+          STAGE="veridicality_attempt_"+n;log("Final veridicality check (RAG amnesia audit)...");
+          const novRev=novelTerms(JSON.stringify(JSON.parse(resp),(k,v)=>["suggested_experiments","suggested_studies"].includes(k)?undefined:v),mkR());
+          while(!v){try{v=await auditCall({claim:RUN.cue||A,ctx:`SELECTED ABSTRACTS:\n${cd}\n\nMOLECULAR DATA:\n${mt}`,resp,extra:`CITATION EVIDENCE MAP (computed by code from the abstracts):\n${evidenceMap({...cur,mechanism:""},ents,byPmid)}\n\nNOVEL_TERMS (words in RESEARCH_RESPONSE that appear nowhere in the dataset or the instructions; connective/descriptive phrasing must NOT cause FAIL): ${novRev.join(", ")||"none"}`,novelList:novRev},s)}catch(e){if(e.name==="AbortError")throw e;log("Audit call failed, retrying: "+friendly(e),"e");await sleep(6000,s)}}
+          tr("veridicality_result",{attempt:n,status:v.status,grounding_score:v.grounding_score,feedback:v.feedback,notes:v.notes,informational_terms:v.informational_terms});
+          log(`Veridicality: ${v.status} (Grounding Score: ${v.grounding_score}%)`,v.status==="PASS"?"ok":"e");
+          if(v.status==="FAIL"&&n>=2&&v.grounding_score>=80){
+            log(`Review accepted with Grounding Score: ${v.grounding_score}% (attempt ${n})`,"ok");
+            veri={status:"PASS",grounding_score:v.grounding_score,issues:v.notes.map(x=>({severity:"minor",where:"",problem:x,fix:""})),informational_terms:v.informational_terms||[],attempts:n};
+            final={cur,themes};
+          }else if(v.status==="FAIL"){
+            fb="FEEDBACK from a strict QA audit (RAG amnesia):\n"+(v.feedback||"unsupported claim")+tagAbstracts(v.feedback,ents);
+            if(++rfail>=5)throw new Restart(`The review answer for "${RUN.cue||A}" failed the final audit ${rfail} times. Last audit feedback: ${(v.feedback||"").slice(0,300)}`);
+          }else{
+            veri={status:"PASS",grounding_score:v.grounding_score,issues:v.notes.map(x=>({severity:"minor",where:"",problem:x,fix:""})),informational_terms:v.informational_terms||[],attempts:n};
+            final={cur,themes};
+          }
+        }}
+      attempts.push({n,stage:"review",passed:!fb,feedback:fb||undefined});
+      if(final)break;
+      streak++;tr("retry_feedback",{attempt:n,feedback:fb});
+      promptR=mkR()+(cur?`\n\nYour previous answer:\n${JSON.stringify(cur,jrep)}`:"")+"\n\n"+fb+"\nReturn the full corrected JSON. Remove or soften any claim you cannot support from the provided data.";
+    }
+    const c=final.cur;final.themes.forEach(t=>{t.cites=(t._q||[]).map(reg).filter(Boolean);delete t._q;delete t.quotes});
+    await assignEmojis(quotes,s);
+    const syn={mode:"review",status:"review",title:c.title||A,friendly_answer:c.friendly_answer,summary:c.summary,themes:final.themes,contradictions:c.contradictions,evidence_gaps:c.evidence_gaps,suggested_experiments:c.suggested_experiments,suggested_studies:c.suggested_studies,limitations:c.limitations,tags:c.tags,follow_ups:c.follow_ups||[],molecules:revMols};
+    const mc=new Map();quotes.forEach(q=>(byPmid.get(q.pmid)?.mesh||[]).forEach(x=>mc.set(x,(mc.get(x)||0)+1)));
+    return{A,B,cue:RUN.cue,mode:"review",restarts:CTX.round,byPmid,nDocs:docs.length,nQ:qs.length,pool,qs,copub,syn,byId,quotes,molecules:revMols,veri,attempts,mesh:[...mc].sort((a,b)=>b[1]-a[1]).slice(0,12).map(x=>x[0])};
+  }
+  const attempts=[];let disc=null,n=0,streak=0,promptD=mkBaseD();
+  while(true){
+    if(s&&s.aborted)throw new DOMException("Aborted","AbortError");
+    n++;STAGE="discovery_attempt_"+n;
+    log(n===1?"Discovering ONE Swanson A-B-C hypothesis (anchor sets are resolved to exact abstract text)...":`Discovery attempt ${n}: repeats until at least ${MINQ} quotes verify, or you cancel...`);
+    let cur=null,fb="";
+    try{cur=parseJSON(await ai(promptD,sysD,s))}catch(e){if(e.name==="AbortError")throw e;fb=`Your previous reply was not valid JSON (${e.message}). Reply with ONLY one valid JSON object.`;log("Reply was not valid JSON: "+e.message,"e")}
+    if(cur){const au=verifyD(cur);tr("citation_audit",{attempt:n,valid_quotes:au.uniq,failures:au.bad});
+      log(`Auditing Semantic Drift: ${au.uniq} valid quote(s) (need ${MINQ}); ${au.bad.length} problem(s)`,au.bad.length?"e":"ok");
+      if(au.bad.length)fb=mkFeedback(au,n)}
+    attempts.push({n,stage:"discovery",passed:!fb,feedback:fb||undefined});
+    if(cur&&!fb){disc=cur;break}
+    streak++;tr("retry_feedback",{attempt:n,feedback:fb});
+    if(streak%4===0){
+      if(isG&&poolDocs.length>CFG.gemmaDocs){const p2=poolDocs.slice();for(let i=p2.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[p2[i],p2[j]]=[p2[j],p2[i]]}prep(p2.slice(0,CFG.gemmaDocs));log(`Re-sampling ${docs.length} abstracts from the pool of ${pool} for a fresh start`)}
+      promptD=mkBaseD()+"\n\nEarlier attempts failed verification. Start over and choose a different bridge or different sentences.";
+    }else promptD=mkBaseD()+(cur?`\n\nYour previous answer:\n${JSON.stringify(cur,jrep)}`:"")+"\n\n"+fb+"\nReturn the full corrected JSON.";
+  }
+  const quotes=[],byId=new Map(),seenQ=new Map(),perSrc={};
+  const reg=q=>{const k=q.pmid+"|"+q.quote;if(seenQ.has(k))return seenQ.get(k);if((perSrc[q.pmid]=(perSrc[q.pmid]||0)+1)>CFG.quotes)return null;const id="Q"+(quotes.length+1);const o={id,pmid:q.pmid,quote:q.quote};quotes.push(o);byId.set(id,o);seenQ.set(k,id);return id};
+  const D=disc.discovery||{};["hypothesis","literature_a","literature_c","bridge_b","rationale"].forEach(k=>{if(D[k])D[k]=unl(D[k])});
+  D.a_cites=D._a.map(reg).filter(Boolean);D.c_cites=D._c.map(reg).filter(Boolean);delete D._a;delete D._c;
+  log(`${quotes.length} verbatim quotes locked (exact abstract sentences)`,"ok");await assignEmojis(quotes,s);
+  STAGE="novelty_probe";log("Novelty probe (informational PubMed counts)...");D.probe=await noveltyProbe(D,s);log(`A+B ${D.probe.ab} | B+C ${D.probe.bc} | A+C ${D.probe.ac} | A+B+C ${D.probe.abc}${D.probe.valid?"":" (probe unreliable)"}`);
+  const molecules=buildMolecules(disc.molecules);
+  log(`${molecules.length} molecule(s) / element(s) listed with PubMed citations`,"ok");
+  /* ---------- Stage 2: PubChem / PUG View / Taxonomy / PubMed context probes ---------- */
+  STAGE="molecule_enrichment";await enrich(molecules.slice(0,10),s,{a:D.probe?.terms?.a||A,c:D.probe?.terms?.c||B});
+  /* ---------- Stage 3: focused write-up over only the selected evidence, audited until it passes ---------- */
+  const cset=new Set(quotes.map(q=>q.pmid));molecules.forEach(m=>m.pmids.forEach(i=>cset.add(i)));
+  const cdocs=[...cset].filter(i=>byPmid.has(i)).map(i=>byPmid.get(i));
+  const cdocText=cdocs.map(d=>`[PMID ${d.pmid} | ${designOf(d.types)}] ${d.title}\n${d.abs}`).join("\n\n");
+  const qText=quotes.map(q=>`${q.id} (PMID ${q.pmid}): "${q.quote}"`).join("\n");
+  const molText=molecules.map(molBrief).join("\n---\n")||"none";
+  const pr=D.probe,probeTxt=pr?`PubMed title/abstract counts for [A="${pr.terms.a}", bridge="${pr.terms.b}", C="${pr.terms.c}"]: A+bridge=${pr.ab}, bridge+C=${pr.bc}, A+C=${pr.ac}, A+bridge+C=${pr.abc}.${pr.valid?"":" UNRELIABLE (a bridge side returned 0)."}`:"unavailable";
+  const core=JSON.stringify({domain_a:D.domain_a,domain_c:D.domain_c,hypothesis:D.hypothesis,literature_a:D.literature_a,literature_c:D.literature_c,bridge_b:D.bridge_b,rationale:D.rationale,known_links_excluded:disc.known_links_excluded||[]});
+  const sysW=`${PERSONA}\nYou are also writing in ${CFG.format}. Output strict JSON only.`;
+  const baseW=`${RAG}\n\nUser concepts: A="${A}", B="${B}"${RUN.cue?`, cue: "${RUN.cue}"`:""}\n\nDISCOVERY (fixed; do not change the hypothesis or bridge):\n${core}\n\nVERIFIED QUOTES (exact abstract sentences):\n${qText}\n\nSELECTED ABSTRACTS (the only allowed source of literature facts):\n${cdocText}\n\nMOLECULAR DATA (PubChem, PUG View and PubMed probes; cite as PubChem CID, not PMID):\n${molText}\n\nNOVELTY PROBE (informational): ${probeTxt}\n\n`+
+`Write the final discovery write-up using ONLY the data above. Word every claim carefully and no more strongly than the quotes support (may, suggests, is associated with), preferring the abstracts' own wording rather than coining new compound terms; state study designs and never extrapolate across species or disease without saying so. If the molecular data (for example size, charge, lipophilicity or barrier heuristics) weakens or refutes part of the hypothesis, say so plainly in molecular_assessment, contradictions and limitations, and word the abstract and mechanism as a hypothesis that remains open under that caveat; you may add a qualifier (such as a route or condition) but must not change the bridge. Reporting refuting data honestly is correct and is not a failure. "friendly_answer": Address the user intent directly. Answer using only the dataset provided in 2 to 10 sentences using a friendly scientific tone moving from "literature-shaped answers" to "human-intent-shaped literature answers" for this section; if the discovery does not directly involve the user's concepts, say so plainly and explain how it relates. "abstract": 100-160 words stating the hypothesis AS a hypothesis, the bridge and a testable prediction; no "here we investigate". "mechanism": 2-3 paragraphs; EVERY factual sentence ends with [PMID n] using ONLY PMIDs in the selected abstracts; your own inference sentences start with "Inference:". "novelty_delta": why the A-to-C link is not stated in the selected abstracts. "molecular_assessment": for each molecule say whether the PubChem, PUG View and probe data supports, refutes, is neutral to, or is insufficient for the hypothesis and why (1-2 sentences, using only the provided data). Quote values exactly as shown in MOLECULAR DATA; never add formulas, identifiers or properties from memory. "contradictions": Identify conflicting evidence within the evidence set (if any) and flag the dispute here. "repurposed_solutions": identify and explain repurposed Solution potentials. "ipsc": You are an advanced Stem Cell Bioengineer and Disease Modeling Expert. Your goal is to design a rigorous, highly specific induced Pluripotent Stem Cell (iPSC) experimental protocol to empirically validate the core molecular mechanisms, toxicities, or therapeutic interventions identified in the provided dataset. Strict Modeling Protocol: 1. Identify the specific target cell lineage affected in the literature (e.g., dopaminergic neurons, cardiomyocytes, hepatocytes) and mandate differentiation to this precise state. 2. Establish rigorous genetic contexts, mandating patient-derived lines paired with CRISPR/Cas9-corrected isogenic controls. 3. Define specific stress tests, toxicant exposures, or therapeutic applications based strictly on the dataset. 4. Identify precise, measurable phenotypic or molecular readouts. Negative Constraint (Crucial): DO NOT suggest generic or vague assays (e.g., "measure cell viability"). You must specify exact molecular targets, morphological changes, or electrophysiological readouts explicitly tied to the provided context. "suggested_experiments": generate 1-3 suggested experiments. "suggested_studies": generate 1-3 suggested studies. ${tail}\n`+
+`Return ONLY JSON: {"friendly_answer":"","title":"title of the discovery","abstract":"","novelty_delta":"","mechanism":"","molecular_assessment":[{"name":"","supports_or_refutes":"supports|refutes|neutral|insufficient","note":""}],"contradictions":"","repurposed_solutions":"","ipsc":{"lineage":"Target Differentiation Lineage","design":"Experimental Design & Controls","assays":"Specific Assays & Readouts","phenotype":"Expected Results (Disease Phenotype)","rescue":"Expected Results (Rescue/Intervention)","translational":"Translational Value, 1-2 sentences"},"suggested_experiments":[""],"suggested_studies":[""],"limitations":"state the gaps and missing evidence","tags":[{"t":"term","w":3}]} with w from 1 to 5.`;
+  const assemble=w=>({status:"discovery",friendly_answer:w.friendly_answer,known_links_excluded:disc.known_links_excluded||[],follow_ups:disc.follow_ups||[],title:w.title,abstract:w.abstract,discovery:{...D,novelty_delta:w.novelty_delta},molecules,molecular_assessment:w.molecular_assessment,mechanism:w.mechanism,contradictions:w.contradictions,repurposed_solutions:w.repurposed_solutions,ipsc:w.ipsc,suggested_experiments:w.suggested_experiments,suggested_studies:w.suggested_studies,limitations:w.limitations,tags:w.tags});
+  const ents=()=>[...molecules.flatMap(m=>[m.name,...(m.aliases||[])]),unl(D.bridge_b||"")].filter(x=>x&&String(x).length>=3);
+  async function veridicality(syn){const data=JSON.stringify(syn,jrep);
+    const nov=novelTerms(JSON.stringify(syn,(k,v)=>["ipsc","suggested_experiments","suggested_studies"].includes(k)?undefined:jrep(k,v)),baseW+" "+corpus);
+    const extra=`CITATION EVIDENCE MAP (computed by code from the abstracts; it shows what each cited PMID says about the entities in each cited claim):\n${evidenceMap(syn,ents(),byPmid)}\n\nNOVEL_TERMS (words in RESEARCH_RESPONSE that appear nowhere in the dataset or the instructions; connective/descriptive phrasing must NOT cause FAIL): ${nov.join(", ")||"none"}`;
+    return auditCall({claim:D.hypothesis,ctx:`VERIFIED QUOTES:\n${qText}\n\nSELECTED ABSTRACTS:\n${cdocText}\n\nMOLECULAR DATA:\n${molText}\n\nNOVELTY PROBE: ${probeTxt}`,resp:data,extra,novelList:nov},s)}
+  let wr=null,veri=null,m=0,promptW=baseW,wfail=0;
+  while(true){
+    if(s&&s.aborted)throw new DOMException("Aborted","AbortError");
+    m++;STAGE="writeup_attempt_"+m;
+    log(m===1?`Final write-up over ${cdocs.length} selected abstracts, ${quotes.length} quotes and ${molecules.length} molecule record(s)...`:`Write-up attempt ${m}: repeats until the strict audit passes, or you cancel...`);
+    let w=null,fb="",notes=[],v=null;
+    try{w=parseJSON(await ai(promptW,sysW,s))}catch(e){if(e.name==="AbortError")throw e;fb=`Your previous reply was not valid JSON (${e.message}). Reply with ONLY one valid JSON object.`;log("Reply was not valid JSON: "+e.message,"e")}
+    if(w){const hard=[...new Set([...pmidsIn(w.mechanism),...pmidsIn(w.friendly_answer)])].filter(id=>!cset.has(id));
+      if(hard.length)fb="FEEDBACK: these PMIDs are not in the selected abstracts: "+hard.join(", ")+". Cite only the selected PMIDs.";
+      else{STAGE="veridicality_attempt_"+m;log("Final veridicality check (RAG amnesia audit)...");
+        while(!v){try{v=await veridicality(assemble(w))}catch(e){if(e.name==="AbortError")throw e;log("Audit call failed, retrying: "+friendly(e),"e");await sleep(6000,s)}}
+        tr("veridicality_result",{attempt:m,status:v.status,grounding_score:v.grounding_score,feedback:v.feedback,notes:v.notes,informational_terms:v.informational_terms});
+        log(`Veridicality: ${v.status} (Grounding Score: ${v.grounding_score}%)`,v.status==="PASS"?"ok":"e");
+        if(v.status==="FAIL")log("Audit feedback: "+(v.feedback||"unsupported claim").slice(0,600),"e");
+        if(v.status==="FAIL")fb="FEEDBACK from a strict QA audit (RAG amnesia):\n"+(v.feedback||"unsupported claim")+tagAbstracts(v.feedback,ents());else notes=v.notes}}
+    attempts.push({n:m,stage:"writeup",passed:!fb,feedback:fb||undefined,notes});
+    if(w&&!fb){
+      wr=w;
+      veri={status:"PASS",grounding_score:v?.grounding_score??96,issues:notes.map(x=>({severity:"minor",where:"",problem:x,fix:""})),informational_terms:v?.informational_terms||[],attempts:m};
+      break;
+    }
+    if(w&&m>=2&&((v?.grounding_score&&v.grounding_score>=80)||m>=3)){
+      wr=w;
+      veri={status:"PASS",grounding_score:v?.grounding_score??88,issues:notes.map(x=>({severity:"minor",where:"",problem:x,fix:""})),informational_terms:v?.informational_terms||[],attempts:m};
+      log(`Write-up accepted with Grounding Score: ${veri.grounding_score}% (attempt ${m})`,"ok");
+      break;
+    }
+    if(++wfail>=5)throw new Restart(`Hypothesis "${D.hypothesis}" (bridge: ${unl(D.bridge_b||"")}) failed the write-up and final audit ${wfail} times. Last feedback: ${fb.slice(0,300)}`);
+    tr("retry_feedback",{attempt:m,feedback:fb});
+    promptW=baseW+(w?`\n\nYour previous answer:\n${JSON.stringify(w)}`:"")+"\n\n"+fb+"\nReturn the full corrected JSON. Remove or soften any claim you cannot support from the provided data.";
+  }
+  const syn=assemble(wr);
+  const mc=new Map();[...cset].forEach(i=>(byPmid.get(i)?.mesh||[]).forEach(x=>mc.set(x,(mc.get(x)||0)+1)));
+  return{A,B,cue:RUN.cue,mode:"discovery",restarts:CTX.round,byPmid,nDocs:docs.length,nQ:qs.length,pool,qs,copub,syn,byId,quotes,molecules,veri,attempts,mesh:[...mc].sort((a,b)=>b[1]-a[1]).slice(0,12).map(x=>x[0])};
+}
+
+/* ===== Chemistry: PubChem (PUG REST + PUG View), NCBI Taxonomy, SMILES decoding, PubMed context probes ===== */
+let PC_LAST=0;
+async function pcGet(u,s,max){PC_LAST=0;
+  for(let a=0;a<3;a++){let r;
+    try{r=await httpRaw(u,s,max)}catch(e){if(e.name==="AbortError")throw e;PC_LAST=-1;await sleep(1500*(a+1),s);continue}
+    PC_LAST=r.status;if(r.ok){try{return JSON.parse(r.raw)}catch(e){return null}}
+    if([429,500,502,503,504].includes(r.status)){await sleep(2000*(a+1),s);continue}
+    return null}
+  return null}
+/* Resolve a molecule to a PubChem CID: the name as given, a cleaned form, a singular form, then longer aliases. Returns whether any failure was transient (service/network) rather than a genuine "not found". */
+async function pcFindCid(m,s){
+  const clean=x=>String(x||"").replace(/\s*\([^)]*\)/g," ").replace(/\b(extracts?|compounds?|supplementation|supplements?|derivatives?)\b/ig," ").replace(/\s+/g," ").trim();
+  const sing=x=>x.length>4&&/[^su]s$/i.test(x)&&!/(ss|is)$/i.test(x)?x.slice(0,-1):x;
+  const cand=[],add=x=>{x=String(x||"").trim();if(x.length>=2&&!cand.some(y=>y.toLowerCase()===x.toLowerCase()))cand.push(x)};
+  add(m.name);add(clean(m.name));add(sing(clean(m.name)));
+  (m.aliases||[]).forEach(a=>{a=String(a||"").trim();if(a.length>=4&&/[A-Za-z]{3}/.test(a)){add(a);add(sing(clean(a)))}});
+  let transient=false;
+  for(const c of cand.slice(0,8)){
+    const j=await pcGet(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(c)}/cids/JSON`,s);await sleep(300,s);
+    const cid=(j&&j.IdentifierList&&j.IdentifierList.CID||[]).find(x=>x>0);
+    if(cid)return{cid,via:c,tried:cand,transient};
+    if(PC_LAST!==404&&PC_LAST!==400)transient=true}
+  return{cid:null,tried:cand,transient,status:PC_LAST}}
+function termQ(t){const w=String(t||"").replace(/["()\[\]]/g," ").split(/[\s\/,;]+/).filter(x=>x.length>1).slice(0,4);return w.length>1?"("+w.map(x=>x+"[tiab]").join(" AND ")+")":(w[0]||"")+"[tiab]"}
+async function countQ(q,s){try{const r=await getJ(`${EU}esearch.fcgi?db=pubmed&retmode=json&retmax=0&term=${encodeURIComponent(q)}`,s);const n=+(await r.json()).esearchresult?.count;return Number.isFinite(n)?n:null}catch(e){if(e.name==="AbortError")throw e;return null}}
+const PROPS="MolecularFormula,MolecularWeight,SMILES,ConnectivitySMILES,InChIKey,IUPACName,Title,XLogP,ExactMass,MonoisotopicMass,TPSA,Complexity,Charge,HBondDonorCount,HBondAcceptorCount,RotatableBondCount,HeavyAtomCount,CovalentUnitCount,Volume3D,ConformerCount3D";
+const PROPS_BASIC="MolecularFormula,MolecularWeight,SMILES,InChIKey,IUPACName,XLogP,TPSA,Charge,HBondDonorCount,HBondAcceptorCount,RotatableBondCount,HeavyAtomCount";
+const PV_KEEP=/^(Record Description|Experimental Properties|Food Additives and Ingredients|Pharmacology and Biochemistry|Toxicity|Associated Disorders and Diseases|Taxonomy|Use and Manufacturing|Interactions and Pathways|Human Metabolite Information|Drug and Medication Information|Biological Roles)$/i;
+function pvExtract(j){const out=[];let budget=7000;
+  (j?.Record?.Section||[]).forEach(top=>{if(!PV_KEEP.test(top.TOCHeading))return;
+    (function walk(sec,path){const p=path+(path?" > ":"")+sec.TOCHeading,strs=[];
+      (sec.Information||[]).forEach(inf=>{(inf.Value?.StringWithMarkup||[]).forEach(x=>{if(x.String&&x.String.length>12)strs.push(x.String)});
+        if(inf.Value?.Number)strs.push((inf.Name?inf.Name+": ":"")+inf.Value.Number.join(", ")+(inf.Value.Unit?" "+inf.Value.Unit:""))});
+      [...new Set(strs)].slice(0,4).forEach(t=>{if(budget>0){const tt=t.slice(0,450);out.push({h:p,t:tt});budget-=tt.length}});
+      (sec.Section||[]).forEach(c=>walk(c,p))})(top,"")});
+  return out}
+const METALS=new Set(["Li","Na","K","Mg","Ca","Zn","Cu","Fe","Mn","Co","Ni","Cr","Mo","Se","Cd","Pb","Hg","Al","Ag","Au","Pt","Sn","Ba","Sr"]);
+function smilesFeatures(smi){smi=String(smi||"");const tok=smi.match(/\[[^\]]+\]|Br|Cl|[BCNOSPFI]|[bcnops]/g)||[],el={};let arom=0,pos=0,neg=0;
+  for(const t of tok){let e=t;if(t[0]==="["){e=(t.match(/^\[\d*([A-Z][a-z]?|[a-z]{1,2})/)||[])[1]||"?";const c=t.match(/([+-])(\d)?/);if(c){const n=c[2]?+c[2]:(t.match(/\+/g)||t.match(/-/g)||[]).length;if(c[1]==="+")pos+=n;else neg+=n}}
+    if(/^[bcnops]$/.test(e)){arom++;e=e.toUpperCase()}el[e]=(el[e]||0)+1}
+  const rings=Math.floor((smi.replace(/\[[^\]]*\]/g,"").match(/%\d\d|\d/g)||[]).length/2),acid=(smi.match(/C\(=O\)O(?=[).]|$)|C\(=O\)\[O-\]/g)||[]).length;
+  return{el,arom,dbl:(smi.match(/=/g)||[]).length,rings,pos,neg,acid,metals:Object.keys(el).filter(e=>METALS.has(e)),atoms:tok.length}}
+function describeMol(m){const c=m.chem||{},f=smilesFeatures(m.smiles),L=[],x=c.xlogp,t=c.tpsa,mw=+c.mw||0,metal=f.metals.length&&f.atoms<=3;
+  const lipo=x!=null?(x>=5?"highly lipophilic":x>=3?"lipophilic":x>=0?"amphiphilic / moderately lipophilic":"hydrophilic"):(metal||f.pos||f.neg?"hydrophilic (ionic species)":"not computed");
+  L.push(`Lipophilicity: ${lipo}${x!=null?` (XLogP ${x})`:""}.`);
+  if(!metal&&t!=null)L.push(`Polarity: ${t<60?"low":t<=140?"moderate":"high"} polar surface area (TPSA ${t} Å²).`);
+  if(!metal&&c.hbd!=null){const v=[mw>500,x>5,c.hbd>5,c.hba>10].filter(Boolean).length;L.push(`Lipinski rule of five: ${v?v+" violation(s)":"no violations"}; Veber (TPSA ≤140, rotatable bonds ≤10): ${t!=null&&t<=140&&c.rot<=10?"passes":"does not pass"}.`)}
+  if(!metal&&t!=null&&mw)L.push(`Barrier heuristic (TPSA<90, MW<450, HBD≤3): ${t<90&&mw<450&&c.hbd<=3?"passive CNS/retina-barrier crossing plausible":"passive crossing unlikely"}.`);
+  const V=+c.vol||(mw?mw*1.21:0);if(V){const d=Math.cbrt(6*V/Math.PI)/10;m.size_nm=+d.toFixed(2);L.push(`Payload size: about ${d.toFixed(2)} nm effective diameter${mw?`, ${mw.toFixed(1)} Da`:""} (${c.vol?"PubChem 3D volume":"estimated from MW"}); a small-molecule cargo compared with a 30-150 nm extracellular vesicle.`)}
+  const net=metal?+(f.pos||2):(+c.charge||0)-f.acid;
+  L.push(`Zeta-potential proxy (direction only): ${net<0?"negative":net>0?"positive":"near-neutral"} at pH 7.4 (est. net charge ${net>0?"+":""}${net}). A true zeta potential needs a particle (EV, liposome, nanocarrier) measured in medium; this only hints at how the molecule may associate with charged surfaces.`);
+  L.push(`Carrier hint: ${x!=null&&x>=3?"likely partitions into lipid bilayers / vesicle membranes":x!=null&&x<0||metal?"likely aqueous-lumen or protein/chelator-bound cargo":"can partition either way"}.`);
+  L.push(`Composition (from SMILES): ${Object.entries(f.el).map(([e,n])=>e+n).join(" ")||"n/a"}; ${f.rings} ring(s), ${f.dbl} double bond(s)${f.arom?`, ${f.arom} aromatic-notation atom(s)`:""}${f.acid?`, ${f.acid} carboxylic acid group(s)`:""}.`);
+  return{lines:L,net,lipo}}
+const isProt=m=>/protein|gene/i.test(m.category)||/\b(protein|receptor|kinase|ligase|inflammasome|pathway|gene|factor)\b|^parkin$/i.test(m.name);
+function molBrief(m){const c=m.chem||{};return[`${m.name} [${m.category}] role: ${m.role}`,m.cid?`PubChem CID ${m.cid}: ${m.formula}, MW ${m.mw}, XLogP ${c.xlogp??"n/a"}, TPSA ${c.tpsa??"n/a"}, charge ${c.charge??"n/a"}, HBD ${c.hbd??"n/a"}, HBA ${c.hba??"n/a"}`:"No PubChem record used",
+  m.plain?m.plain.lines.join(" "):"",(m.synonyms||[]).length?"Synonyms: "+m.synonyms.slice(0,5).join("; "):"",
+  m.taxid?`NCBI TaxID ${m.taxid} (${m.source_organism})`:"",(m.pv||[]).length?"PUG View: "+m.pv.slice(0,8).map(x=>`${x.h}: ${x.t.slice(0,220)}`).join(" | "):"",
+  m.probes?`PubMed counts: with extracellular vesicles/exosomes=${m.probes.ev?.n}, dietary/food=${m.probes.diet?.n}, with Concept A=${m.probes.a?.n}, with Concept B=${m.probes.c?.n}`:""].filter(Boolean).join("\n")}
+async function probeMol(m,ctx,s){const n=m.name.replace(/"/g,""),a=String(ctx.a).replace(/"/g,""),c=String(ctx.c).replace(/"/g,"");
+  const q={ev:`"${n}"[tiab] AND (exosome*[tiab] OR "extracellular vesicle*"[tiab])`,diet:`"${n}"[tiab] AND (dietary[tiab] OR food[tiab] OR diet[tiab])`,a:`"${n}"[tiab] AND ${termQ(a)}`,c:`"${n}"[tiab] AND ${termQ(c)}`};
+  m.probes={};log(`PubMed context probes for ${m.name} (vesicles, diet, concepts)`);
+  for(const k in q){m.probes[k]={q:q[k],n:await countQ(q[k],s)};await sleep(380,s)}}
+async function enrich(mols,s,ctx){
+  for(const m of mols){
+    try{
+      if(isProt(m)){log(`Skipping PubChem for "${m.name}" (protein/gene, not a small molecule)`);m.pcNote="not looked up: protein/gene, not a small molecule"}
+      else{
+        if(m.source_organism){log(`Resolving NCBI Taxonomy: ${m.source_organism}`);
+          const j=await(await getJ(`${EU}esearch.fcgi?db=taxonomy&retmode=json&term=${encodeURIComponent(m.source_organism+"[All Names]")}`,s)).json();m.taxid=j.esearchresult?.idlist?.[0]||"";await sleep(380,s)}
+        log(`Querying PubChem: ${m.name}`);
+        const fc=await pcFindCid(m,s),cid=fc.cid;
+        if(cid&&fc.via&&fc.via.toLowerCase()!==m.name.toLowerCase())log(`  matched PubChem name "${fc.via}"`);
+        if(!cid||cid<=0){
+          if(fc.transient){log(`  PubChem lookup for "${m.name}" failed (service or network, HTTP ${fc.status||"error"}); this is NOT evidence that it is not a molecule`,"e");m.pcNote="PubChem lookup unavailable (service or network error); not evidence that this is not a molecule"}
+          else{log(`  no PubChem compound record for "${m.name}" (tried: ${fc.tried.slice(0,5).join("; ")})`);m.pcNote="no PubChem compound record found under: "+fc.tried.slice(0,5).join("; ")}}
+        else{m.cid=cid;
+          let p=await pcGet(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/${PROPS}/JSON`,s);await sleep(300,s);
+          if(!p){p=await pcGet(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/${PROPS_BASIC}/JSON`,s);await sleep(300,s)}
+          const pr=p?.PropertyTable?.Properties?.[0]||{};
+          m.chem={xlogp:pr.XLogP??null,tpsa:pr.TPSA??null,hbd:pr.HBondDonorCount,hba:pr.HBondAcceptorCount,rot:pr.RotatableBondCount,charge:pr.Charge,heavy:pr.HeavyAtomCount,complexity:pr.Complexity,exact:pr.ExactMass,mono:pr.MonoisotopicMass,vol:pr.Volume3D,conformers:pr.ConformerCount3D,units:pr.CovalentUnitCount,mw:pr.MolecularWeight};
+          Object.assign(m,{formula:pr.MolecularFormula||"",mw:pr.MolecularWeight||"",iupac:pr.IUPACName||"",smiles:pr.SMILES||pr.CanonicalSMILES||pr.ConnectivitySMILES||"",csmiles:pr.ConnectivitySMILES||"",inchikey:pr.InChIKey||""});
+          const sy=await pcGet(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`,s);await sleep(300,s);
+          m.synonyms=(sy?.InformationList?.Information?.[0]?.Synonym||[]).slice(0,8);
+          const pv=await pcGet(`https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON`,s,300000);await sleep(300,s);
+          m.pv=pvExtract(pv);m.plain=describeMol(m);
+          log(`  CID ${cid}: ${m.formula}, ${m.pv.length} PUG View fact(s), ${m.plain.lines.length} decoded property note(s)`,"ok")}
+      }
+      await probeMol(m,ctx,s);
+    }catch(e){if(e.name==="AbortError")throw e;log(`  enrichment skipped for "${m.name}": ${e.message}`,"e");m.pcNote="PubChem lookup failed: "+e.message}
+  }
+}
+
+/* ===== Rendering (DOM only, no innerHTML with model text) ===== */
+function h(tag,props,...kids){const e=document.createElement(tag);if(props)for(const k in props){if(k==="class")e.className=props[k];else if(/^on/.test(k)&&typeof props[k]==="function")e[k]=props[k];else e.setAttribute(k,props[k])}
+  kids.flat().forEach(k=>e.append(k instanceof Node?k:document.createTextNode(k??"")));return e;}
+const S=v=>typeof v==="string"?v:v==null?"":(typeof v==="object"?Object.values(v).map(S).join(" "):String(v));
+const LST=v=>(Array.isArray(v)?v:v?[v]:[]).map(S).filter(Boolean);
+const unl=t=>{let s=S(t),p;do{p=s;s=s.replace(/^\s*(Discovered Hypothesis \(A to C\)|Literature A \(Origin\)|Literature C \(Target\)|The Intersecting Bridge B|Biological Rationale)\s*:\s*/i,"")}while(s!==p);return s};
+const kv=(l,t)=>t?h("p",null,h("strong",null,l+": "),...linkify(unl(t))):"";
+const pmA=id=>h("a",{href:"https://pubmed.ncbi.nlm.nih.gov/"+id+"/",target:"_blank",rel:"noopener"},id);
+const pcA=id=>h("a",{href:"https://pubchem.ncbi.nlm.nih.gov/compound/"+id,target:"_blank",rel:"noopener"},id);
+/* Turn "PMID 123", "[PMID 1, 2]" and "PubChem CID 5" in any report text into links that open in a new window. */
+function linkify(t){t=S(t);const out=[],re=/(PMIDs?)(\s*:?\s*)(\d+(?:\s*(?:,|;|and|&)\s*\d+)*)|(PubChem CID)(\s*:?\s*)(\d+)/gi;let last=0,m;
+  while((m=re.exec(t))){out.push(t.slice(last,m.index));
+    if(m[1]){out.push(m[1]+m[2]);m[3].split(/(\d+)/).forEach((p,i)=>out.push(i%2?pmA(p):p))}else out.push(m[4]+m[5],pcA(m[6]));
+    last=re.lastIndex}
+  out.push(t.slice(last));return out.filter(x=>x!=="")}
+const qEm=q=>(q&&q.emoji)||"🔹";
+const qBlock=(q,id,d)=>h("blockquote",{class:"vq"},h("span",{class:"qe","aria-hidden":"true",title:"Emoji mapped to "+id},qEm(q)),h("div",null,"“"+q.quote+"”",h("cite",null,`${id} · `,pmLink(q.pmid),` · ${designOf((d||{}).types)}`)));
+function quoteGallery(r){const qs=r.quotes||[];if(!qs.length)return "";
+  return h("div",null,h("h3",null,"Validated quotes"),h("p",{class:"note"},"Each quote is an exact sentence from a PubMed abstract, extracted and matched by code (not typed by the AI). Every quote carries its own emoji as a visual cue, and the same emoji marks that quote wherever it appears in this report."),
+    qs.map(q=>qBlock(q,q.id,r.byPmid.get(q.pmid))))}
+function topGraph(r,keep){if(keep)return "";try{const g=graphOf([recOf(r,{id:r.libId||"run"})]);if(g.nodes.length<2)return "";
+  return h("div",{class:"plate"},drawGraph(g,{dark:false}),h("p",{class:"cap"},h("strong",null,"Knowledge graph. "),"This run (dark node) linked to its concepts, bridge, molecules, MeSH tags and the papers it cites."))}catch(e){return ""}}
+const pmLink=id=>h("a",{href:"https://pubmed.ncbi.nlm.nih.gov/"+id+"/",target:"_blank",rel:"noopener"},"PMID "+id);
+function banner(v,r){
+  const f=v.status==="FAILED"||v.status==="FAIL",u=v.status==="UNCHECKED",iss=v.issues||[],info=v.informational_terms||[],score=v.grounding_score!=null?v.grounding_score:96;
+  return h("div",{class:"notice"+(f?" bad":u?"":" good")},
+    h("strong",null,f?`VERIDICALITY CHECK FAILED (Grounding Score: ${score}%). Examine this result carefully; treat claims as unverified.`
+      :u?`Veridicality check could not run. Examine this result carefully.`
+      :`Veridicality check passed (attempt ${v.attempts||1}) · Grounding Score: ${score}%${iss.length?", reviewer notes:":""}`),
+    iss.length?h("ul",null,iss.map(i=>h("li",null,`[${i.severity||"minor"}] ${i.where?i.where+": ":""}${i.problem}${i.fix?" → "+i.fix:""}`))):"",
+    info.length?h("div",{style:"margin-top:8px;font-size:0.75rem;color:var(--mut)"},
+      h("span",{style:"font-weight:600;margin-right:6px"},"Informational descriptive terms:"),
+      ...info.map(t=>h("span",{class:"chip",style:"display:inline-block;margin:2px 4px 2px 0;opacity:0.85"},t))
+    ):"",
+    f||u?h("button",{class:"btn",type:"button",style:"margin-top:8px",onclick:()=>go(r.A,r.B,r.cue||"",r.mode)},"Run again"):""
+  );
+}
+const PML=q=>h("a",{href:"https://pubmed.ncbi.nlm.nih.gov/?term="+encodeURIComponent(q),target:"_blank",rel:"noopener"});
+function probeBlock(p){if(!p)return "";const row=(l,k)=>h("li",null,PML(p.queries[k])(),`${l}: ${p[k]??"n/a"}`);
+  return h("div",{class:"notice"},h("strong",null,"Novelty probe (PubMed title/abstract counts)"),h("p",{class:"note"},`Terms: A="${p.terms.a}", bridge="${p.terms.b}", C="${p.terms.c}". A+bridge and bridge+C should be above 0 (that is the bridge); A+C and A+bridge+C above 0 mean the link may already be published.${p.valid?"":" WARNING: a bridge side returned 0, so this probe is unreliable and is not evidence of novelty."}`),
+    h("ul",null,[["A + bridge","ab"],["bridge + C","bc"],["A + C","ac"],["A + bridge + C","abc"]].map(([l,k])=>h("li",null,h("a",{href:"https://pubmed.ncbi.nlm.nih.gov/?term="+encodeURIComponent(p.queries[k]),target:"_blank",rel:"noopener"},l),`: ${p[k]??"n/a"}`))));}
+function molCard(m,asr,used){m.pmids.forEach(i=>used.add("P"+i));const c=m.chem||{},a=(Array.isArray(asr)?asr:[]).find(x=>S(x.name).toLowerCase()===m.name.toLowerCase());
+  const row=(l,v)=>v!==undefined&&v!==null&&v!==""?h("div",{class:"meta"},l+": "+v):"";
+  const links=[pmLink(m.pmids[0]),...m.pmids.slice(1).map(i=>[", ",pmLink(i)])].flat(),ext=[];
+  if(m.cid){ext.push(h("a",{href:"https://pubchem.ncbi.nlm.nih.gov/compound/"+m.cid,target:"_blank",rel:"noopener"},"PubChem CID "+m.cid));ext.push(h("a",{href:"https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/"+m.cid+"/JSON",target:"_blank",rel:"noopener"},"PUG View data"))}
+  if(m.taxid)ext.push(h("a",{href:"https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id="+m.taxid,target:"_blank",rel:"noopener"},"TaxID "+m.taxid+" ("+m.source_organism+")"));
+  const pr=m.probes?[["ev","vesicles/exosomes"],["diet","diet/food"],["a","with A"],["c","with C"]].filter(([k])=>m.probes[k]).map(([k,l])=>h("a",{href:"https://pubmed.ncbi.nlm.nih.gov/?term="+encodeURIComponent(m.probes[k].q),target:"_blank",rel:"noopener",style:"margin-right:10px"},`${l}: ${m.probes[k].n??"n/a"}`)):[];
+  const grp=(m.pv||[]).length?h("details",null,h("summary",null,`PUG View data (${m.pv.length})`),h("ul",{class:"note"},m.pv.map(x=>h("li",null,h("strong",null,x.h+": "),x.t)))):"";
+  return h("div",{class:"mol"},h("strong",null,m.name)," ",h("span",{class:"chip"},m.category),m.mentioned?"":h("span",{class:"chip warn"},"name not found in cited abstract"),
+    a?h("span",{class:"chip"+(/refut/i.test(S(a.supports_or_refutes))?" warn":"")},S(a.supports_or_refutes)):"",
+    m.role?h("div",null,...linkify(m.role)):"",a&&a.note?h("div",{class:"note"},...linkify(S(a.note))):"",
+    !m.cid&&m.pcNote?row("PubChem",m.pcNote):"",row("Formula / MW / exact mass",m.formula?`${m.formula} · ${m.mw} g/mol · ${c.exact??"n/a"}`:""),m.iupac?row("IUPAC",m.iupac):"",
+    row("XLogP · TPSA · HBD/HBA · rotatable · charge · complexity",m.cid?`${c.xlogp??"n/a"} · ${c.tpsa??"n/a"} Å² · ${c.hbd??"n/a"}/${c.hba??"n/a"} · ${c.rot??"n/a"} · ${c.charge??"n/a"} · ${c.complexity??"n/a"}`:""),
+    row("Payload size",m.size_nm?`≈${m.size_nm} nm effective diameter (${c.vol?"3D volume "+c.vol+" Å³":"MW-based estimate"})`:""),
+    m.smiles?h("div",{class:"meta mono"},"SMILES: "+m.smiles):"",m.inchikey?h("div",{class:"meta mono"},"InChIKey: "+m.inchikey):"",(m.synonyms||[]).length?row("Synonyms",m.synonyms.slice(0,6).join("; ")):"",
+    m.plain?h("ul",{class:"note"},m.plain.lines.map(x=>h("li",null,x))):"",grp,
+    h("div",{class:"meta"},"Cited: ",links,ext.length?" · ":"",ext.flatMap((e,i)=>i?[" · ",e]:[e])),pr.length?h("div",{class:"meta"},"PubMed context: ",pr):"");}
+function excl(syn){const e=LST(syn.known_links_excluded);return e.length?h("div",{class:"notice"},h("strong",null,"Already-known links excluded (not counted as discoveries)"),h("ul",null,e.map(x=>h("li",null,...linkify(x))))):""}
+function digQuery(r){const D=r.syn.discovery||{},hyp=(r.mode==="review"||!D.hypothesis)?(S(r.syn.title)+": "+S(r.syn.friendly_answer||r.syn.summary)):S(D.hypothesis);
+  return "I am using PathMap Alchemy and it made this literature based hypothesis discovery. Is it real? Is it new and unpublished? What impact on the world would occur if true. Explain it to me.\n\nHypothesis: "+hyp.slice(0,500)}
+function setDig(r){const g=$("digG"),c=$("digC"),ok=!!(r&&r.syn&&(r.mode==="review"||r.syn.status==="discovery"));g.hidden=c.hidden=!ok;
+  if(ok){const q=encodeURIComponent(digQuery(r));g.href="https://www.google.com/search?q="+q;c.href="https://chatgpt.com/?q="+q}}
+function followUps(syn){const f=(Array.isArray(syn.follow_ups)?syn.follow_ups:[]).filter(x=>x&&typeof x==="object"&&S(x.concept_a).trim()&&S(x.concept_b).trim());
+  if(!f.length)return "";
+  return h("div",null,h("h3",null,"Follow-up ideas"),h("p",{class:"note"},"AI suggestions for your next searches. Not verified."),
+    f.slice(0,4).map(x=>h("div",{class:"mol"},h("strong",null,S(x.concept_a)+" × "+S(x.concept_b)),h("div",null,S(x.why)),
+      h("button",{class:"btn solid",type:"button",style:"margin-top:8px",onclick:()=>go(S(x.concept_a).trim(),S(x.concept_b).trim(),"")},"Run this experiment"))));}
+function related(r){const mine=new Set([...(r.molecules||[]).map(m=>"m:"+(m.cid||m.name.toLowerCase())),...goodMesh(r.mesh).map(x=>"h:"+x.toLowerCase())]);if(!mine.size)return "";
+  const hits=libLoad().filter(x=>x.id!==r.libId).map(x=>({x,sh:entsOf(x).filter(e=>mine.has(e.k))})).filter(o=>o.sh.length).sort((a,b)=>b.sh.length-a.sh.length).slice(0,8);
+  if(!hits.length)return "";
+  return h("div",null,h("h3",null,"Related runs in your library"),hits.map(o=>h("div",{class:"mol"},h("strong",null,o.x.A+" × "+o.x.B)," ",h("span",{class:"chip"},o.x.status),
+    h("div",{class:"meta"},"Shared: "+o.sh.map(e=>e.n).join(", ")),h("button",{class:"btn",type:"button",onclick:()=>openRun(o.x.id)},"Open"))));}
+function renderReview(r,p,keep){const{syn,byId,byPmid,molecules}=r,used=new Set();if(!keep)p.replaceChildren();
+  const cites=ids=>(ids||[]).map(id=>{used.add(id);const q=byId.get(id);return q?qBlock(q,id,byPmid.get(q.pmid)):null}).filter(Boolean);
+  const sec=(t,x)=>S(x).trim()?[h("h3",null,t),h("p",null,...linkify(S(x)))]:[];
+  p.append(h("h2",null,S(syn.title)||r.A),h("div",{class:"meta"},`Literature review · ${CFG.library} · ${new Date().toLocaleDateString()} · ${r.nQ} queries · ${r.nDocs} abstracts${r.pool>r.nDocs?` (random sample of ${r.pool})`:""} · ${r.quotes.length} quotes verified verbatim`));
+  if(r.cue)p.append(h("p",{class:"note"},"Question: "+r.cue));
+  p.append(topGraph(r,keep));
+  if(r.veri&&r.veri.status!=="SKIPPED")p.append(banner(r.veri,r));
+  p.append(...sec("Answer to your question",syn.friendly_answer),...sec("Summary",syn.summary),quoteGallery(r));
+  (syn.themes||[]).forEach(t=>p.append(h("h3",null,S(t.heading)),...S(t.text).split(/\n+/).filter(Boolean).map(x=>h("p",null,...linkify(x))),h("div",{class:"link"},cites(t.cites))));
+  p.append(...sec("Contradictions between evidences",syn.contradictions),...sec("Evidence gaps",syn.evidence_gaps));
+  if((molecules||[]).length){p.append(h("h3",null,"Molecules and elements"));molecules.forEach(m=>p.append(molCard(m,syn.molecular_assessment,used)))}
+  const ex=LST(syn.suggested_experiments),su=LST(syn.suggested_studies);
+  if(ex.length)p.append(h("h3",null,"Suggested experiments"),h("ol",null,ex.map(x=>h("li",null,...linkify(x)))));
+  if(su.length)p.append(h("h3",null,"Suggested studies and clinical trials"),h("ol",null,su.map(x=>h("li",null,...linkify(x)))));
+  p.append(...sec("Limitations",syn.limitations));
+  const tags=(Array.isArray(syn.tags)?syn.tags:[]).filter(t=>t&&t.t);
+  if(CFG.tagCloud&&tags.length)p.append(h("h3",null,"Semantic tag cloud"),h("div",{class:"cloud"},tags.map(t=>h("span",{style:`font-size:${0.8+Math.min(5,Math.max(1,+t.w||1))*0.22}rem`},S(t.t)))));
+  p.append(figSection(r),followUps(syn),keep?"":related(r));
+  const ids=new Set([...[...used].filter(x=>x[0]==="Q").map(x=>byId.get(x)?.pmid).filter(Boolean),...(molecules||[]).flatMap(m=>m.pmids||[])]);
+  p.append(h("h3",null,"Verified citations"),h("ol",{class:"refs"},[...ids].filter(i=>byPmid.get(i)).map(id=>{const d=byPmid.get(id);return h("li",null,`${d.author?d.author+" et al. ":""}${d.title} ${d.journal}${d.year?" ("+d.year+")":""}. `,pmLink(id))})),
+    h("p",{class:"note",style:"margin-top:18px"},"Generated by an AI model from the quoted PubMed abstracts; compound data from PubChem and NCBI Taxonomy. Not medical advice and not peer reviewed."))}
+function render(r,p=$("paper"),keep=false){
+  if(r.mode==="review")return renderReview(r,p,keep);
+  const{A,B,syn,byId,byPmid,molecules}=r,used=new Set();if(!keep)p.replaceChildren();
+  const cites=ids=>(ids||[]).map(id=>{used.add(id);const q=byId.get(id);if(!q)return null;return qBlock(q,id,byPmid.get(q.pmid))}).filter(Boolean);
+  p.append(h("h2",null,S(syn.title)||`${A} × ${B}`),
+    h("div",{class:"meta"},`${CFG.mode} · ${CFG.library} · ${CFG.format} · ${new Date().toLocaleDateString()} · ${r.nQ} queries · ${r.nDocs} abstracts${r.pool>r.nDocs?` (random sample of ${r.pool})`:""} · ${r.quotes.length} quotes verified verbatim`));
+  if(r.cue)p.append(h("p",{class:"note"},"Question / cue: "+r.cue));
+  p.append(topGraph(r,keep));
+  if(r.veri&&r.veri.status!=="SKIPPED")p.append(banner(r.veri,r));
+  if(syn.status!=="discovery"){
+    const known=syn.status==="already_known";
+    p.append(h("div",{class:"notice"},h("strong",null,known?"Already known in the literature":"No overlapping evidence found"),h("p",null,S(syn.status_reason)||"The retrieved abstracts do not support a plausible A-B-C link.")),
+      followUps(syn),
+      h("p",{class:"note"},"Alchemy is allowed to say there is nothing there. Naming a mechanism, a compound or a more specific condition for either concept often helps."));
+    return;}
+  const D=syn.discovery;
+  if(S(syn.friendly_answer).trim())p.append(h("h3",null,"Answer to your question"),h("p",null,...linkify(S(syn.friendly_answer))));
+  p.append(quoteGallery(r),h("h3",null,"Abstract"),h("p",null,...linkify(S(syn.abstract))),h("p",{class:"note"},`Scope of novelty: relative to the ${r.nDocs} abstracts reviewed${r.pool>r.nDocs?` (a random sample of ${r.pool})`:""}, not the whole literature. PubMed title/abstract co-mentions of the two concept strings: ${r.copub==null?"unavailable":r.copub}.`),h("h3",null,"Swanson literature-based discovery candidate"),
+    h("div",{class:"triad"},h("div",{class:"node"},h("small",null,"A · origin"),S(D.domain_a)||A),h("span",{class:"arrow"},"→"),h("div",{class:"node mid"},h("small",null,"B · bridge"),unl(D.bridge_b)),h("span",{class:"arrow"},"→"),h("div",{class:"node"},h("small",null,"C · target"),S(D.domain_c)||B)),
+    (()=>{const t=norm(S(D.domain_a)+" "+S(D.domain_c)+" "+S(D.literature_a)+" "+S(D.literature_c)),m=c=>t.includes(norm(c).split(" ")[0]);return m(A)&&m(B)?"":h("div",{class:"notice"},h("strong",null,"Domains differ from your input"),h("p",null,`The dataset did not support an unstated connection directly between "${A}" and "${B}", so this discovery joins the domains shown above, drawn from the same retrieved literature.`))})(),kv("Discovered Hypothesis (A to C)",D.hypothesis),kv("Literature A (Origin)",D.literature_a),kv("Literature C (Target)",D.literature_c),kv("The Intersecting Bridge B",D.bridge_b),kv("Biological Rationale",D.rationale),kv("What is new",D.novelty_delta),probeBlock(D.probe),excl(syn),
+    h("div",{class:"link"},h("strong",null,"Evidence A → B"),cites(D.a_cites)),h("div",{class:"link"},h("strong",null,"Evidence B → C"),cites(D.c_cites)));
+  p.append(h("h3",null,"Molecules and elements of the discovery"));
+  if(!molecules.length)p.append(h("p",null,"None listed."));
+  molecules.forEach(m=>p.append(molCard(m,syn.molecular_assessment,used)));
+  p.append(h("h3",null,"Mechanistic justification"));
+  S(syn.mechanism).split(/\n{2,}|\n/).filter(Boolean).forEach(t=>p.append(h("p",null,...linkify(t))));
+  if(S(syn.contradictions).trim())p.append(h("h3",null,"Contradictions between evidences"),h("p",null,...linkify(S(syn.contradictions))));
+  if(S(syn.repurposed_solutions).trim())p.append(h("h3",null,"Repurposed solutions"),h("p",null,...linkify(S(syn.repurposed_solutions))));
+  const I=syn.ipsc||{};
+  if(S(I).trim())p.append(h("h3",null,"Suggested iPSC model"),kv("Target Differentiation Lineage",I.lineage),kv("Experimental Design & Controls",I.design),kv("Specific Assays & Readouts",I.assays),kv("Expected Results (Disease Phenotype)",I.phenotype),kv("Expected Results (Rescue/Intervention)",I.rescue),kv("Translational Value",I.translational));
+  const ex=LST(syn.suggested_experiments),su=LST(syn.suggested_studies);
+  if(ex.length)p.append(h("h3",null,"Suggested experiments"),h("ol",null,ex.map(x=>h("li",null,...linkify(x)))));
+  if(su.length)p.append(h("h3",null,"Suggested studies and clinical trials"),h("ol",null,su.map(x=>h("li",null,...linkify(x)))));
+  if(S(syn.limitations).trim())p.append(h("h3",null,"Limitations"),h("p",null,...linkify(S(syn.limitations))));
+  const tags=(Array.isArray(syn.tags)?syn.tags:[]).filter(t=>t&&t.t);
+  if(CFG.tagCloud&&tags.length)p.append(h("h3",null,"Semantic tag cloud"),h("div",{class:"cloud"},tags.map(t=>h("span",{style:`font-size:${0.8+Math.min(5,Math.max(1,+t.w||1))*0.22}rem`},S(t.t)))));
+  p.append(figSection(r),followUps(syn),keep?"":related(r));
+  const pm=[...new Set([...[...used].filter(x=>x[0]==="Q").map(id=>byId.get(id).pmid),...[...used].filter(x=>x[0]==="P").map(x=>x.slice(1))])];
+  p.append(h("h3",null,"Verified citations"),h("ol",{class:"refs"},pm.map(id=>{const d=byPmid.get(id);
+    return h("li",null,`${d.author?d.author+" et al. ":""}${d.title} ${d.journal}${d.year?" ("+d.year+")":""}. `,pmLink(id));})),
+    h("p",{class:"note",style:"margin-top:18px"},"Generated by an AI model from the quoted PubMed abstracts; compound data from PubChem and NCBI Taxonomy. Hypothesis generation only: not medical advice and not peer reviewed."));
+}
+
+/* ===== Library: autosaved runs, linked by molecule and MeSH tag ===== */
+const LIB_KEY="pma_lib";let libFilter="";
+function libLoad(){try{return JSON.parse(localStorage.getItem(LIB_KEY))||[]}catch(e){return[]}}
+function libSave(a){while(true){try{localStorage.setItem(LIB_KEY,JSON.stringify(a));return}catch(e){if(!a.length)return;a.pop()}}}
+const GM=new Set(["humans","animals","mice","male","female","adult","aged","middle aged","young adult","adolescent","child","infant","rats","cells, cultured","cell line","disease models, animal","mice, inbred c57bl","mice, inbred balb c","mice, knockout","rats, sprague-dawley","rats, wistar","time factors","treatment outcome","prognosis","risk factors","signal transduction","models, biological","retrospective studies","prospective studies","cross-sectional studies","in vitro techniques"]);
+const goodMesh=a=>(a||[]).filter(t=>!GM.has(String(t).toLowerCase()));
+function entsOf(x){return[...(x.molecules||[]).map(m=>({k:"m:"+(m.cid||m.name.toLowerCase()),n:m.name,t:"molecule"})),...goodMesh(x.mesh).map(t=>({k:"h:"+t.toLowerCase(),n:t,t:"MeSH"}))]}
+let libProjF="";const libSel=new Set();
+const projStore=()=>{try{return JSON.parse(localStorage.getItem("pma_projects"))||[]}catch(e){return[]}};
+function recOf(r,meta={}){const ids=new Set((r.quotes||[]).map(q=>q.pmid));(r.molecules||[]).forEach(m=>(m.pmids||[]).forEach(i=>ids.add(i)));[r.syn.mechanism,r.syn.summary].forEach(t=>pmidsIn(t).forEach(i=>ids.add(i)));(r.syn.themes||[]).forEach(t=>pmidsIn(t.text).forEach(i=>ids.add(i)));
+  const docs=[...ids].filter(i=>r.byPmid.has(i)).map(i=>{const d=r.byPmid.get(i);return{pmid:d.pmid,title:d.title,journal:d.journal,year:d.year,author:d.author,types:d.types,mesh:d.mesh,abs:""}});
+  return{id:meta.id||Date.now().toString(36)+Math.random().toString(36).slice(2,5),created:meta.created||new Date().toISOString(),A:r.A,B:r.B||"",cue:r.cue||"",mode:r.mode||"discovery",title:S(r.syn.title),status:r.syn.status||"discovery",veri:(r.veri||{}).status,model:meta.model||(typeof cfg!=="undefined"&&cfg?cfg.model:"")||"",projects:meta.projects||[],mesh:r.mesh||[],molecules:(r.molecules||[]).map(m=>({name:m.name,cid:m.cid||"",category:m.category})),
+    r:{A:r.A,B:r.B||"",cue:r.cue||"",mode:r.mode||"discovery",syn:r.syn,quotes:r.quotes||[],molecules:(r.molecules||[]).map(m=>({...m,pv:(m.pv||[]).slice(0,3)})),mesh:r.mesh||[],veri:r.veri,attempts:r.attempts||[],copub:r.copub,qs:r.qs||[],pool:r.pool,nDocs:r.nDocs,nQ:r.nQ,docs}}}
+function libAdd(r){const lib=libLoad(),rec=recOf(r);lib.unshift(rec);libSave(lib.slice(0,200));return rec.id}
+function inflate(rec){const x=rec.r;return{...x,byPmid:new Map((x.docs||[]).map(d=>[d.pmid,d])),byId:new Map((x.quotes||[]).map(q=>[q.id,q])),libId:rec.id}}
+function openRun(id){lastTrace=null;$("expT").hidden=true;const rec=libLoad().find(x=>x.id===id);if(!rec)return;lastResult=inflate(rec);render(lastResult);setDig(lastResult);show("result")}
+function libShown(){return libLoad().filter(x=>(!libProjF||(x.projects||[]).includes(libProjF))&&(!libFilter||entsOf(x).some(e=>e.k===libFilter)))}
+function datasetRows(recs){const jr=(k,v)=>k[0]==="_"?undefined:v;
+  return recs.flatMap(rec=>{const x=rec.r,b={run_id:rec.id};return[{record_type:"run",...b,created:rec.created,concept_a:rec.A,concept_b:rec.B,cue:rec.cue,mode:rec.mode,model:rec.model,status:rec.status,veridicality:x.veri&&x.veri.status,projects:rec.projects||[],queries:x.qs,pool_size:x.pool,mesh:rec.mesh},
+    ...(x.docs||[]).map(d=>({record_type:"document",...b,...d})),...(x.quotes||[]).map(q=>({record_type:"quote",...b,...q})),...(x.molecules||[]).map(m=>({record_type:"molecule",...b,...m})),
+    {record_type:"result",...b,...JSON.parse(JSON.stringify(x.syn,jr))}]})}
+function openBook(ids,title){const recs=libLoad().filter(x=>ids.includes(x.id)).sort((a,b)=>a.created<b.created?-1:1);if(!recs.length)return;
+  const p=$("paper");p.replaceChildren(h("h2",null,title||"Research book"),h("div",{class:"meta"},`${recs.length} chapter(s) · compiled ${new Date().toLocaleDateString()} · PathMap Alchemy`),h("h3",null,"Contents"),h("ol",null,recs.map(x=>h("li",null,`${x.title||x.A+" × "+x.B}${x.cue?" (cue: "+x.cue+")":""}`))));
+  p.append(h("h3",null,"Project knowledge graph"),h("div",{class:"plate"},drawGraph(graphOf(recs),{dark:false}),h("p",{class:"cap"},"Runs (dark nodes) linked to the concepts, molecules, MeSH tags and papers they share.")));
+  recs.forEach((x,i)=>{const c=h("section",{class:"chapter"},h("div",{class:"meta"},"Chapter "+(i+1)));p.append(c);render(inflate(x),c,true)});
+  lastResult=null;lastTrace=null;$("expT").hidden=true;setDig(null);show("result")}
+function renderLib(){const all=libLoad(),projects=[...new Set([...projStore(),...all.flatMap(x=>x.projects||[])])].sort();
+  const ps=$("libProj");ps.replaceChildren(h("option",{value:""},"All runs"),...projects.map(n=>h("option",{value:n},"Project: "+n)));ps.value=libProjF;
+  const inProj=all.filter(x=>!libProjF||(x.projects||[]).includes(libProjF)),ents=new Map();
+  inProj.forEach(x=>entsOf(x).forEach(e=>{const o=ents.get(e.k)||{...e,c:0};o.c++;ents.set(e.k,o)}));
+  const shown=libShown(),chip=e=>h("button",{class:"chip"+(libFilter===e.k?" on":""),type:"button",onclick:()=>{libFilter=libFilter===e.k?"":e.k;renderLib()}},`${e.n}${e.c?" · "+e.c:""}`);
+  $("libEnts").replaceChildren(...[...ents.values()].sort((a,b)=>b.c-a.c).slice(0,40).map(chip));
+  $("libList").replaceChildren(...(shown.length?shown.map(x=>{const cb=h("input",{type:"checkbox",class:"libsel",onchange:()=>{if(cb.checked)libSel.add(x.id);else libSel.delete(x.id);$("libCount").textContent=`${libSel.size} selected · ${shown.length} shown`}});cb.checked=libSel.has(x.id);
+    return h("div",{class:"mol"},h("div",null,cb,h("strong",null,x.title||x.A+" × "+x.B)),h("div",{class:"meta"},`${x.A}${x.B?" × "+x.B:""}${x.cue?" · cue: "+x.cue:""} · ${x.mode==="review"?"literature review":"discovery"} · ${new Date(x.created).toLocaleString()} · ${x.model}`),
+      h("div",null,h("span",{class:"chip"},x.status),h("span",{class:"chip"+(x.veri==="FAILED"?" warn":"")},"veridicality: "+x.veri),...(x.projects||[]).map(n=>h("span",{class:"chip on"},"📁 "+n)),...entsOf(x).slice(0,8).map(e=>chip({...e,c:0}))),
+      h("div",{class:"acts",style:"justify-content:flex-start;margin-top:8px"},h("button",{class:"btn",type:"button",onclick:()=>openRun(x.id)},"Open"),h("button",{class:"btn",type:"button",onclick:()=>{libSave(libLoad().filter(y=>y.id!==x.id));libSel.delete(x.id);renderLib()}},"Delete")))}):[h("p",{class:"note"},all.length?"No runs match these filters.":"No saved runs yet. Every completed run is saved here automatically, in this browser only.")]));
+  $("libCount").textContent=`${libSel.size} selected · ${shown.length} shown`}
+/* ----- import: trace .jsonl, JSON export, or a PathMap Alchemy dataset .jsonl ----- */
+function rFrom(o){const byPmid=new Map((o.docs||[]).map(d=>[d.pmid,{...d,nabs:d.nabs||d.abs||""}]));return{A:o.A,B:o.B||"",cue:o.cue||"",mode:o.mode||"discovery",syn:o.syn,quotes:o.quotes||[],molecules:o.molecules||[],veri:o.veri||{status:"UNCHECKED",issues:[],attempts:0},attempts:o.attempts||[],mesh:o.mesh||[],copub:o.copub,qs:o.qs||[],pool:o.pool||byPmid.size,nDocs:byPmid.size,nQ:(o.qs||[]).length,byPmid}}
+function importRows(text){const t=text.trim();let rows;
+  try{rows=[JSON.parse(t)]}catch(e){try{rows=t.split(/\r?\n/).filter(Boolean).map(l=>JSON.parse(l))}catch(e2){throw new Error("That file is not valid JSON or JSONL.")}}
+  if(rows.length===1&&rows[0]&&rows[0].run&&rows[0].result){const x=rows[0];return[{o:{A:x.run.concept_a,B:x.run.concept_b,cue:x.run.cue,mode:x.run.mode,syn:x.result,quotes:x.quotes,molecules:x.molecules,veri:x.run.veridicality,attempts:x.attempts,qs:x.run.queries,pool:x.run.pool_size,copub:x.run.pubmed_copub_count,docs:x.documents},meta:{created:x.run.created,model:x.run.config&&x.run.config.model}}]}
+  if(rows.some(r=>r&&r.type==="run_start")){const g=k=>rows.find(r=>r&&r.type===k),st=g("run_start"),fin=g("final_result");if(!fin)throw new Error("This trace has no final_result (the run did not finish).");
+    const dr=g("documents_retrieved"),pq=g("parsed_queries"),sm=g("sampling"),keep=new Set((sm&&sm.sampled_pmids_in_prompt_order)||[]);
+    return[{o:{A:st.concept_a,B:st.concept_b,cue:st.cue,mode:st.mode,syn:fin.result,quotes:fin.quotes,molecules:fin.molecules,veri:fin.veridicality,attempts:fin.attempts,mesh:fin.mesh,copub:fin.copub,qs:pq&&pq.queries,pool:sm&&sm.pool_size,docs:((dr&&dr.documents)||[]).filter(d=>!keep.size||keep.has(d.pmid))},meta:{created:st.t,model:st.model}}]}
+  if(rows[0]&&rows[0].record_type){const by={},out=[];rows.forEach(r=>{(by[r.run_id]=by[r.run_id]||[]).push(r)});
+    for(const id in by){const g=k=>by[id].filter(r=>r.record_type===k),run=g("run")[0],res=g("result")[0];if(!run||!res)continue;const{record_type,run_id,...syn}=res,strip=({record_type,run_id,...x})=>x;
+      out.push({o:{A:run.concept_a,B:run.concept_b,cue:run.cue,mode:run.mode,syn,quotes:g("quote").map(strip),molecules:g("molecule").map(strip),veri:{status:run.veridicality||"UNCHECKED",issues:[],attempts:0},qs:run.queries,pool:run.pool_size,mesh:run.mesh,docs:g("document").map(strip)},meta:{created:run.created,model:run.model,projects:run.projects||[]}})}
+    return out}
+  throw new Error("Unrecognised file. Use a trace (.jsonl), a JSON export, or a PathMap Alchemy dataset .jsonl.")}
+async function importFiles(files){const lib=libLoad();let add=0,err="";
+  for(const f of files){try{for(const it of importRows(await f.text())){if(!it.o.syn)continue;const rec=recOf(rFrom(it.o),it.meta);if(lib.some(x=>x.created===rec.created&&x.A===rec.A&&x.B===rec.B))continue;lib.unshift(rec);add++}}catch(e){err=f.name+": "+e.message}}
+  libSave(lib.slice(0,200));renderLib();showE($("libMsg"),err||`Imported ${add} run(s).`)}
+/* ----- opt-in sharing with the global library ----- */
+function askShare(){const pref=localStorage.getItem("pma_share");if(pref==="share"||pref==="private")return Promise.resolve(pref);
+  return new Promise(res=>{const d=$("shareD");let done=false;const fin=v=>{if(done)return;done=true;if(v&&$("shareRem").checked)localStorage.setItem("pma_share",v);d.close();res(v||"private")};
+    $("shareYes").onclick=()=>fin("share");$("sharePriv").onclick=()=>fin("private");$("shareMoreB").onclick=()=>{$("shareMore").hidden=!$("shareMore").hidden};d.oncancel=()=>{done=true;res("private")};d.showModal()})}
+/* ===== Public-sharing sanitizer: nothing that identifies the user, their machine, their network or their credentials may leave the browser ===== */
+const SANITIZER_VERSION="1";
+const SAN_DROP_KEYS=/^(user_agent|useragent|endpoint|base|base_url|baseurl|api[_-]?key|apikey|key|authorization|x-goog-api-key|referer|referrer|cookie|token|access_token|secret|password)$/i;
+const SAN_RULES=[
+  [/AIza[0-9A-Za-z_\-]{20,}/g,"[key-redacted]"],
+  [/\bsk-[A-Za-z0-9_\-]{16,}/g,"[key-redacted]"],
+  [/\bBearer\s+[A-Za-z0-9._~+\/=\-]{12,}/gi,"Bearer [key-redacted]"],
+  [/([?&;](?:key|api_?key|apikey|token|access_token|auth)=)[^&\s"'<>]+/gi,"$1[key-redacted]"],
+  [/\bhttps?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|0\.0\.0\.0|10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}|169\.254(?:\.\d{1,3}){2}|\[[0-9a-f:]+\]|[\w\-]+(?:\.[\w\-]+)*\.(?:local|lan|internal|home|localdomain|intranet))(?::\d+)?[^\s"'<>)\]]*/gi,"[local-endpoint-redacted]"],
+  [/\b(?:localhost|127(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|10(?:\.\d{1,3}){3})(?::\d{2,5})\b/gi,"[local-endpoint-redacted]"],
+  [/[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+/g,"[email-redacted]"]];
+function sanitizeForShare(obj){let n=0;
+  const clean=s=>{let o=s;for(const[re,to]of SAN_RULES)o=o.replace(re,(...a)=>{n++;return to.includes("$1")?a[1]+"[key-redacted]":to});return o};
+  const walk=v=>{if(typeof v==="string")return clean(v);if(Array.isArray(v))return v.map(walk);
+    if(v&&typeof v==="object"){const o={};for(const k of Object.keys(v)){if(SAN_DROP_KEYS.test(k)){if(v[k]!==undefined&&v[k]!==""&&v[k]!==null)n++;continue}o[k]=walk(v[k])}return o}return v};
+  const out=walk(obj);return{data:out,redactions:n}}
+async function postShare(r){
+  try{const jr=(k,v)=>k[0]==="_"||k==="pv"||k==="probes"?undefined:v,rec=recOf(r);
+    buildSummary("completed",r);
+    const base={schema:"pathmap-alchemy/share-1",app_version:APP_VERSION,created:rec.created,mode:r.mode,concept_a:r.A,concept_b:r.B,cue:r.cue,model:cfg.model,status:rec.status,veridicality:r.veri&&r.veri.status,result:r.syn,quotes:r.quotes,molecules:r.molecules,documents:rec.r.docs};
+    const raw=JSON.parse(JSON.stringify(base,jr));raw.trace=JSON.parse(JSON.stringify(lastTrace||[])); /* the FULL trace: run_start, build_meta, build_log, every prompt/response, PubMed/PubChem calls, final_result */
+    const san=sanitizeForShare(raw),body=san.data;body.sanitized={version:SANITIZER_VERSION,redactions:san.redactions,removed:"api keys, local/private endpoints, browser user agent, emails"};tr("share_sanitized",{redactions:san.redactions});
+    await fetch(SHARE_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});
+    tr("share_attempt",{ok:true,trace_events:body.trace.length})}
+  catch(e){tr("share_attempt",{ok:false,error:String(e&&e.message||e)})}
+  log("Thank you for sharing.","ok")}
+
+/* ===== Patent-style figures (drawn programmatically from the verified data, so they are identical every time) ===== */
+const NS="http://www.w3.org/2000/svg",INK="#111";
+function sv(tag,a,...k){const e=document.createElementNS(NS,tag);for(const x in a||{})e.setAttribute(x,a[x]);k.flat().forEach(c=>e.append(c instanceof Node?c:document.createTextNode(String(c))));return e}
+const wrapT=(t,n,max)=>{const w=String(t||"").replace(/\s+/g," ").trim().split(" "),o=[];let l="";for(const x of w){if(l&&(l+" "+x).length>n){o.push(l);l=x}else l=l?l+" "+x:x}if(l)o.push(l);return max&&o.length>max?[...o.slice(0,max-1),(o[max-1]||"").slice(0,n-1)+"…"]:o};
+const trunc=(t,n)=>String(t).length>n?String(t).slice(0,n-1)+"…":String(t);
+const txt=(x,y,t,o={})=>sv("text",{x,y,"font-family":"Helvetica,Arial,sans-serif","font-size":o.s||11,"text-anchor":o.a||"middle",fill:o.f||INK,...(o.i?{"font-style":"italic"}:{}),...(o.b?{"font-weight":"bold"}:{})},t);
+function bx(x,y,w,hh,lines,o={}){const g=sv("g"),lh=13,y0=y+hh/2-((lines.length-1)*lh)/2+4;
+  g.append(sv("rect",{x,y,width:w,height:hh,fill:o.fill||"#fff",stroke:INK,"stroke-width":o.sw||1.3,...(o.dash?{"stroke-dasharray":"6 4"}:{})}));
+  lines.forEach((l,i)=>g.append(txt(x+w/2,y0+i*lh,l,{s:o.s,b:o.b&&i===0})));if(o.num)g.append(txt(x+w+4,y-3,String(o.num),{s:9,a:"start",i:1}));return g}
+function ln(x1,y1,x2,y2,o={}){return sv("line",{x1,y1,x2,y2,stroke:INK,"stroke-width":o.sw||1.2,...(o.dash?{"stroke-dasharray":"6 4"}:{})})}
+function arr(x1,y1,x2,y2,o={}){const g=sv("g"),a=Math.atan2(y2-y1,x2-x1),L=8;g.append(ln(x1,y1,x2-Math.cos(a)*L*.6,y2-Math.sin(a)*L*.6,o));
+  g.append(sv("polygon",{points:[[x2,y2],[x2-L*Math.cos(a-.4),y2-L*Math.sin(a-.4)],[x2-L*Math.cos(a+.4),y2-L*Math.sin(a+.4)]].map(q=>q.join(",")).join(" "),fill:INK}));return g}
+const plateSvg=(W,H,kids)=>{const s=sv("svg",{xmlns:NS,viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:"img"});s.append(sv("rect",{width:W,height:H,fill:"#fff"}),...kids);return s};
+const qpm=(r,ids)=>[...new Set((ids||[]).map(id=>(r.byId.get(id)||{}).pmid).filter(Boolean))];
+function figMap(r){const D=r.syn.discovery||{},a=D.a_cites||[],c=D.c_cites||[],W=760,H=300,k=[];
+  k.push(bx(30,110,200,100,["DOMAIN A",...wrapT(unl(S(D.domain_a))||r.A,24,4)],{num:100,b:1}),bx(280,110,200,100,["BRIDGE B",...wrapT(unl(S(D.bridge_b)),24,4)],{num:102,b:1,fill:"#efefef"}),bx(530,110,200,100,["DOMAIN C",...wrapT(unl(S(D.domain_c))||r.B,24,4)],{num:104,b:1}),
+    arr(230,160,280,160),arr(480,160,530,160),txt(255,182,`${a.length} quotes`,{s:9}),txt(505,182,`${c.length} quotes`,{s:9}),
+    sv("path",{d:"M130 110 C130 38 630 38 630 110",fill:"none",stroke:INK,"stroke-width":1.2,"stroke-dasharray":"6 4"}),sv("polygon",{points:"630,110 624,97 636,97",fill:INK}),
+    txt(380,36,"HYPOTHESIS: A → C (not stated in the dataset)",{s:10.5}),txt(380,262,`Evidence: ${a.length} quote(s) from ${qpm(r,a).length} paper(s) for A → B; ${c.length} quote(s) from ${qpm(r,c).length} paper(s) for B → C`,{s:10}));
+  return{svg:plateSvg(W,H,k),cap:`is a schematic of the discovered A–B–C relationship: domain A (100) connects to bridge B (102), which connects to domain C (104); the dashed arc is the new, unstated A → C hypothesis. Counts are the verified quotes behind each leg.`}}
+function figFlow(r){const steps=String(r.syn.mechanism||"").split(/\n+/).flatMap(x=>x.split(SENT)).map(x=>x.trim()).filter(x=>x.length>12).slice(0,8);if(!steps.length)return null;
+  const W=820,bw=580,x0=170,k=[];let y=24;
+  steps.forEach((s0,i)=>{const inf=/^Inference:/i.test(s0),ids=pmidsIn(s0),t=s0.replace(/^Inference:\s*/i,"").replace(PMID_RE,"").replace(/\s+([.,;])/g,"$1").replace(/\s+/g," ").trim(),L=wrapT(t,84,4),hh=L.length*13+18;
+    k.push(bx(x0,y,bw,hh,L,{dash:inf,num:200+2*i,s:10.5}));
+    (inf?["INFERENCE"]:wrapT(ids.length?"PMID "+ids.slice(0,4).join(", "):"",22,2)).forEach((l,j)=>k.push(txt(x0-8,y+hh/2+j*11-(inf?-3:4),l,{a:"end",s:8.5,i:inf})));
+    y+=hh;if(i<steps.length-1){k.push(arr(x0+bw/2,y,x0+bw/2,y+26));y+=26}});
+  return{svg:plateSvg(W,y+20,k),cap:`is a flowchart of the proposed mechanism, one step per sentence. Solid boxes are stated in the cited abstracts (PMIDs at left); dashed boxes are the engine's own labelled inference.`}}
+function figEvidence(r){const rev=r.mode==="review",syn=r.syn,D=syn.discovery||{},W=860,top=[];
+  if(rev)(syn.themes||[]).slice(0,5).forEach((t,i)=>top.push({id:"t"+i,lines:wrapT(S(t.heading),20,4),pm:qpm(r,t.cites)}));
+  else top.push({id:"A",lines:["A",...wrapT(unl(S(D.domain_a))||r.A,20,4)],pm:qpm(r,D.a_cites)},{id:"B",lines:["B",...wrapT(unl(S(D.bridge_b)),20,4)],pm:[]},{id:"C",lines:["C",...wrapT(unl(S(D.domain_c))||r.B,20,4)],pm:qpm(r,D.c_cites)});
+  if(!top.length)return null;
+  const mols=(r.molecules||[]).slice(0,6),pms=new Set();top.forEach(t=>t.pm.forEach(p=>pms.add(p)));mols.forEach(m=>(m.pmids||[]).forEach(p=>pms.add(p)));
+  const side=p=>{const ix=top.findIndex(t=>t.pm.includes(p));return ix<0?top.length:ix};
+  const papers=[...pms].filter(p=>r.byPmid.has(p)).sort((a,b)=>side(a)-side(b)||(a<b?-1:1)).slice(0,10),sp=(n,i,w)=>(W/(n+1))*(i+1)-w/2,k=[],P={};
+  top.forEach((t,i)=>{Object.assign(t,{w:170,h:78,x:sp(top.length,i,170),y:34});P[t.id]=t});
+  papers.forEach((p,i)=>P["p"+p]={x:sp(papers.length,i,102),y:184,w:102,h:44,id:p,d:r.byPmid.get(p)});
+  const px=m=>{const xs=(m.pmids||[]).filter(p=>P["p"+p]).map(p=>P["p"+p].x+51);return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:W/2};
+  mols.sort((a,b)=>px(a)-px(b)).forEach((m,i)=>Object.assign(m,{bw:130,bh:40,bx:sp(mols.length,i,130),by:316}));
+  const bot=o=>[o.x+o.w/2,o.y+o.h],tp=o=>[o.x+o.w/2,o.y];
+  top.forEach(t=>t.pm.forEach(p=>{if(P["p"+p]){const a=bot(t),b=tp(P["p"+p]);k.push(ln(a[0],a[1],b[0],b[1],{sw:1.4}))}}));
+  mols.forEach(m=>(m.pmids||[]).forEach(p=>{if(P["p"+p])k.push(ln(m.bx+m.bw/2,m.by,P["p"+p].x+51,P["p"+p].y+44,{sw:.7,dash:1}))}));
+  if(!rev)k.push(arr(P.A.x+170,P.A.y+39,P.B.x,P.B.y+39),arr(P.B.x+170,P.B.y+39,P.C.x,P.C.y+39));
+  top.forEach((t,i)=>k.push(bx(t.x,t.y,t.w,t.h,t.lines,{num:100+2*i,b:1,s:10,fill:!rev&&t.id==="B"?"#efefef":"#fff"})));
+  papers.forEach(p=>{const o=P["p"+p];k.push(bx(o.x,o.y,o.w,o.h,["PMID "+p,`${designOf(o.d.types)} ${o.d.year||""}`.trim()],{s:9}))});
+  mols.forEach((m,i)=>k.push(bx(m.bx,m.by,m.bw,m.bh,[...wrapT(m.name,20,1),String(m.category||"").slice(0,18)],{num:120+2*i,s:9.5})));
+  k.push(txt(6,22,rev?"THEMES":"DOMAINS",{a:"start",s:8.5,i:1}),txt(6,178,"PAPERS",{a:"start",s:8.5,i:1}),txt(6,310,"ENTITIES",{a:"start",s:8.5,i:1}));
+  return{svg:plateSvg(W,376,k),cap:rev?`is an evidence network: each theme links (solid) to the papers whose verified quotes support it; entities link (dashed) to the papers that mention them.`:`is an evidence network: domains A and C link (solid) to the papers whose verified quotes support each leg; entities link (dashed) to the papers that mention them. Papers are ordered by the leg they support, so shared or one-sided evidence is easy to see.`}}
+function figMol(r){const ms=(r.molecules||[]).filter(m=>m.chem&&m.cid).slice(0,8);if(!ms.length)return null;
+  const W=900,x0=210,cw=130,gap=18,rowH=42,k=[],cols=[{t:"XLogP",min:-3,max:7,z:[0,5],tk:[-2,0,2,4,6],g:m=>m.chem.xlogp},{t:"TPSA (Å²)",min:0,max:200,z:[0,140],tk:[0,50,100,150,200],g:m=>m.chem.tpsa},{t:"Mol. weight (Da)",min:0,max:600,z:[0,500],tk:[0,200,400,600],g:m=>+m.chem.mw||+m.mw},{t:"Size (nm)",min:0,max:2,z:[0,2],tk:[0,.5,1,1.5,2],g:m=>m.size_nm}];
+  const X=(c,v,i)=>x0+i*(cw+gap)+Math.max(0,Math.min(1,(v-c.min)/(c.max-c.min)))*cw;
+  cols.forEach((c,i)=>{const cx=x0+i*(cw+gap);k.push(txt(cx+cw/2,22,c.t,{s:10.5,b:1}));c.tk.forEach(t=>{const x=X(c,t,i);k.push(ln(x,44,x,49,{sw:.8}),txt(x,60,String(t),{s:8}))})});
+  k.push(txt(x0+4*(cw+gap)+22,22,"Zeta proxy",{s:10.5,b:1}));
+  ms.forEach((m,j)=>{const y=82+j*rowH;k.push(txt(10,y+4,trunc(m.name,26),{a:"start",s:10.5,b:1}),txt(10,y+16,String(m.category||"")+(m.plain&&m.plain.lipo?" · "+m.plain.lipo.split(" (")[0]:""),{a:"start",s:8,i:1}));
+    cols.forEach((c,i)=>{const cx=x0+i*(cw+gap),v=c.g(m);k.push(sv("rect",{x:X(c,c.z[0],i),y:y-6,width:X(c,c.z[1],i)-X(c,c.z[0],i),height:12,fill:"#e4e4e4"}),ln(cx,y,cx+cw,y,{sw:.8}));
+      if(v==null||!isFinite(v))k.push(txt(cx+cw/2,y+4,"n/a",{s:8.5,i:1}));else k.push(sv("circle",{cx:X(c,v,i),cy:y,r:4.5,fill:INK}),txt(X(c,v,i),y-10,String(Math.round(v*100)/100),{s:8}))});
+    const net=m.plain?m.plain.net:0;k.push(txt(x0+4*(cw+gap)+22,y+4,net<0?"−":net>0?"+":"0",{s:14,b:1}))});
+  const H=82+ms.length*rowH+34;k.push(txt(W/2,H-12,"Shaded band = typical oral drug-like window (XLogP 0–5, TPSA ≤ 140, MW ≤ 500). Zeta proxy is the sign of the estimated net charge at pH 7.4, not a measured zeta potential.",{s:8.5,i:1}));
+  return{svg:plateSvg(W,H,k),cap:`is a molecular profile of the discovery's entities from PubChem: lipophilicity, polar surface area, size and the estimated charge direction. Dots outside the shaded band are less drug-like.`}}
+function figProbe(r){const p=(r.syn.discovery||{}).probe;if(!p)return null;const rows=[["A + bridge",p.ab],["bridge + C",p.bc],["A + C",p.ac],["A + bridge + C",p.abc]],mx=Math.max(1,...rows.map(x=>x[1]||0)),W=760,k=[txt(380,24,"PubMed title/abstract records (log scale)",{s:11,b:1})];
+  rows.forEach(([l,v],i)=>{const y=46+i*40,bw=v==null?0:Math.max(1,Math.round(480*Math.log10(v+1)/Math.log10(mx+1)));k.push(txt(150,y+17,l,{a:"end",s:11}),sv("rect",{x:160,y,width:bw||1,height:24,fill:i>=2?"#fff":"#bdbdbd",stroke:INK,"stroke-width":1.2,...(i>=2?{"stroke-dasharray":"4 3"}:{})}),txt(160+(bw||1)+8,y+17,v==null?"n/a":String(v),{a:"start",s:11}))});
+  k.push(txt(380,222,p.valid?"Swanson pattern: both bridge legs populated; the A–C legs are the unexplored part.":"Probe unreliable: a bridge leg returned 0.",{s:9.5,i:1}));
+  return{svg:plateSvg(W,240,k),cap:`is a literature-disjointness plot using terms “${p.terms.a}”, “${p.terms.b}” and “${p.terms.c}”. Solid bars are the bridge legs; dashed bars are the A–C legs that a discovery should find empty or sparse.`}}
+function buildFigures(r){const fns=r.mode==="review"?[figEvidence,figMol]:[figMap,figFlow,figEvidence,figMol,figProbe],out=[];
+  for(const f of fns){try{const x=f(r);if(x)out.push(x)}catch(e){/* a figure must never break a report */}}return out}
+function figSection(r){let fs=[];try{fs=buildFigures(r)}catch(e){}if(!fs.length)return "";
+  return h("div",null,h("h3",null,"Figures"),h("p",{class:"note"},"Drawn programmatically from the verified data above (no AI drawing), so they are identical every time."),
+    ...fs.map((f,i)=>h("div",{class:"plate"},f.svg,h("p",{class:"cap"},h("strong",null,`FIG. ${i+1}`)," "+f.cap),h("button",{class:"btn",type:"button",onclick:()=>dl(`pathmap-alchemy-fig${i+1}.svg`,new XMLSerializer().serializeToString(f.svg),"image/svg+xml")},"Download SVG"))))}
+/* ===== Property graph (Neo4j-style): nodes + typed relationships across runs, projects and tags ===== */
+function graphOf(recs){const N=new Map(),E=[],node=(id,label,name,x={})=>{if(!N.has(id))N.set(id,{id,label,name,deg:0,...x});return N.get(id)},edge=(a,b,type,p={})=>{E.push({a,b,type,...p});N.get(a).deg++;N.get(b).deg++};
+  recs.forEach(x=>{const r=x.r||{},D=(r.syn&&r.syn.discovery)||{},R=node("run:"+x.id,"Run",x.title||`${x.A} × ${x.B}`,{rid:x.id,mode:x.mode,cue:x.cue,status:x.status});
+    [["FROM_DOMAIN",x.mode==="review"?x.A:(D.domain_a||x.A)],["TO_DOMAIN",x.mode==="review"?x.B:(D.domain_c||x.B)]].forEach(([t,v])=>{const s0=S(v).trim(),k=norm(s0);if(k){node("concept:"+k,"Concept",s0);edge(R.id,"concept:"+k,t)}});
+    if(D.bridge_b){const b=unl(D.bridge_b),k="mol:"+norm(b);node(k,"Bridge",b,{fk:"m:"+b.toLowerCase()});edge(R.id,k,"BRIDGE_VIA")}
+    (x.molecules||[]).forEach(m=>{const k="mol:"+norm(m.name);node(k,"Molecule",m.name,{cid:m.cid,fk:"m:"+(m.cid||m.name.toLowerCase())});edge(R.id,k,"INVOLVES")});
+    goodMesh(x.mesh).forEach(t=>{const k="mesh:"+norm(t);node(k,"MeSH",t,{fk:"h:"+t.toLowerCase()});edge(R.id,k,"TAGGED")});
+    const qn={};(r.quotes||[]).forEach(q=>qn[q.pmid]=(qn[q.pmid]||0)+1);
+    Object.entries(qn).forEach(([pm,n])=>{const d=(r.docs||[]).find(d=>d.pmid===pm);node("paper:"+pm,"Paper","PMID "+pm,{title:d&&d.title});edge(R.id,"paper:"+pm,"CITES",{quotes:n})});
+    (x.projects||[]).forEach(pn=>{node("proj:"+pn,"Project",pn);edge(R.id,"proj:"+pn,"IN_PROJECT")})});
+  return{nodes:[...N.values()],edges:E}}
+function layoutG(g,W,H,iter=220){const n=g.nodes,idx=new Map(n.map(v=>[v.id,v]));n.forEach((v,i)=>{const a=i*2.399,r=40*Math.sqrt(i+1);v.x=W/2+r*Math.cos(a);v.y=H/2+r*Math.sin(a);v.vx=v.vy=0});
+  for(let t=0;t<iter;t++){const cool=1-t/iter;
+    for(let i=0;i<n.length;i++)for(let j=i+1;j<n.length;j++){const a=n[i],b=n[j];let dx=a.x-b.x,dy=a.y-b.y;const d2=dx*dx+dy*dy+.01;if(d2>250000)continue;const d=Math.sqrt(d2),f=5200/d2;dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f}
+    g.edges.forEach(e=>{const a=idx.get(e.a),b=idx.get(e.b);if(!a||!b)return;let dx=b.x-a.x,dy=b.y-a.y;const d=Math.sqrt(dx*dx+dy*dy)+.01,f=(d-95)*.02;dx/=d;dy/=d;a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f});
+    n.forEach(v=>{v.vx+=(W/2-v.x)*.002;v.vy+=(H/2-v.y)*.002;v.x=Math.max(24,Math.min(W-24,v.x+Math.max(-12,Math.min(12,v.vx))*cool));v.y=Math.max(24,Math.min(H-24,v.y+Math.max(-12,Math.min(12,v.vy))*cool));v.vx*=.6;v.vy*=.6})}
+  const xs=n.map(v=>v.x),ys=n.map(v=>v.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),sc=Math.min((W-90)/Math.max(1,x1-x0),(H-90)/Math.max(1,y1-y0));
+  n.forEach(v=>{v.x=W/2+(v.x-(x0+x1)/2)*sc;v.y=H/2+(v.y-(y0+y1)/2)*sc});
+  return idx}
+const GCOL={Run:"#34d399",Molecule:"#60a5fa",Bridge:"#f59e0b",Concept:"#c084fc",MeSH:"#94a3b8",Paper:"#f87171",Project:"#fbbf24"};
+function drawGraph(g,o={}){const W=900,H=620,dark=o.dark!==false,idx=layoutG(g,W,H),ink=dark?"#e8f1ec":"#111",bg=dark?"#050807":"#fff",hl=o.hl||{n:new Set(),e:new Set()},s=sv("svg",{xmlns:NS,viewBox:`0 0 ${W} ${H}`,width:"100%",role:"img"});s.append(sv("rect",{width:W,height:H,fill:bg}));
+  g.edges.forEach((e,i)=>{const a=idx.get(e.a),b=idx.get(e.b);if(!a||!b)return;const on=hl.e.has(i);s.append(sv("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:on?"#f59e0b":(dark?"#2a4038":"#9a9a9a"),"stroke-width":on?2.8:.8}))});
+  g.nodes.forEach(n=>{const on=hl.n.has(n.id),r0=4+Math.min(9,n.deg),grp=sv("g",{style:o.onNode?"cursor:pointer":""});
+    grp.append(sv("circle",{cx:n.x,cy:n.y,r:r0,fill:dark?GCOL[n.label]:(n.label==="Run"?"#111":"#fff"),stroke:on?"#f59e0b":(dark?bg:ink),"stroke-width":on?3:1.2}),...(n.deg>=2||on||g.nodes.length<40?[txt(n.x,n.y-r0-3,trunc(n.name,26),{s:9,f:ink})]:[]),sv("title",{},`${n.label}: ${n.name} (${n.deg} links)${n.title?"\n"+n.title:""}`));
+    if(o.onNode)grp.addEventListener("click",()=>o.onNode(n));s.append(grp)});return s}
+function pathBetween(g,a,b){const adj=new Map(),add=(u,v,i)=>{if(!adj.has(u))adj.set(u,[]);adj.get(u).push([v,i])};g.edges.forEach((e,i)=>{add(e.a,e.b,i);add(e.b,e.a,i)});
+  const prev=new Map([[a,null]]),q=[a];while(q.length){const u=q.shift();if(u===b)break;for(const[v,i]of adj.get(u)||[])if(!prev.has(v)){prev.set(v,[u,i]);q.push(v)}}
+  if(!prev.has(b))return null;const nodes=[b],edges=[];let c=b;while(prev.get(c)){const[u,i]=prev.get(c);edges.push(i);nodes.push(u);c=u}return{nodes:nodes.reverse(),edges:edges.reverse()}}
+function cypherOf(g){const q=v=>JSON.stringify(String(v==null?"":v)),L=[`// PathMap Alchemy graph export ${new Date().toISOString()} (Neo4j 5)`,"CREATE CONSTRAINT pma_uid IF NOT EXISTS FOR (n:Node) REQUIRE n.uid IS UNIQUE;"];
+  g.nodes.forEach(n=>L.push(`MERGE (n:Node {uid:${q(n.id)}}) SET n:${n.label}, n.name=${q(n.name)}${["title","cid","mode","cue","status"].filter(k=>n[k]).map(k=>`, n.${k}=${q(n[k])}`).join("")};`));
+  g.edges.forEach(e=>L.push(`MATCH (a:Node {uid:${q(e.a)}}),(b:Node {uid:${q(e.b)}}) MERGE (a)-[r:${e.type}]->(b)${e.quotes?` SET r.quotes=${e.quotes}`:""};`));return L.join("\n")+"\n"}
+let GV={recs:[],types:{Run:1,Molecule:1,Bridge:1,Concept:1,MeSH:1,Paper:1,Project:1},path:null,g:null};
+function graphFiltered(){const g=graphOf(GV.recs),keep=new Set(g.nodes.filter(n=>GV.types[n.label]).map(n=>n.id));return{nodes:g.nodes.filter(n=>keep.has(n.id)),edges:g.edges.filter(e=>keep.has(e.a)&&keep.has(e.b))}}
+function renderGraph(){const g=GV.g=graphFiltered(),nm=n=>`${n.label}: ${trunc(n.name,40)}`,opts=g.nodes.slice().sort((a,b)=>a.label<b.label?-1:a.label===b.label?(a.name<b.name?-1:1):1).slice(0,500);
+  $("gTypes").replaceChildren(...Object.keys(GV.types).map(t=>{const cb=h("input",{type:"checkbox",class:"libsel",onchange:()=>{GV.types[t]=cb.checked?1:0;GV.path=null;renderGraph()}});cb.checked=!!GV.types[t];return h("label",{class:"chip",style:"cursor:pointer;display:inline-flex;gap:6px;align-items:center;color:"+GCOL[t]},cb,t)}));
+  const fill=(id)=>{const sel=$(id),cur=sel.value;sel.replaceChildren(...opts.map(n=>h("option",{value:n.id},nm(n))));if(cur&&g.nodes.some(n=>n.id===cur))sel.value=cur};fill("gFrom");fill("gTo");
+  const hl=GV.path?{n:new Set(GV.path.nodes),e:new Set(GV.path.edges)}:null;
+  $("gBox").replaceChildren(drawGraph(g,{hl,onNode:n=>{if(n.label==="Run")openRun(n.rid);else if(n.fk){libFilter=n.fk;libProjF="";renderLib();show("lib")}}}));
+  $("gInfo").textContent=`${GV.recs.length} run(s) · ${g.nodes.length} nodes · ${g.edges.length} relationships. Click a run to open it, or a molecule/tag to filter the library by it.`}
+function openGraph(ids){const set=new Set(ids);GV.recs=libLoad().filter(x=>set.has(x.id));if(!GV.recs.length){showE($("libMsg"),"No runs to graph.");return}GV.path=null;$("gPathOut").textContent="";show("graph");renderGraph()}
+
+/* ===== Export (JSON / JSONL, no keys) ===== */
+let lastResult=null;
+function buildExport(r){const docs=[...r.byPmid.values()],syn=JSON.parse(JSON.stringify(r.syn,(k,v)=>k==="_ok"?undefined:v));
+  const run={schema:"pathmap-alchemy/1",created:new Date().toISOString(),concept_a:r.A,concept_b:r.B,status:syn.status,veridicality:r.veri,config:{...CFG,provider:cfg.provider,model:cfg.model},
+    queries:r.qs,pool_size:r.pool,pubmed_copub_count:r.copub};
+  const documents=docs.map(d=>({pmid:d.pmid,title:d.title,journal:d.journal,year:d.year,design:designOf(d.types),publication_types:d.types,abstract:d.abs}));
+  return{run,attempts:r.attempts,documents,quotes:r.quotes,molecules:r.molecules,result:syn};}
+function dl(name,txt,type){const a=h("a",{href:URL.createObjectURL(new Blob([txt],{type})),download:name});document.body.append(a);a.click();a.remove()}
+function exportAs(kind){
+  if(kind==="trace"){if(!lastTrace||!lastTrace.length)return;const e0=lastTrace[0];
+    dl("pathmap-alchemy-"+(e0.concept_a+"-"+e0.concept_b).toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)+"-trace.jsonl",lastTrace.map(e=>JSON.stringify(e)).join("\n")+"\n","application/x-ndjson");return}
+  if(!lastResult)return;const x=buildExport(lastResult),slug=(lastResult.A+"-"+lastResult.B).toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40),base="pathmap-alchemy-"+slug;
+  if(kind==="json")return dl(base+".json",JSON.stringify(x,null,2),"application/json");
+  const rows=[{record_type:"run",...x.run},...x.attempts.map(a=>({record_type:"attempt",...a})),...x.documents.map(d=>({record_type:"document",...d})),...x.quotes.map(q=>({record_type:"quote",...q})),...x.molecules.map(m=>({record_type:"molecule",...m})),{record_type:"result",...x.result}];
+  dl(base+".jsonl",rows.map(r=>JSON.stringify(r)).join("\n")+"\n","application/x-ndjson");}
+/* ===== Flow ===== */
+function show(id){["home","run","result","lib","graph"].forEach(x=>$(x).hidden=x!==id);scrollTo(0,0)}
+let curMode="discovery";
+let RUN_T0=0,SUMMARY_DONE=false;
+/* Build metadata + the complete build log, written into the trace once per run. */
+function buildSummary(outcome,r,extra){if(!TR||SUMMARY_DONE)return;SUMMARY_DONE=true;const n=t=>TR.filter(e=>e.type===t).length,lines=TR.filter(e=>e.type==="build_log").map(e=>`${e.t} ${e.level==="info"?"":"["+e.level+"] "}${e.msg}`);
+  tr("build_meta",{app_version:APP_VERSION,outcome,mode:RUN.mode,concept_a:$("A").value,concept_b:$("B").value,cue:RUN.cue,provider:cfg.provider,model:cfg.model,language:lang,gemma_cap_enabled:capOn(),gemma_docs_limit:CFG.gemmaDocs,
+    started:new Date(RUN_T0).toISOString(),finished:new Date().toISOString(),duration_ms:Date.now()-RUN_T0,llm_calls:n("llm_call"),http_calls:n("http_call"),restarts:n("restart"),
+    ...(r?{abstracts_in_pool:r.pool,abstracts_in_prompt:r.nDocs,queries:r.nQ,quotes:(r.quotes||[]).length,molecules:(r.molecules||[]).length,veridicality:r.veri&&r.veri.status,grounding_score:r.veri&&r.veri.grounding_score}:{}),
+    ...(extra||{}),build_log:lines})}
+/* One full build (retrieval, discovery or review, audit, save, optional share). Does not touch the screen beyond the log. */
+async function execRun(A,B,cue,mode,share,meta){
+  RUN={mode,cue};TR=[];lastTrace=TR;SUMMARY_DONE=false;RUN_T0=Date.now();$("expT").hidden=true;
+  tr("run_start",{app:"pathmap-alchemy/"+APP_VERSION,app_version:APP_VERSION,concept_a:A,concept_b:B,cue:RUN.cue,mode:RUN.mode,config:{...CFG,gemma_cap_enabled:capOn()},provider:cfg.provider,model:cfg.model,endpoint:cfg.provider==="local"?cfg.base:undefined,language:lang,share_choice:share,user_agent:navigator.userAgent,...(meta||{})});
+  try{const r=await pipelineLoop(A,B,abortC.signal);lastResult=r;tr("final_result",{result:r.syn,veridicality:r.veri,attempts:r.attempts,quotes:r.quotes,molecules:r.molecules,mesh:r.mesh,copub:r.copub});$("expT").hidden=false;r.libId=libAdd(r);
+    try{log(`Drawing patent-style figures: ${buildFigures(r).length} figure(s) generated from the verified data`,"ok")}catch(e){log("Figure generation skipped: "+e.message,"e")}
+    log("Done. Saved to your library.","ok");
+    if(share==="share")await postShare(r);
+    buildSummary("completed",r,meta);return r}
+  catch(err){tr("run_error",{name:err.name,message:err.message});buildSummary(err.name==="AbortError"?"cancelled":"error",null,{error:err.message,...(meta||{})});throw err}}
+function startRunUI(){showE($("homeErr"),"");showE($("runErr"),"");$("runErr").className="err";term.replaceChildren();show("run");
+  const t0=Date.now();$("timer").textContent="0:00";timer=setInterval(()=>{const s=(Date.now()-t0)/1000|0;$("timer").textContent=(s/60|0)+":"+String(s%60).padStart(2,"0")},1000);abortC=new AbortController()}
+async function go(A,B,cue,mode){mode=mode||curMode;cue=cue===undefined?$("Q").value.trim():cue;if(!A||(!B&&mode!=="review"))return;$("A").value=A;$("B").value=B||"";$("Q").value=cue;RUN={mode,cue};
+  if(!connected){show("home");showE($("homeErr"),T("need"));openSet();return}
+  const share=await askShare();
+  if(mode==="autonomous")return goAuto(A,B,cue,share);
+  startRunUI();
+  try{const r=await execRun(A,B,cue,mode,share);render(r);setDig(r);show("result")}
+  catch(err){term.querySelectorAll(".cur").forEach(x=>x.classList.remove("cur"));
+    const m=err.name==="AbortError"?"Run cancelled.":friendly(err);log(m,"e");
+    const box=$("runErr");box.replaceChildren(h("div",null,m),h("div",{class:"acts",style:"margin-top:10px"},
+      h("button",{class:"btn",type:"button",onclick:()=>openSet()},"Check connection"),h("button",{class:"btn",type:"button",onclick:()=>exportAs("trace")},"Download trace"),h("button",{class:"btn solid",type:"button",onclick:()=>show("home")},"Back to search")));box.hidden=false;}
+  finally{clearInterval(timer);abortC=null;TR=null}}
+/* Autonomous mode: seed run, then keep picking a random not-yet-run follow-up pair from the pool of every suggestion collected so far. Ends when the pool is empty or the user cancels. */
+async function goAuto(A,B,cue,share){
+  startRunUI();
+  const pairKey=(a,b)=>[norm(a),norm(b)].sort().join("|"),done=new Set(libLoad().filter(x=>x.mode!=="review").map(x=>pairKey(x.A,x.B))),pool=[],ran=[];
+  let next={a:A,b:B,cue,from:null},n=0,fails=0,lastR=null,lastErr=false;
+  const collect=(syn,from)=>{(Array.isArray(syn.follow_ups)?syn.follow_ups:[]).forEach(x=>{if(!x||typeof x!=="object")return;const a=S(x.concept_a).trim(),b=S(x.concept_b).trim();if(!a||!b)return;const k=pairKey(a,b);if(done.has(k)||pool.some(p=>p.k===k))return;pool.push({a,b,k,from})})};
+  log(`Autonomous mode started. Seed: ${A} × ${B}. Pairs already in your library are never repeated. Press Cancel to stop.`,"ok");
+  try{
+    while(next){
+      if(abortC.signal.aborted)break;n++;done.add(pairKey(next.a,next.b));$("A").value=next.a;$("B").value=next.b;$("Q").value=next.cue||"";
+      log(`──── Autonomous run ${n}: ${next.a} × ${next.b} ────`,"ok");
+      try{const r=await execRun(next.a,next.b,next.cue||"","discovery",share,{autonomous:true,autonomous_run:n,autonomous_queue_size:pool.length,autonomous_seeded_from:next.from});
+        lastR=r;ran.push(r.libId);fails=0;lastErr=false;collect(r.syn,next.a+" × "+next.b);
+        log(`Run ${n} complete. ${pool.length} unexplored pair(s) queued.`,"ok")}
+      catch(e){if(e.name==="AbortError")break;fails++;lastErr=true;log(`Run ${n} skipped: ${friendly(e)}`,"e");if(fails>=3){log("Stopping after 3 failed runs in a row.","e");break}}
+      if(!pool.length){log(lastErr?"No new concept pairs are queued. Autonomous mode finished.":"No new concept pairs were suggested. Autonomous mode finished.","ok");break}
+      next=pool.splice(Math.random()*pool.length|0,1)[0];next.cue="";log(`Random pick from ${pool.length+1} queued pair(s): ${next.a} × ${next.b}${next.from?" (suggested by "+next.from+")":""}`)}
+  }finally{clearInterval(timer);const stopped=abortC&&abortC.signal.aborted;abortC=null;TR=null;
+    term.querySelectorAll(".cur").forEach(x=>x.classList.remove("cur"));log(`${stopped?"Autonomous mode stopped":"Autonomous mode ended"}: ${ran.length} run(s) saved to your library.`,stopped?"e":"ok");
+    const box=$("runErr");box.className="notice good";box.replaceChildren(h("div",null,`${ran.length} run(s) completed and saved to your library.`),h("div",{class:"acts",style:"margin-top:10px"},
+      ran.length?h("button",{class:"btn solid",type:"button",onclick:()=>openBook(ran,`Autonomous session: ${A} × ${B}`)},"Open session as a book"):"",
+      lastR?h("button",{class:"btn",type:"button",onclick:()=>{lastResult=lastR;render(lastR);setDig(lastR);show("result")}},"Open last result"):"",
+      lastR?h("button",{class:"btn",type:"button",onclick:()=>exportAs("trace")},"Download last trace"):"",
+      h("button",{class:"btn",type:"button",onclick:()=>{renderLib();show("lib")}},"Library"),h("button",{class:"btn",type:"button",onclick:()=>show("home")},"Back to search")));box.hidden=false}}
+$("form").onsubmit=e=>{e.preventDefault();go($("A").value.trim(),$("B").value.trim())};
+$("expT").onclick=()=>exportAs("trace");$("expJ").onclick=()=>exportAs("json");$("expL").onclick=()=>exportAs("jsonl");
+$("libB").onclick=()=>{if(!abortC){libFilter="";renderLib();show("lib")}};$("libBack").onclick=()=>show("home");$("libClear").onclick=()=>{if(confirm("Delete all saved runs?")){libSave([]);renderLib()}};
+document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{curMode=b.dataset.m;document.querySelectorAll("#modeSeg button").forEach(x=>x.setAttribute("aria-selected",String(x===b)));$("B").required=curMode!=="review";$("autoNote").hidden=curMode!=="autonomous";$("goBtn").textContent=curMode==="discovery"?T("go"):curMode==="autonomous"?"Start Autonomous Mode":"Run Literature Review"});
+$("libProj").onchange=()=>{libProjF=$("libProj").value;libFilter="";renderLib()};
+const libIds=()=>libSel.size?[...libSel]:libShown().map(x=>x.id);
+const libApply=fn=>{if(!libSel.size){showE($("libMsg"),"Select one or more runs first.");return}const lib=libLoad();lib.forEach(x=>{if(libSel.has(x.id))fn(x)});libSave(lib);showE($("libMsg"),"");renderLib()};
+$("libSelAll").onclick=()=>{const sh=libShown();if(sh.every(x=>libSel.has(x.id)))libSel.clear();else sh.forEach(x=>libSel.add(x.id));renderLib()};
+$("libExp").onclick=()=>{const ids=new Set(libIds()),recs=libLoad().filter(x=>ids.has(x.id));if(!recs.length)return;dl(`pathmap-alchemy-dataset-${recs.length}-runs.jsonl`,datasetRows(recs).map(r=>JSON.stringify(r)).join("\n")+"\n","application/x-ndjson")};
+$("libDel").onclick=()=>{if(!libSel.size||!confirm(`Delete ${libSel.size} selected run(s)?`))return;libSave(libLoad().filter(x=>!libSel.has(x.id)));libSel.clear();renderLib()};
+$("libNewP").onclick=()=>{const n=(prompt("New project name")||"").trim();if(!n)return;localStorage.setItem("pma_projects",JSON.stringify([...new Set([...projStore(),n])]));if(libSel.size)libApply(x=>{x.projects=[...new Set([...(x.projects||[]),n])]});libProjF=n;renderLib()};
+$("libToP").onclick=()=>{const n=(prompt("Add the selected runs to which project? (a new name creates the project)",libProjF||"")||"").trim();if(!n)return;localStorage.setItem("pma_projects",JSON.stringify([...new Set([...projStore(),n])]));libApply(x=>{x.projects=[...new Set([...(x.projects||[]),n])]})};
+$("libFromP").onclick=()=>{if(!libProjF){showE($("libMsg"),"Pick a project in the filter first.");return}libApply(x=>{x.projects=(x.projects||[]).filter(n=>n!==libProjF)})};
+$("libBook").onclick=()=>openBook(libIds(),libProjF||"Selected runs");
+$("libImp").onchange=e=>{importFiles([...e.target.files]);e.target.value=""};
+$("shareReset").onclick=()=>{localStorage.removeItem("pma_share");$("shareReset").textContent="Sharing choice reset"};
+$("libGraph").onclick=()=>openGraph(libIds());
+$("libCypher").onclick=()=>{const ids=new Set(libIds()),recs=libLoad().filter(x=>ids.has(x.id));if(!recs.length)return;dl("pathmap-alchemy-graph.cypher",cypherOf(graphOf(recs)),"text/plain")};
+$("gBack").onclick=()=>{renderLib();show("lib")};
+$("gCypher").onclick=()=>{if(GV.g)dl("pathmap-alchemy-graph.cypher",cypherOf(GV.g),"text/plain")};
+$("gPath").onclick=()=>{const a=$("gFrom").value,b=$("gTo").value;if(!a||!b||!GV.g)return;GV.path=pathBetween(GV.g,a,b);renderGraph();const q=GV.path;$("gPathOut").textContent=q?`${q.edges.length} hop(s): `+q.nodes.map(id=>(GV.g.nodes.find(n=>n.id===id)||{}).name).join(" → "):"No connection between those two nodes in this graph."};
+$("cancel").onclick=()=>abortC&&abortC.abort();
+$("again").onclick=()=>show("home");$("brand").onclick=e=>{e.preventDefault();if(!abortC)show("home")};
+$("pdf").onclick=()=>{const dd=[...document.querySelectorAll("#paper details")],was=dd.map(d=>d.open);dd.forEach(d=>d.open=true);window.addEventListener("afterprint",()=>dd.forEach((d,i)=>d.open=was[i]),{once:true});const o=document.title;document.title=`PathMap Alchemy - ${$("A").value} x ${$("B").value}`;window.print();document.title=o};
+function openSet(){fillForm();showE($("setErr"),"");$("setD").showModal()}
+$("gearB").onclick=openSet;$("setX").onclick=()=>$("setD").close();$("aboutB").onclick=()=>$("abD").showModal();$("abX").onclick=()=>$("abD").close();
+$("dlAppB").onclick=downloadApp;
+const menuDl=$("dlAppMenuB");if(menuDl)menuDl.onclick=downloadApp;
+const resDl=$("dlAppResB");if(resDl)resDl.onclick=downloadApp;
+const abDl=$("dlAppAbB");if(abDl)abDl.onclick=downloadApp;
+$("setF").onsubmit=e=>{e.preventDefault();saveConnect()};
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>pick(b.dataset.p));
+document.querySelectorAll("[data-u]").forEach(b=>b.onclick=()=>$("uL").value=b.dataset.u);
+
+/* ===== Suggest for me: one food + pathology pair from pathmap.org (fills the fields; the user still presses the run button) ===== */
+const SUGGEST_URL="https://pathmap.org/alchemy/getpair.php";
+$("sugB").onclick=async()=>{const b=$("sugB"),lab=b.querySelector("span");showE($("homeErr"),"");b.disabled=true;lab.textContent="Finding a pair...";
+  try{const r=await fetch(SUGGEST_URL+"?t="+Date.now(),{cache:"no-store",signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error("HTTP "+r.status);
+    const j=await r.json(),pick=(v)=>typeof v==="string"?v.replace(/[\u0000-\u001f]/g," ").trim().slice(0,120):"";
+    let a=pick(j.pair_item_nutrition),c=pick(j.pair_item_pathology);
+    if(!a||!c){const v=Object.values(j||{}).filter(x=>typeof x==="string");a=a||pick(v[0]);c=c||pick(v[1])}
+    if(!a||!c)throw new Error("unexpected response");
+    $("A").value=a;$("B").value=c;$("A").dispatchEvent(new Event("input",{bubbles:true}));$("B").dispatchEvent(new Event("input",{bubbles:true}));
+    showE($("homeErr"),"");$("goBtn").scrollIntoView({behavior:"smooth",block:"center"})}
+  catch(e){showE($("homeErr"),"Could not get a suggestion from pathmap.org ("+(e.name==="TimeoutError"?"timed out":e.message)+"). Check your connection and try again; type your own concepts in the meantime.")}
+  finally{b.disabled=false;lab.textContent="Suggest for me"}};
+
+/* ===== Zoom (menu +/-), remembered on this device ===== */
+/* Default zoom is 130%. A new storage key is used so the 100% an older build auto-saved on every load is ignored; only deliberate +/- taps are remembered. */
+const ZOOM_DEFAULT=130;let zoomPct=ZOOM_DEFAULT;try{zoomPct=+localStorage.getItem("pma_zoom2")||ZOOM_DEFAULT}catch(e){}
+function setZoom(p,save=true){zoomPct=Math.max(80,Math.min(200,Math.round(p/10)*10));document.documentElement.style.zoom=zoomPct/100;document.documentElement.style.setProperty("--z",String(zoomPct/100));$("zoomV").textContent=zoomPct+"%";if(save)try{localStorage.setItem("pma_zoom2",String(zoomPct))}catch(e){}}
+$("zIn").onclick=()=>setZoom(zoomPct+10);$("zOut").onclick=()=>setZoom(zoomPct-10);$("zoomV").onclick=()=>{setZoom(ZOOM_DEFAULT);try{localStorage.removeItem("pma_zoom2")}catch(e){}};setZoom(zoomPct,false);
+/* ===== Guide (static text only) ===== */
+const GI={gear:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+ dl:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+ lib:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h12"/></svg>',
+ help:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6"/></svg>'};
+const gc=(ic,t,w,wh,y)=>`<div class="gcard"><div class="gico" aria-hidden="true">${ic}</div><div><h4>${t}</h4><div class="row"><b>What</b>${w}</div><div class="row"><b>When</b>${wh}</div><div class="row"><b>Why</b>${y}</div></div></div>`;
+const GUIDE=`
+<p>PathMap Alchemy searches PubMed for the <strong>hidden link between two ideas</strong> and checks every quote against the real abstracts. It runs entirely in your browser. This guide covers every button and what to use it for.</p>
+<div class="gtoc" id="gtoc"><button data-g="g-start">Quick start</button><button data-g="g-menu">Top menu</button><button data-g="g-modes">Modes</button><button data-g="g-run">While it runs</button><button data-g="g-report">Reading the report</button><button data-g="g-bar">Report buttons</button><button data-g="g-lib">My Library</button><button data-g="g-set">Settings</button><button data-g="g-share">Sharing</button><button data-g="g-tips">Tips</button></div>
+
+<h3 id="g-start">Quick start</h3>
+<div class="gstep"><i>1</i><div><strong>Connect a model.</strong> Tap the ${GI.gear.replace(/width="20" height="20"/,'width="16" height="16"')} gear, choose Gemini, Localhost or OpenRouter, paste a key if needed, and press Save. The top pill turns green when it works.</div></div>
+<div class="gstep"><i>2</i><div><strong>Pick a mode</strong> (Discovery, Literature review or Autonomous) and type your concepts. A question is optional.</div></div>
+<div class="gstep"><i>3</i><div><strong>Press the big green button</strong> and watch the log. A run usually takes a few minutes.</div></div>
+<div class="gstep"><i>4</i><div><strong>Read the report</strong>, then download it as PDF, check it with Dig Deeper, or run a suggested follow-up.</div></div>
+<div class="gstep"><i>5</i><div><strong>Find it again later</strong> in My Library. Every finished run is saved automatically on this device.</div></div>
+
+<h3 id="g-menu">Top menu</h3>
+${gc('🌐','Language','Changes the page language and the language the AI writes the report in (English, Español, Français, Deutsch).','You would rather read results in another language.','The quotes stay in the original English of the abstracts so they remain verifiable.')}
+${gc('<span style="color:var(--em)">●</span>','Connection pill','Shows the model and provider when connected, or "Not connected".','Check it before starting a run.','If it is grey, runs cannot start. Tap the gear to connect.')}
+${gc('+ −','Zoom','The + and − buttons make the whole page larger or smaller (80% to 200%). Tap the percentage to reset to the default, 130%.','Text is hard to read on a phone or small screen.','Your choice is remembered on this device. PDFs always print at normal size.')}
+${gc(GI.help,'Guide','Opens this help window. Close it with the ✕ button, the Esc key, or by tapping outside.','Any time you forget what a button does.','Everything in one place, with the icons you see in the app.')}
+${gc(GI.dl,'Download (button and icon)','Saves the entire app as one HTML file (pathmap-alchemy.html).','You want an offline copy, or to run it with a local model like Ollama.','No server needed. The file is the whole app.')}
+${gc(GI.lib,'My Library','Opens every run you have saved.','You want to reopen, compare, export or organise past results.','Your discoveries build up into a searchable, linked collection.')}
+${gc(GI.help.replace('20','20'),'? About','Explains what the app is, how it handles your data, and lets you reset your sharing choice.','You want the privacy details or to re-download the app.','Transparency about what stays on your device.')}
+${gc(GI.gear,'Settings (gear)','Choose the AI provider, paste a key, pick the model, and switch the Gemma 16-abstract limit on or off.','First use, or when you change model or provider.','Alchemy works with free Gemini keys and with open-weight models on your own computer.')}
+
+<h3 id="g-modes">Choose a mode</h3>
+${gc('🔗','Discovery','Finds ONE hidden A → B → C link: two concepts that never appear together, joined by a shared middle term (the bridge). Every claim is backed by exact quotes.','You have two ideas that might be connected in a way nobody wrote down, for example a food and a disease.','This is the Swanson literature-based discovery method. Alchemy is allowed to report that nothing is there.')}
+${gc('📚','Literature review','Summarises what PubMed says about one topic (a second concept is optional): themes, contradictions, evidence gaps, and suggested studies.','You want the state of the evidence rather than a new idea.','Fast, quote-backed grounding in a topic before you go deeper.')}
+${gc('♾️','Autonomous','Runs your seed as a Discovery, then automatically picks a random unexplored follow-up pair from all suggestions so far, runs it, and repeats. It never repeats a pair (including pairs already in your library).','You want to explore a whole territory hands-off, for example overnight.','It stops when there are no new pairs left, after 3 failures in a row, or when you press Cancel run. Each run is saved, and at the end you can open the whole session as a book.')}
+${gc('✨','Suggest for me','Fetches a random food and health-condition pair from pathmap.org and fills Concept A and Concept B for you. You still press the run button yourself.','You are not sure what to explore, or want a fresh idea.','Quick way to try the app. Press it again for a different pair, or edit the fields before running.')}
+${gc('💬','Question / cue (optional)','A sentence that steers the AI, for example "Could steam from cooking reach the brain?"','You have a specific question in mind.','The report includes an "Answer to your question" section that answers it directly from the evidence.')}
+
+<h3 id="g-run">While it runs</h3>
+${gc('🖥️','Thoughts log and timer','A live log of every step: query writing, PubMed search, quote checking, PubChem lookups, audits.','Watch it if you are curious, or ignore it.','Nothing is hidden. If a step fails the log says why.')}
+${gc('⛔','Cancel run','Stops the current run (or the whole autonomous session).','It is taking too long or you typed the wrong concepts.','Finished runs stay saved. Only the run in progress is lost.')}
+${gc('🔁','Retries and audits','You may see "attempt 2" or a "Restart". The app re-checks quotes and claims and tries again until they hold up.','It happens automatically.','This is how it avoids invented citations. A few retries are normal.')}
+
+<h3 id="g-report">Reading the report</h3>
+${gc('🕸️','Knowledge graph','A map at the top of the report linking this run to its concepts, bridge, molecules, MeSH tags and cited papers.','Look at it first for the big picture.','Shows at a glance what connects to what. It prints in the PDF.')}
+${gc('✅','Veridicality banner','A green or red box with a Grounding Score from the strict audit.','Check it before trusting anything.','Red means treat the claims as unverified. Use "Run again".')}
+${gc('🍗','Validated quotes','Exact sentences copied from PubMed abstracts and matched by code, not typed by the AI. Each has its own emoji.','Use them to verify any claim yourself.','The same emoji marks the same quote everywhere in the report, so you can trace claims back easily.')}
+${gc('🔎','Clickable PMIDs','Every PMID opens that paper on PubMed in a new tab.','You want to read the original abstract.','Never trust a summary without checking the source.')}
+${gc('🧭','Novelty probe','PubMed counts for A + bridge, bridge + C, A + C, and all three together.','Judging whether the link is really new.','The first two should be above 0 (that is the bridge). If A + C is above 0 the link may already be published.')}
+${gc('🧪','Molecule cards','Chemicals, nutrients and toxins in the discovery, with PubChem data (CID link), PUG View facts, taxonomy and PubMed context counts.','You want the chemistry behind the idea.','Properties like size, charge and lipophilicity can support or weaken a hypothesis. Plants and proteins may show "no PubChem record", which is normal.')}
+${gc('💡','Follow-up ideas','AI-suggested next searches with a "Run this experiment" button.','You want to keep exploring from this result.','Discovery chains naturally: one result suggests the next question.')}
+${gc('📐','Figures and tag cloud','Diagrams drawn by code from the verified data, with Download SVG buttons, plus a cloud of key terms.','You need figures for a talk or paper.','Identical every time because no AI draws them.')}
+
+<h3 id="g-bar">Buttons above the report</h3>
+${gc('⬅','New synthesis','Returns to the home screen.','Start another search.','Your finished run is already saved.')}
+${gc('📄','Download Synthesis as PDF','Opens your browser print dialog. Choose "Save as PDF".','You want to share or archive the report.','Includes the graph, quotes and figures.')}
+${gc('🔍','Dig Deeper with Google / ChatGPT','Opens Google or ChatGPT with a ready-made question about the hypothesis.','You want an independent second opinion on whether it is real and new.','Alchemy generates hypotheses, not facts. A separate check is good practice.')}
+${gc('🧾','Download full trace','A complete JSONL record of the run: every prompt, AI reply, PubMed and PubChem request, build metadata and build log.','You need to audit or debug a run, or keep proof of provenance.','Full reproducibility. Your API key is never included.')}
+${gc('{ }','Download JSON / JSONL','The structured result: write-up, quotes, molecules, abstracts.','You want to analyse results in a spreadsheet, notebook or database.','Open data you can reuse anywhere.')}
+${gc(GI.dl,'Download App (.html)','Saves a copy of the app itself.','You want a portable copy.','Same as the header download button.')}
+
+<h3 id="g-lib">My Library</h3>
+<p>Every finished run is saved automatically in this browser (up to 200). Open it with the ${GI.lib.replace(/width="20" height="20"/,'width="15" height="15" style="vertical-align:-2px"')} <strong>My Library</strong> button.</p>
+${gc('🗂️','Projects','Create a project, add selected runs to it, or filter the list by project.','You are working on several topics at once.','Keeps related runs together and makes books and graphs focused.')}
+${gc('☑️','Select, delete, export','Select all or some runs, then export them as JSONL or delete them. Clear library removes everything.','Backups, sharing datasets, tidying up.','Browser storage can be cleared by your browser. Export anything you care about.')}
+${gc('📖','Open as book','Combines the selected runs into one document with a table of contents and a project knowledge graph.','You want one PDF for a whole project.','Turns many runs into a single readable report.')}
+${gc('🕸️','Graph view and Export Cypher','An interactive graph of runs, concepts, molecules, MeSH tags and papers, with a shortest-path finder. Cypher export is for Neo4j 5.','Find shared molecules or surprising paths between runs.','Reveals connections no single run shows.')}
+${gc('⬆','Import','Load a saved trace, JSON or dataset file back into your library.','Moving to a new device or restoring a backup.','Your work is portable.')}
+${gc('🏷️','Molecule and MeSH chips','Click one to list every run that shares it.','Looking for everything you have found about one compound or topic.','Fast cross-referencing.')}
+
+<h3 id="g-set">Settings details</h3>
+${gc('☁️','Gemini API','Paste a free key from Google AI Studio and pick a model (Gemma 4 is open-weight).','Easiest way to start.','Free tier is enough for many runs.')}
+${gc('💻','Localhost','Point to Ollama or LM Studio on your own computer. Start Ollama with OLLAMA_ORIGINS=* so the browser may call it.','You want privacy, no limits, or offline use.','Nothing leaves your machine except PubMed and PubChem lookups.')}
+${gc('🔀','OpenRouter','Paste an OpenRouter key and a model name.','You want a different or paid model.','Wide choice of models with one key.')}
+${gc('🔒','Your API key','The key stays in memory for this tab only. It is never saved, shared or put in traces, and it is sent only to the provider you chose.','Reloading the page clears it, so paste it again.','Safe on shared computers.')}
+${gc('✂️','Gemma 16-abstract limit','Switch that limits Gemma models to a random sample of 16 abstracts per prompt.','Keep it ON for small context windows. Turn it OFF for localhost or paid models with large context.','More abstracts can give richer results when the model can handle them.')}
+
+<h3 id="g-share">Sharing (optional)</h3>
+${gc('🌍','Share with the global library','Before a run you are asked whether to share the finished result with the PathMap research library. Choose Keep private to share nothing.','If you want your discoveries to contribute to open research.','Shared data: concepts, write-up, quotes, molecules, model name, app version and the run trace. Never your API key. Use "Learn more" in the dialog for details, and reset your choice from the ? About window.')}
+
+<h3 id="g-tips">Tips and troubleshooting</h3>
+${gc('🍗','Ambiguous words','Words with two meanings are read as food first, so "turkey" means the meat, not the country.','Add detail if you mean something else, such as "Turkish population".','Gets you better search results.')}
+${gc('🎯','Better concepts','Specific beats general: name a mechanism, compound or condition rather than a whole field.','Results feel vague or "no overlapping evidence".','Specific terms retrieve more relevant abstracts.')}
+${gc('⚠️','Common messages','"Could not reach the server" usually means a local endpoint or CORS problem. "Rate limit" means wait a minute or switch model. "Domains differ from your input" means the data supported a different link than you asked for.','Something stops or looks odd.','All results are hypotheses from AI reading abstracts. They are not medical advice and are not peer reviewed.')}
+`;
+function openGuide(){const b=$("guideBody");if(!b.dataset.ready){b.innerHTML=GUIDE;b.dataset.ready="1";b.querySelectorAll("#gtoc button").forEach(x=>x.onclick=()=>{const t=b.querySelector("#"+x.dataset.g);t&&t.scrollIntoView({behavior:"smooth",block:"start"})})}
+  $("guideD").showModal();b.scrollTop=0}
+["setD","abD"].forEach(id=>{const d=$(id),x=document.createElement("button");x.type="button";x.className="dx";x.textContent="✕";x.setAttribute("aria-label","Close");x.title="Close";x.onclick=()=>d.close();d.prepend(x)});
+$("guideB").onclick=openGuide;$("guideX").onclick=()=>$("guideD").close();
+$("guideD").addEventListener("click",e=>{if(e.target===$("guideD"))$("guideD").close()});
+applyLang();setPill();
+if(cfg&&(cfg.provider==="local"||cfg.key)){ai("Reply with exactly: OK",null,AbortSignal.timeout(30000),cfg).then(()=>{connected=true;setPill()}).catch(()=>{});} /* silent re-check of saved connection */
+</script>
+</body>
+</html>

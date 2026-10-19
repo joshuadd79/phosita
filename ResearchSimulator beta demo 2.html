@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BioArcade: Research Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style id="game-css">
+
+
+        html, body { height: 100%; margin: 0; }
+        body { background-color: #030d07; color: #f0fdf4; overflow: hidden; touch-action: manipulation; font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+        .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace; }
+        #root { height: 100%; }
+        .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .toast-enter { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes pop { 0% { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+        .tile-pop { animation: pop 0.22s ease-out; }
+        @keyframes eq { 0%,100% { height: 20%; } 50% { height: 100%; } }
+        .eq-bar { width: 3px; background: #34d399; border-radius: 1px; animation: eq 0.7s ease-in-out infinite; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .app-bg { background: radial-gradient(ellipse at 50% 0%, #0b2416 0%, #04110a 55%, #020a05 100%); }
+        .panel { background: rgba(2, 10, 6, 0.98); }
+        input[type=range] { accent-color: #10b981; width: 100%; }
+
+        /* Arcade Tiles */
+        .tile-red { background: linear-gradient(135deg, #f87171, #dc2626); border-bottom-color: #991b1b; color: white; }
+        .tile-yellow { background: linear-gradient(135deg, #fde047, #d97706); border-bottom-color: #b45309; color: #111; }
+        .tile-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); border-bottom-color: #1e3a8a; color: white; }
+        .tile-orange { background: linear-gradient(135deg, #fb923c, #ea580c); border-bottom-color: #9a3412; color: white; }
+        .tile-green { background: linear-gradient(135deg, #4ade80, #16a34a); border-bottom-color: #14532d; color: white; }
+        .tile-purple { background: linear-gradient(135deg, #c084fc, #9333ea); border-bottom-color: #581c87; color: white; }
+        .tile-grey { background: linear-gradient(135deg, #9ca3af, #4b5563); border-bottom-color: #1f2937; color: white; }
+
+
+        /* ---- Text size scale (Setup > Text Size): Small = old Extra Large, then +2px per step ---- */
+        .ts-small .text-\[9px\] { font-size: 13px !important; line-height: 1.35 !important; }
+        .ts-small .text-\[10px\] { font-size: 14px !important; line-height: 1.35 !important; }
+        .ts-small .text-\[11px\] { font-size: 15px !important; line-height: 1.35 !important; }
+        .ts-small .text-xs { font-size: 15px !important; line-height: 1.35 !important; }
+        .ts-small .text-sm { font-size: 17px !important; line-height: 1.35 !important; }
+        .ts-small .text-base { font-size: 18px !important; line-height: 1.35 !important; }
+        .ts-small .text-lg { font-size: 20px !important; line-height: 1.35 !important; }
+        .ts-small .text-xl { font-size: 23px !important; line-height: 1.35 !important; }
+        .ts-small .text-2xl { font-size: 26px !important; line-height: 1.35 !important; }
+        .ts-small .text-3xl { font-size: 32px !important; line-height: 1.35 !important; }
+        .ts-small .text-4xl { font-size: 38px !important; line-height: 1.35 !important; }
+        .ts-medium .text-\[9px\] { font-size: 15px !important; line-height: 1.35 !important; }
+        .ts-medium .text-\[10px\] { font-size: 16px !important; line-height: 1.35 !important; }
+        .ts-medium .text-\[11px\] { font-size: 17px !important; line-height: 1.35 !important; }
+        .ts-medium .text-xs { font-size: 17px !important; line-height: 1.35 !important; }
+        .ts-medium .text-sm { font-size: 19px !important; line-height: 1.35 !important; }
+        .ts-medium .text-base { font-size: 20px !important; line-height: 1.35 !important; }
+        .ts-medium .text-lg { font-size: 22px !important; line-height: 1.35 !important; }
+        .ts-medium .text-xl { font-size: 25px !important; line-height: 1.35 !important; }
+        .ts-medium .text-2xl { font-size: 28px !important; line-height: 1.35 !important; }
+        .ts-medium .text-3xl { font-size: 34px !important; line-height: 1.35 !important; }
+        .ts-medium .text-4xl { font-size: 40px !important; line-height: 1.35 !important; }
+        .ts-large .text-\[9px\] { font-size: 17px !important; line-height: 1.35 !important; }
+        .ts-large .text-\[10px\] { font-size: 18px !important; line-height: 1.35 !important; }
+        .ts-large .text-\[11px\] { font-size: 19px !important; line-height: 1.35 !important; }
+        .ts-large .text-xs { font-size: 19px !important; line-height: 1.35 !important; }
+        .ts-large .text-sm { font-size: 21px !important; line-height: 1.35 !important; }
+        .ts-large .text-base { font-size: 22px !important; line-height: 1.35 !important; }
+        .ts-large .text-lg { font-size: 24px !important; line-height: 1.35 !important; }
+        .ts-large .text-xl { font-size: 27px !important; line-height: 1.35 !important; }
+        .ts-large .text-2xl { font-size: 30px !important; line-height: 1.35 !important; }
+        .ts-large .text-3xl { font-size: 36px !important; line-height: 1.35 !important; }
+        .ts-large .text-4xl { font-size: 42px !important; line-height: 1.35 !important; }
+        .ts-xl .text-\[9px\] { font-size: 19px !important; line-height: 1.35 !important; }
+        .ts-xl .text-\[10px\] { font-size: 20px !important; line-height: 1.35 !important; }
+        .ts-xl .text-\[11px\] { font-size: 21px !important; line-height: 1.35 !important; }
+        .ts-xl .text-xs { font-size: 21px !important; line-height: 1.35 !important; }
+        .ts-xl .text-sm { font-size: 23px !important; line-height: 1.35 !important; }
+        .ts-xl .text-base { font-size: 24px !important; line-height: 1.35 !important; }
+        .ts-xl .text-lg { font-size: 26px !important; line-height: 1.35 !important; }
+        .ts-xl .text-xl { font-size: 29px !important; line-height: 1.35 !important; }
+        .ts-xl .text-2xl { font-size: 32px !important; line-height: 1.35 !important; }
+        .ts-xl .text-3xl { font-size: 38px !important; line-height: 1.35 !important; }
+        .ts-xl .text-4xl { font-size: 44px !important; line-height: 1.35 !important; }
+        .ts-medium .tracking-widest, .ts-large .tracking-widest, .ts-xl .tracking-widest { letter-spacing: .06em !important; }
+        .ts-medium .tracking-wider, .ts-large .tracking-wider, .ts-xl .tracking-wider { letter-spacing: .03em !important; }
+        /* higher contrast for secondary text */
+        .text-gray-500, .text-zinc-500 { color: #b4bdca !important; }
+        .text-gray-400, .text-zinc-400 { color: #d3dae4 !important; }
+        .text-emerald-700, .text-emerald-600 { color: #6ee7b7 !important; }
+        /* bottom menu + header buttons scale with the text size */
+        .nav-btn { font-size: 12px; line-height: 1.1; letter-spacing: .02em; flex-direction: column !important; gap: 2px !important; min-height: 58px; }
+        .nav-btn > span { font-size: 20px; line-height: 1; }
+        .ts-medium .nav-btn { font-size: 13px; } .ts-medium .nav-btn > span { font-size: 22px; }
+        .ts-large .nav-btn { font-size: 14px; } .ts-large .nav-btn > span { font-size: 24px; }
+        .ts-xl .nav-btn { font-size: 15px; } .ts-xl .nav-btn > span { font-size: 26px; }
+        .icon-btn { width: 44px !important; height: 44px !important; }
+        .ts-medium .icon-btn { width: 48px !important; height: 48px !important; }
+        .ts-large .icon-btn { width: 52px !important; height: 52px !important; }
+        .ts-xl .icon-btn { width: 56px !important; height: 56px !important; }
+        input[type=range] { height: 36px; }
+
+        /* ---- Arcade FX ---- */
+        @keyframes tileDrop { 0% { transform: translateY(-180%) scale(.85); opacity: 0; } 55% { transform: translateY(8%) scale(1.04); opacity: 1; } 78% { transform: translateY(-3%) scale(.99); } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        .tile-drop { animation: tileDrop .38s cubic-bezier(.3,.9,.4,1) backwards; }
+        @keyframes tileForge { 0% { transform: scale(.1) rotate(-200deg); filter: brightness(3); } 60% { transform: scale(1.4) rotate(10deg); filter: brightness(1.8); } 100% { transform: scale(1) rotate(0); filter: none; } }
+        .tile-forge { animation: tileForge .5s cubic-bezier(.2,.9,.3,1.2) backwards; }
+        @keyframes glowPulse { 0%,100% { filter: drop-shadow(0 0 3px rgba(253,224,71,.55)); } 50% { filter: drop-shadow(0 0 10px rgba(253,224,71,1)); } }
+        .special-glow { animation: glowPulse 1.4s ease-in-out infinite; }
+        @keyframes ghostOut { 0% { transform: scale(1); opacity: 1; filter: brightness(1); } 30% { transform: scale(1.22); opacity: 1; filter: brightness(2.4); } 100% { transform: scale(0) rotate(30deg); opacity: 0; } }
+        @keyframes ghostMerge { 0% { transform: translate(0,0) scale(1); opacity: 1; filter: brightness(1.4); } 100% { transform: translate(var(--mx), var(--my)) scale(.25); opacity: .1; filter: brightness(2.5); } }
+        @keyframes part { 0% { transform: translate(0,0) scale(1.2); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
+        @keyframes ring { 0% { transform: scale(.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        @keyframes beam { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes moveY { 0% { transform: translateY(0); opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(var(--dist)); opacity: 0; } }
+        @keyframes moveX { 0% { transform: translateX(0); opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(var(--dist)); opacity: 0; } }
+        @keyframes numFly { 0% { transform: translate(0,6px) scale(.4); opacity: 0; } 15% { transform: translate(0,0) scale(1.3); opacity: 1; } 100% { transform: translate(var(--drift), calc(var(--rise) * -1)) scale(.9); opacity: 0; } }
+        @keyframes floatText { 0% { transform: translateY(8px) scale(.5); opacity: 0; } 20% { transform: translateY(0) scale(1.15); opacity: 1; } 70% { transform: translateY(-14px) scale(1); opacity: 1; } 100% { transform: translateY(-34px) scale(.9); opacity: 0; } }
+        @keyframes heartFloat { 0% { transform: translate(0,0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(var(--drift), -80px) scale(1.3); opacity: 0; } }
+        @keyframes hammerSwing { 0% { transform: translate(-30%,-60%) rotate(-80deg) scale(1.2); opacity: 0; } 35% { transform: translate(0,-10%) rotate(30deg) scale(1.9); opacity: 1; } 100% { transform: translate(0,0) rotate(30deg) scale(.2); opacity: 0; } }
+        @keyframes blast3 { 0% { transform: scale(.4); opacity: 1; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
+        @keyframes boom { 0% { transform: translate(-50%,-50%) scale(.2); opacity: 1; } 60% { transform: translate(-50%,-50%) scale(1.3); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1.8); opacity: 0; } }
+        @keyframes flash { from { opacity: var(--a); } to { opacity: 0; } }
+        @keyframes spark { 0%,100% { transform: scale(.6) rotate(0); opacity: .9; } 50% { transform: scale(1.4) rotate(25deg); opacity: 1; } }
+        @keyframes linkPulse { 0% { transform: scaleX(0); opacity: 1; } 40% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+        @keyframes shakeA { 0%,100% { transform: translate(0,0); } 15% { transform: translate(calc(-4px * var(--k,1)), calc(2px * var(--k,1))); } 30% { transform: translate(calc(4px * var(--k,1)), calc(-3px * var(--k,1))); } 45% { transform: translate(calc(-3px * var(--k,1)), calc(-2px * var(--k,1))); } 60% { transform: translate(calc(3px * var(--k,1)), calc(3px * var(--k,1))); } 80% { transform: translate(calc(-1px * var(--k,1)), calc(1px * var(--k,1))); } }
+        @keyframes shakeB { 0%,100% { transform: translate(0,0); } 15% { transform: translate(calc(-4px * var(--k,1)), calc(2px * var(--k,1))); } 30% { transform: translate(calc(4px * var(--k,1)), calc(-3px * var(--k,1))); } 45% { transform: translate(calc(-3px * var(--k,1)), calc(-2px * var(--k,1))); } 60% { transform: translate(calc(3px * var(--k,1)), calc(3px * var(--k,1))); } 80% { transform: translate(calc(-1px * var(--k,1)), calc(1px * var(--k,1))); } }
+        @media (prefers-reduced-motion: reduce) { .fx-layer { display: none; } .tile-drop, .tile-forge, .special-glow { animation: none !important; } }
+    
+    
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel" id="game-src">
+
+
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // =========================================================================
+        // HYPOTHESIS DATA: one literature-derived hypothesis powers each run
+        // =========================================================================
+        const DEFAULT_HYPOTHESIS = {
+    "hypothesis_id": "RS_HYP_14AFC4E1",
+    "title": "Hypothesized Antioxidant Modulation of Glutaric Aciduria Type I by Apigenin from Petroselinum crispum",
+    "main_claim": "Apigenin, a flavonoid abundant in Italian parsley, may ameliorate the neurotoxic effects of glutaric aciduria type I by attenuating the cellular oxidative stress linked to glutaryl-CoA dehydrogenase deficiency.",
+    "justification": "Both domains intersect at the mechanism of oxidative stress: parsley-derived apigenin is confirmed to reduce oxidative stress, while GA1 is a disorder where oxidative stress is a key mediator of neurotoxicity following enzymatic deficiency.",
+    "swanson_triad": {
+        "origin_a": {
+            "label": "ORIGIN A",
+            "concept": "italian parsley",
+            "pmid": "41020006"
+        },
+        "bridge_b": {
+            "label": "BRIDGE B",
+            "concept": "oxidative stress",
+            "sub": "Shared intermediate"
+        },
+        "target_c": {
+            "label": "TARGET C",
+            "concept": "glutaric aciduria type i",
+            "pmid": "38822985"
+        }
+    },
+    "cited_pmids": [
+        "41020006",
+        "32180089",
+        "37685964",
+        "27482198",
+        "38822985"
+    ],
+    "global_solves": 0,
+    "game_data": {
+        "core_concepts": [
+            {
+                "id": "c1",
+                "emoji": "🧪",
+                "name": "superoxide dismutase",
+                "desc": "Protein_or_gene",
+                "pmid": "41020006",
+                "quote": "Mechanistically, HEP alleviated oxidative stress by activating Nrf2 pathway and enhancing the expression of antioxidant enzymes, such as 🧪 superoxide dismutase (SOD) and catalase (CAT).",
+                "quote_verbatim": "Mechanistically, HEP alleviated oxidative stress by activating Nrf2 pathway and enhancing the expression of antioxidant enzymes, such as superoxide dismutase (SOD) and catalase (CAT)."
+            },
+            {
+                "id": "c2",
+                "emoji": "🧫",
+                "name": "italian parsley",
+                "desc": "Origin A evidence",
+                "pmid": "32180089",
+                "quote": "🧫 The results demonstrated that pretreatment of HepG2 cells with PSA offered protective properties by lowering the LPO and ROS generation and elevating the cell viability, GSH and MMP levels.",
+                "quote_verbatim": "The results demonstrated that pretreatment of HepG2 cells with PSA offered protective properties by lowering the LPO and ROS generation and elevating the cell viability, GSH and MMP levels."
+            },
+            {
+                "id": "c3",
+                "emoji": "🧠",
+                "name": "glutaryl-CoA dehydrogenase",
+                "desc": "Protein_or_gene",
+                "pmid": "37685964",
+                "quote": "Glutaric acidemia type 1 (GA1) is a neurotoxic metabolic disorder due to 🧠 glutaryl-CoA dehydrogenase (GCDH) deficiency.",
+                "quote_verbatim": "Glutaric acidemia type 1 (GA1) is a neurotoxic metabolic disorder due to glutaryl-CoA dehydrogenase (GCDH) deficiency."
+            },
+            {
+                "id": "c4",
+                "emoji": "🩸",
+                "name": "oxidative stress",
+                "desc": "Bridge B evidence",
+                "pmid": "27482198",
+                "quote": "Most of the neuronal damage is caused by complex of biochemical reactions and substantial processes, such as protein agregation, reactions of free radicals, insufficient blood supply, glutamate excitotoxicity, and 🩸 oxidative stress.",
+                "quote_verbatim": "Most of the neuronal damage is caused by complex of biochemical reactions and substantial processes, such as protein agregation, reactions of free radicals, insufficient blood supply, glutamate excitotoxicity, and oxidative stress."
+            },
+            {
+                "id": "c5",
+                "emoji": "⚡",
+                "name": "glutaric aciduria type i",
+                "desc": "Target C evidence",
+                "pmid": "38822985",
+                "quote": "⚡ Oxidative stress, a key factor in NDDs such as Alzheimer's disease, Parkinson's disease, amyotrophic lateral sclerosis, and Huntington's disease can lead to neuronal cell death, mitochondria impairment, excitotoxicity, and Ca2+ stress.",
+                "quote_verbatim": "Oxidative stress, a key factor in NDDs such as Alzheimer's disease, Parkinson's disease, amyotrophic lateral sclerosis, and Huntington's disease can lead to neuronal cell death, mitochondria impairment, excitotoxicity, and Ca2+ stress."
+            },
+            {
+                "id": "c6",
+                "emoji": "🧊",
+                "name": "Solubility",
+                "desc": "Evidence term",
+                "pmid": "37685964",
+                "quote": "An altered oligomerization, loss of protein stability and 🧊 solubility, as well as an augmented susceptibility to aggregation were observed.",
+                "quote_verbatim": "An altered oligomerization, loss of protein stability and solubility, as well as an augmented susceptibility to aggregation were observed."
+            }
+        ],
+        "noise_concepts": [
+            "💊",
+            "🦠",
+            "🦷",
+            "🦴",
+            "🔬",
+            "🌡️",
+            "💉",
+            "🩹",
+            "🩺",
+            "⚛️",
+            "🧲",
+            "🍎",
+            "🍃",
+            "🍄",
+            "🫀",
+            "👁️",
+            "🧬",
+            "🛡️",
+            "🔥",
+            "💧"
+        ]
+    }
+};
+
+        // To plug in real PubMed-derived data, define window.BIOARCADE_HYPOTHESIS (same shape as
+        // DEFAULT_HYPOTHESIS: exactly 6 core_concepts plus a noise_concepts list) in a <script> placed
+        // before this one. If it is missing or malformed the built-in hypothesis is used.
+        const HYPOTHESIS_DATA = (() => {
+            try {
+                const o = window.BIOARCADE_HYPOTHESIS;
+                if (o && o.game_data && Array.isArray(o.game_data.core_concepts) && o.game_data.core_concepts.length === 6 &&
+                    Array.isArray(o.game_data.noise_concepts) && Array.isArray(o.cited_pmids) && o.swanson_triad) return o;
+            } catch (e) {}
+            return DEFAULT_HYPOTHESIS;
+        })();
+
+        const CORE_EMOJIS = HYPOTHESIS_DATA.game_data.core_concepts.map(c => c.emoji);
+        const COLORS = ["red", "yellow", "blue", "orange", "green", "purple"];
+        const HEART_EMOJIS = { red: "❤️", yellow: "💛", blue: "💙", orange: "🧡", green: "💚", purple: "💜" };
+        const TILE_CLASSES = { red: "tile-red", yellow: "tile-yellow", blue: "tile-blue", orange: "tile-orange", green: "tile-green", purple: "tile-purple", grey: "tile-grey" };
+        const COLOR_HEX = { red: "#ef4444", yellow: "#eab308", blue: "#3b82f6", orange: "#f97316", green: "#22c55e", purple: "#a855f7", grey: "#6b7280" };
+
+        const MODES = {
+            easy: { name: "Rookie", baseTarget: 500, clockChance: 0.04, extraCards: 0, baseRoomLvl: 1, cardBase: 5, cardStep: 1, maxInflux: 4 },
+            normal: { name: "Student", baseTarget: 1000, clockChance: 0.06, extraCards: 4, baseRoomLvl: 4, cardBase: 7, cardStep: 2, maxInflux: 5 },
+            hard: { name: "Expert", baseTarget: 1500, clockChance: 0.09, extraCards: 10, baseRoomLvl: 6, cardBase: 9, cardStep: 2, maxInflux: 6 },
+            insane: { name: "PInsane", baseTarget: 2000, clockChance: 0.12, extraCards: 20, baseRoomLvl: 8, cardBase: 12, cardStep: 3, maxInflux: 7 }
+        };
+
+        const VIEWPORTS = {
+            phone:   { label: "PHONE",   maxW: 440 },
+            tablet:  { label: "TABLET",  maxW: 720 },
+            desktop: { label: "DESKTOP", maxW: 1080 }
+        };
+        const VIEWPORT_ORDER = ["phone", "tablet", "desktop"];
+
+        // --- Safe preference storage (never crashes if storage is blocked) ---
+        const loadPref = (k, d) => { try { const v = window.localStorage.getItem('bioarcade_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+        const savePref = (k, v) => { try { window.localStorage.setItem('bioarcade_' + k, JSON.stringify(v)); } catch (e) {} };
+
+        // =========================================================================
+        // MUSIC DATA: public-domain compositions arranged as synthesized dubstep
+        // (melody tokens = NOTE:LENGTH in 16th-note steps, R = rest, 16 steps = 1 bar)
+        // =========================================================================
+        const NOTE_BASE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+        const noteToMidi = (s) => {
+            const m = /^([A-G])([#b]?)(-?\d)$/.exec(s);
+            return 12 * (parseInt(m[3], 10) + 1) + NOTE_BASE[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+        };
+        const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
+        const parseMelody = (str) => str.trim().split(/\s+/).map(t => { const p = t.split(':'); return [p[0] === 'R' ? null : p[0], parseInt(p[1], 10)]; });
+
+        const TRACK_DEFS = [
+            {
+                name: "Korobeiniki (Tetris Dubstep)", credit: "Russian folk song, public domain", bpm: 140, lead: 'square',
+                wob: [2, 3, 4, 2],
+                roots: ["A1","A1","E2","A1","D2","C2","E2","A1"],
+                melody: parseMelody(`
+                    E5:4 B4:2 C5:2 D5:4 C5:2 B4:2
+                    A4:4 A4:2 C5:2 E5:4 D5:2 C5:2
+                    B4:6 C5:2 D5:4 E5:4
+                    C5:4 A4:4 A4:8
+                    D5:6 F5:2 A5:4 G5:2 F5:2
+                    E5:6 C5:2 E5:4 D5:2 C5:2
+                    B4:4 B4:2 C5:2 D5:4 E5:4
+                    C5:4 A4:4 A4:8`)
+            },
+            {
+                name: "Ode to Joy (Drop Remix)", credit: "Beethoven, public domain", bpm: 134, lead: 'sawtooth',
+                wob: [2, 4, 3, 4],
+                roots: ["C2","G1","C2","G1","C2","G1","C2","C2"],
+                melody: parseMelody(`
+                    E5:4 E5:4 F5:4 G5:4
+                    G5:4 F5:4 E5:4 D5:4
+                    C5:4 C5:4 D5:4 E5:4
+                    E5:6 D5:2 D5:8
+                    E5:4 E5:4 F5:4 G5:4
+                    G5:4 F5:4 E5:4 D5:4
+                    C5:4 C5:4 D5:4 E5:4
+                    D5:6 C5:2 C5:8`)
+            },
+            {
+                name: "Toccata in D Minor (Bass Cathedral)", credit: "J.S. Bach, public domain", bpm: 144, lead: 'sawtooth',
+                wob: [4, 2, 3, 4],
+                roots: ["D2","D2","D2","D2","D2","Bb1","A1","D2"],
+                melody: parseMelody(`
+                    A5:2 G5:2 A5:8 R:4
+                    G5:2 F5:2 E5:2 D5:2 C#5:4 D5:4
+                    A4:2 G4:2 A4:8 R:4
+                    G4:2 F4:2 E4:2 D4:2 C#4:4 D4:4
+                    D5:2 F5:2 A5:2 F5:2 D5:2 F5:2 A5:2 F5:2
+                    Bb4:2 D5:2 F5:2 D5:2 Bb4:2 D5:2 F5:2 D5:2
+                    A4:2 C#5:2 E5:2 C#5:2 A4:2 C#5:2 E5:2 C#5:2
+                    D5:2 F5:2 A5:2 F5:2 D5:8`)
+            },
+            {
+                name: "Mountain King (Stomp Mix)", credit: "Grieg, public domain", bpm: 140, lead: 'square',
+                wob: [2, 2, 4, 3],
+                roots: ["B1","B1","B1","B1","D2","D2","D2","D2"],
+                melody: parseMelody(`
+                    B4:2 C#5:2 D5:2 E5:2 F#5:2 D5:2 F#5:4
+                    F5:2 C#5:2 F5:4 R:8
+                    B4:2 C#5:2 D5:2 E5:2 F#5:2 D5:2 F#5:4
+                    E5:2 C5:2 E5:4 R:8
+                    D5:2 E5:2 F5:2 G5:2 A5:2 F5:2 A5:4
+                    Ab5:2 E5:2 Ab5:4 R:8
+                    D5:2 E5:2 F5:2 G5:2 A5:2 F5:2 A5:4
+                    G5:2 Eb5:2 G5:4 R:8`)
+            },
+            {
+                name: "Fate Knocks (Symphony 5 Riddim)", credit: "Beethoven, public domain", bpm: 140, lead: 'sawtooth',
+                wob: [2, 4, 2, 3],
+                roots: ["C2","G1","C2","G1","Ab1","G1","C2","G1"],
+                melody: parseMelody(`
+                    G4:2 G4:2 G4:2 Eb4:10
+                    F4:2 F4:2 F4:2 D4:10
+                    G5:2 G5:2 G5:2 Eb5:10
+                    F5:2 F5:2 F5:2 D5:10
+                    Eb5:2 Eb5:2 Eb5:2 C5:10
+                    D5:2 D5:2 D5:2 B4:10
+                    G4:2 G4:2 G4:2 Eb4:10
+                    F4:2 F4:2 F4:2 D4:10`)
+            },
+            {
+                name: "Fur Elise (Glitch Hop Mix)", credit: "Beethoven, public domain", bpm: 128, lead: 'square',
+                wob: [3, 2, 4, 2],
+                roots: ["A1","A1","E2","A1","A1","E2","A1","A1"],
+                melody: parseMelody(`
+                    E5:2 D#5:2 E5:2 D#5:2 E5:2 B4:2 D5:2 C5:2
+                    A4:4 R:2 C4:2 E4:2 A4:2 B4:4
+                    R:2 E4:2 G#4:2 B4:2 C5:4 R:4
+                    R:2 E4:2 E5:2 D#5:2 E5:2 D#5:2 E5:2 B4:2
+                    D5:2 C5:2 A4:4 R:2 C4:2 E4:2 A4:2
+                    B4:4 R:2 E4:2 C5:2 B4:2 A4:4
+                    E5:2 D#5:2 E5:2 D#5:2 E5:2 B4:2 D5:2 C5:2
+                    A4:8 R:8`)
+            },
+            {
+                name: "Greensleeves (Dark Wobble)", credit: "Traditional English, public domain", bpm: 126, lead: 'sawtooth',
+                wob: [2, 3, 4, 3],
+                roots: ["A1","A1","D2","E2","A1","E2","D2","A1"],
+                melody: parseMelody(`
+                    E4:4 G4:8 A4:4
+                    B4:6 C5:2 B4:4 A4:4
+                    F#4:8 D4:4 E4:4
+                    F#4:4 G4:4 E4:8
+                    E4:6 D#4:2 E4:4 F#4:4
+                    D#4:8 B3:8
+                    A5:6 G5:2 F#5:4 E5:4
+                    B4:4 G4:4 A4:8`)
+            },
+            {
+                name: "Nachtmusik (Night Bass)", credit: "Mozart, public domain", bpm: 136, lead: 'square',
+                wob: [4, 2, 3, 2],
+                roots: ["G1","G1","D2","D2","G1","G1","D2","G1"],
+                melody: parseMelody(`
+                    G4:4 D5:4 G4:2 D5:2 G4:2 D5:2
+                    G4:2 B4:2 D5:8 R:4
+                    C5:2 R:2 A4:2 R:2 C5:2 R:2 A4:2 R:2
+                    C5:2 A4:2 F#4:2 A4:2 D5:8
+                    G4:4 D5:4 G4:2 D5:2 G4:2 D5:2
+                    G4:2 B4:2 D5:8 R:4
+                    C5:2 R:2 A4:2 R:2 C5:2 R:2 A4:2 R:2
+                    C5:2 A4:2 F#4:2 A4:2 G4:8`)
+            },
+            {
+                name: "Canon in D (Rave Cathedral)", credit: "Pachelbel, public domain", bpm: 120, lead: 'sawtooth',
+                wob: [2, 3, 2, 4],
+                roots: ["D2","A1","B1","F#1","G1","D2","G1","A1"],
+                melody: parseMelody(`
+                    F#5:4 F#5:2 A5:2 F#5:4 D5:4
+                    E5:4 E5:2 A5:2 E5:4 C#5:4
+                    D5:4 D5:2 F#5:2 D5:4 B4:4
+                    C#5:4 C#5:2 F#5:2 C#5:4 A4:4
+                    B4:4 B4:2 D5:2 G5:4 D5:4
+                    A4:4 A4:2 D5:2 F#5:4 D5:4
+                    B4:4 D5:2 G5:2 B5:4 G5:4
+                    C#5:4 E5:2 A5:2 E5:4 C#5:4`)
+            }
+        ];
+
+        const TRACKS = TRACK_DEFS.map(def => {
+            const events = {};
+            let pos = 0;
+            def.melody.forEach(([n, len]) => { if (n) events[pos] = { midi: noteToMidi(n), len }; pos += len; });
+            const bars = Math.max(1, Math.ceil(pos / 16));
+            return { ...def, events, bars, total: bars * 16, rootMidi: def.roots.map(noteToMidi) };
+        });
+
+        // =========================================================================
+        // ZERO-ASSET WEB AUDIO ENGINE: SFX + dubstep music sequencer
+        // =========================================================================
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.sfxOn = true;
+                this.musicOn = false;
+                this.musicVol = 0.6;
+                this.sfxVol = 0.8;
+                this.trackIdx = 0;
+                this.timer = null;
+                this.onTrack = null;
+                this.session = null;
+                this.track = TRACKS[0];
+                this.step = 0;
+                this.loops = 0;
+                this.nextTime = 0;
+                this.stepDur = 60 / TRACKS[0].bpm / 4;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    if (!AC) return;
+                    const ctx = new AC();
+                    this.ctx = ctx;
+                    this.comp = ctx.createDynamicsCompressor();
+                    this.comp.threshold.value = -14;
+                    this.comp.ratio.value = 6;
+                    this.master = ctx.createGain();
+                    this.master.gain.value = 0.9;
+                    this.musicBus = ctx.createGain();
+                    this.sfxBus = ctx.createGain();
+                    this.musicBus.gain.value = this.musicVol * 0.9;
+                    this.sfxBus.gain.value = this.sfxVol;
+                    this.musicBus.connect(this.comp);
+                    this.sfxBus.connect(this.comp);
+                    this.comp.connect(this.master);
+                    this.master.connect(ctx.destination);
+                    // noise buffer for drums
+                    const len = ctx.sampleRate;
+                    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+                    const d = buf.getChannelData(0);
+                    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+                    this.noiseBuf = buf;
+                    // distortion curve for gritty bass
+                    const curve = new Float32Array(1024);
+                    for (let i = 0; i < 1024; i++) { const x = i * 2 / 1023 - 1; curve[i] = Math.tanh(x * 3); }
+                    this.curve = curve;
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            setMusicVol(v) { this.musicVol = v; if (this.musicBus) this.musicBus.gain.value = v * 0.9; }
+            setSfxVol(v) { this.sfxVol = v; if (this.sfxBus) this.sfxBus.gain.value = v; }
+
+            // ---------- SFX ----------
+            playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.1) {
+                if (!this.ctx || !this.sfxOn) return;
+                try {
+                    const t = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, t);
+                    gain.gain.setValueAtTime(gainVal, t);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+                    osc.connect(gain);
+                    gain.connect(this.sfxBus);
+                    osc.start();
+                    osc.stop(t + duration);
+                } catch (e) {}
+            }
+            select() { this.init(); this.playTone(880, 'square', 0.05, 0.06); }
+            match() {
+                this.init();
+                this.playTone(523.25, 'triangle', 0.08, 0.12);
+                setTimeout(() => this.playTone(659.25, 'triangle', 0.12, 0.15), 60);
+            }
+            burst() {
+                this.init();
+                this.playTone(329.63, 'sawtooth', 0.15, 0.2);
+                setTimeout(() => this.playTone(493.88, 'sawtooth', 0.25, 0.25), 80);
+            }
+            chain() {
+                this.init();
+                [261.63, 329.63, 392.00, 523.25].forEach((f, i) => setTimeout(() => this.playTone(f, 'sine', 0.12, 0.15), i * 50));
+            }
+            calibrate() {
+                this.init();
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => setTimeout(() => this.playTone(f, 'square', 0.15, 0.1), i * 65));
+            }
+            win() {
+                this.init();
+                [440, 554.37, 659.25, 880].forEach((f, i) => setTimeout(() => this.playTone(f, 'triangle', 0.3, 0.2), i * 110));
+            }
+            gameover() {
+                this.init();
+                [440, 392, 349.23, 261.63].forEach((f, i) => setTimeout(() => this.playTone(f, 'sawtooth', 0.3, 0.18), i * 160));
+            }
+
+            // ---------- ARCADE SFX (scheduled on the audio clock) ----------
+            _go() { this.init(); return !!(this.ctx && this.sfxOn); }
+            _o(type, f0, f1, t, dur, vol) {
+                const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+                o.type = type;
+                o.frequency.setValueAtTime(f0, t);
+                if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+                g.gain.setValueAtTime(vol, t);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                o.connect(g); g.connect(this.sfxBus);
+                o.start(t); o.stop(t + dur + 0.02);
+            }
+            _n(ftype, f0, f1, t, dur, vol) {
+                const c = this.ctx, n = c.createBufferSource();
+                n.buffer = this.noiseBuf; n.loop = true;
+                const f = c.createBiquadFilter();
+                f.type = ftype; f.frequency.setValueAtTime(f0, t);
+                if (f1 && f1 !== f0) f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+                const g = c.createGain();
+                g.gain.setValueAtTime(vol, t);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                n.connect(f); f.connect(g); g.connect(this.sfxBus);
+                n.start(t, Math.random() * 0.5); n.stop(t + dur + 0.02);
+            }
+            // pair match: climbs a major scale as the streak grows
+            matchStep(n) {
+                if (!this._go()) return;
+                const steps = [0, 2, 4, 5, 7, 9, 11, 12];
+                const f = 523.25 * Math.pow(2, steps[Math.min(n, 7)] / 12);
+                const t = this.ctx.currentTime;
+                this._o('triangle', f, f, t, 0.12, 0.14);
+                this._o('triangle', f * 1.5, f * 1.5, t + 0.055, 0.16, 0.14);
+                this._o('sine', f * 2, f * 2, t + 0.055, 0.22, 0.05);
+            }
+            // rising whoosh + thump at the top
+            rocket() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                this._n('bandpass', 350, 5200, t, 0.55, 0.42);
+                this._o('sawtooth', 130, 950, t, 0.5, 0.12);
+                this._o('square', 65, 320, t, 0.5, 0.07);
+                this._o('sine', 130, 40, t + 0.45, 0.3, 0.5);
+                this._n('lowpass', 2200, 200, t + 0.45, 0.3, 0.3);
+            }
+            // fuse crackle then boom
+            dynamite() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                for (let i = 0; i < 5; i++) this._n('highpass', 5500, 5500, t + i * 0.03, 0.025, 0.14);
+                this._o('sine', 170, 36, t + 0.14, 0.6, 0.95);
+                this._n('lowpass', 4200, 140, t + 0.14, 0.55, 0.6);
+                this._o('sawtooth', 110, 45, t + 0.14, 0.3, 0.15);
+            }
+            // sparkly arpeggio + soft pop
+            heartPop() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                [1046.5, 1318.5, 1568, 2093, 2637].forEach((f, i) => this._o('sine', f, f, t + i * 0.045, 0.24, 0.1));
+                this._o('sine', 700, 180, t, 0.12, 0.35);
+                this._n('highpass', 6500, 6500, t, 0.08, 0.08);
+            }
+            // magical forge: rising arp, shimmer and a ding
+            forge() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this._o('square', f, f, t + i * 0.05, 0.14, 0.07));
+                this._o('triangle', 1568, 2093, t + 0.25, 0.45, 0.1);
+                this._o('sine', 2093, 2093, t + 0.27, 0.5, 0.08);
+                this._n('highpass', 6000, 9500, t, 0.45, 0.06);
+            }
+            // metal clang + thud
+            hammerHit() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                this._o('square', 520, 500, t, 0.25, 0.1);
+                this._o('square', 783, 760, t, 0.2, 0.07);
+                this._o('triangle', 1180, 1150, t, 0.16, 0.06);
+                this._o('sine', 110, 45, t, 0.22, 0.55);
+                this._n('bandpass', 2600, 800, t, 0.1, 0.22);
+            }
+            // clang + huge boom
+            hammerBlast() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                this.hammerHit();
+                this._o('sine', 95, 28, t + 0.08, 0.75, 1.0);
+                this._n('lowpass', 4500, 90, t + 0.08, 0.7, 0.6);
+                this._o('square', 430, 410, t + 0.12, 0.3, 0.08);
+                this._o('sawtooth', 80, 35, t + 0.08, 0.4, 0.18);
+            }
+            // big-clear stinger (tier 1..4)
+            combo(tier) {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568];
+                for (let i = 0; i < tier + 2; i++) {
+                    this._o('square', notes[i], notes[i], t + 0.12 + i * 0.06, 0.16, 0.06);
+                    this._o('triangle', notes[i] * 2, notes[i] * 2, t + 0.12 + i * 0.06, 0.2, 0.05);
+                }
+                if (tier >= 4) this._o('sawtooth', 200, 1600, t + 0.1, 0.45, 0.07);
+            }
+            // new cards thumping into place
+            land() {
+                if (!this._go()) return;
+                const t = this.ctx.currentTime;
+                this._o('sine', 210, 90, t, 0.09, 0.16);
+                this._o('sine', 270, 120, t + 0.05, 0.08, 0.1);
+            }
+
+            // ---------- MUSIC ----------
+            loadTrack(i) {
+                this.trackIdx = i;
+                this.track = TRACKS[i];
+                this.step = 0;
+                this.loops = 0;
+                this.stepDur = 60 / this.track.bpm / 4;
+                if (this.onTrack) this.onTrack(i);
+            }
+            startMusic(idx) {
+                this.init();
+                if (!this.ctx) return;
+                this.stopMusic(true);
+                this.musicOn = true;
+                this.loadTrack(idx == null ? this.trackIdx : idx);
+                const c = this.ctx;
+                this.session = c.createGain();
+                this.session.gain.setValueAtTime(0.0001, c.currentTime);
+                this.session.gain.linearRampToValueAtTime(1, c.currentTime + 0.25);
+                this.session.connect(this.musicBus);
+                this.nextTime = c.currentTime + 0.08;
+                this.timer = setInterval(() => this.pump(), 30);
+            }
+            stopMusic(silent) {
+                this.musicOn = false;
+                if (this.timer) { clearInterval(this.timer); this.timer = null; }
+                if (this.session && this.ctx) {
+                    const s = this.session, c = this.ctx;
+                    try {
+                        s.gain.cancelScheduledValues(c.currentTime);
+                        s.gain.setValueAtTime(s.gain.value, c.currentTime);
+                        s.gain.linearRampToValueAtTime(0.0001, c.currentTime + 0.12);
+                    } catch (e) {}
+                    setTimeout(() => { try { s.disconnect(); } catch (e) {} }, 400);
+                    this.session = null;
+                }
+            }
+            nextTrack() {
+                const n = (this.trackIdx + 1) % TRACKS.length;
+                if (this.musicOn) this.startMusic(n);
+                else this.loadTrack(n);
+            }
+            pump() {
+                if (!this.ctx || !this.musicOn) return;
+                const c = this.ctx;
+                if (this.nextTime < c.currentTime - 0.3) this.nextTime = c.currentTime + 0.05;
+                while (this.nextTime < c.currentTime + 0.15) {
+                    this.scheduleStep(this.step, this.nextTime);
+                    this.nextTime += this.stepDur;
+                    this.step++;
+                    if (this.step >= this.track.total) {
+                        this.step = 0;
+                        this.loops++;
+                        if (this.loops >= 2) this.loadTrack((this.trackIdx + 1) % TRACKS.length);
+                    }
+                }
+            }
+            scheduleStep(s, t) {
+                const tr = this.track, sd = this.stepDur;
+                const bar = Math.floor(s / 16), p = s % 16;
+                // half-time dubstep drums
+                if (p === 0 || (p === 10 && bar % 2 === 0) || (p === 14 && bar % 4 === 3)) this.kick(t);
+                if (p === 8 || (p === 12 && bar % 4 === 3)) this.snare(t);
+                if (p % 2 === 0) this.hat(t, p % 4 === 2 ? 0.2 : 0.11, 0.045);
+                else if (bar % 2 === 1) this.hat(t, 0.05, 0.025);
+                // wobble bass, two hits per bar
+                if (p === 0 || p === 8) {
+                    const root = tr.rootMidi[bar % tr.rootMidi.length];
+                    const mult = tr.wob[(bar + (p === 8 ? 1 : 0)) % tr.wob.length];
+                    this.wobble(t, sd * 7.6, root, mult);
+                }
+                // lead melody
+                const ev = tr.events[s];
+                if (ev) this.lead(t, ev.len * sd, ev.midi);
+            }
+            kick(t) {
+                const c = this.ctx;
+                const o = c.createOscillator(), g = c.createGain();
+                o.type = 'sine';
+                o.frequency.setValueAtTime(160, t);
+                o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+                g.gain.setValueAtTime(1.0, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+                o.connect(g); g.connect(this.session);
+                o.start(t); o.stop(t + 0.4);
+            }
+            snare(t) {
+                const c = this.ctx;
+                const n = c.createBufferSource(); n.buffer = this.noiseBuf;
+                const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+                const g = c.createGain();
+                g.gain.setValueAtTime(0.55, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                n.connect(hp); hp.connect(g); g.connect(this.session);
+                n.start(t, Math.random() * 0.5); n.stop(t + 0.25);
+                const o = c.createOscillator(), og = c.createGain();
+                o.type = 'triangle';
+                o.frequency.setValueAtTime(200, t);
+                o.frequency.exponentialRampToValueAtTime(110, t + 0.1);
+                og.gain.setValueAtTime(0.4, t);
+                og.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                o.connect(og); og.connect(this.session);
+                o.start(t); o.stop(t + 0.18);
+            }
+            hat(t, vol, dur) {
+                const c = this.ctx;
+                const n = c.createBufferSource(); n.buffer = this.noiseBuf;
+                const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7500;
+                const g = c.createGain();
+                g.gain.setValueAtTime(vol, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                n.connect(hp); hp.connect(g); g.connect(this.session);
+                n.start(t, Math.random() * 0.5); n.stop(t + dur + 0.02);
+            }
+            wobble(t, dur, midi, mult) {
+                const c = this.ctx;
+                const f = midiToFreq(midi);
+                const o1 = c.createOscillator(), o2 = c.createOscillator(), sub = c.createOscillator();
+                o1.type = 'sawtooth'; o2.type = 'sawtooth'; sub.type = 'sine';
+                o1.frequency.value = f; o2.frequency.value = f * 1.006; sub.frequency.value = f;
+                const flt = c.createBiquadFilter();
+                flt.type = 'lowpass'; flt.Q.value = 10; flt.frequency.value = 450;
+                const lfo = c.createOscillator(), lg = c.createGain();
+                lfo.type = 'sine';
+                lfo.frequency.value = this.track.bpm / 60 * mult;
+                lg.gain.value = 380;
+                lfo.connect(lg); lg.connect(flt.frequency);
+                const sh = c.createWaveShaper(); sh.curve = this.curve;
+                const g = c.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.linearRampToValueAtTime(0.3, t + 0.01);
+                g.gain.setValueAtTime(0.3, t + dur - 0.03);
+                g.gain.linearRampToValueAtTime(0.0001, t + dur);
+                const sg = c.createGain(); sg.gain.value = 0.7;
+                o1.connect(flt); o2.connect(flt); flt.connect(sh); sh.connect(g);
+                sub.connect(sg); sg.connect(g); g.connect(this.session);
+                [o1, o2, sub, lfo].forEach(o => { o.start(t); o.stop(t + dur + 0.02); });
+            }
+            lead(t, dur, midi) {
+                const c = this.ctx;
+                const f = midiToFreq(midi);
+                const o1 = c.createOscillator(), o2 = c.createOscillator();
+                o1.type = this.track.lead; o2.type = this.track.lead;
+                o1.frequency.value = f; o2.frequency.value = f; o2.detune.value = 8;
+                const flt = c.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 3200; flt.Q.value = 2;
+                const g = c.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.linearRampToValueAtTime(0.075, t + 0.01);
+                g.gain.linearRampToValueAtTime(0.05, t + dur * 0.5);
+                g.gain.linearRampToValueAtTime(0.0001, t + dur * 0.95);
+                o1.connect(flt); o2.connect(flt); flt.connect(g); g.connect(this.session);
+                o1.start(t); o2.start(t); o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+            }
+        }
+        const Snd = new AudioEngine();
+
+        // =========================================================================
+        // GAME LOGIC (unchanged from Code 19)
+        // =========================================================================
+        const generateRooms = (lvl, difficultyMode = 'normal') => {
+            const mode = MODES[difficultyMode] || MODES.normal;
+            return HYPOTHESIS_DATA.game_data.core_concepts.map((concept, i) => ({
+                id: concept.id,
+                color: COLORS[i],
+                conceptEmoji: concept.emoji,
+                conceptName: concept.name,
+                desc: concept.desc,
+                targetLvl: mode.cardBase + (lvl - 1) * mode.cardStep,
+                targetAlign: Math.floor(Math.random() * 9) + 1,
+                pmid: concept.pmid,
+                quote: concept.quote,
+                isCalibrated: false
+            }));
+        };
+
+        // Alignment goals/rolls stay 1-9; bigger card numbers fold back into that range
+        const cardPts = (card, base = 25) => base + (card.number || 0);
+        const clearPts = (list, base = 25) => list.reduce((sum, g) => sum + cardPts(g.card, base), 0);
+        const alignOf = (n) => ((n - 1) % 9) + 1;
+        // ---- run persistence: score, level, moves and evidence progress (not the exact board) ----
+        const SAVE_KEY = 'save_v1';
+        const loadSave = () => {
+            const sv = loadPref(SAVE_KEY, null);
+            if (!sv || sv.hyp !== HYPOTHESIS_DATA.hypothesis_id || !MODES[sv.modeKey] || !Array.isArray(sv.rooms) || sv.rooms.length !== 6) return null;
+            return sv;
+        };
+        const clearSave = () => { try { window.localStorage.removeItem('bioarcade_' + SAVE_KEY); } catch (e) {} };
+        // ---- personal records, stored per difficulty: { level, total, levelScore, move } each { v, lvl, t } ----
+        const REC_KEY = 'records_v1';
+        const loadRecords = () => {
+            const r = loadPref(REC_KEY, null) || {};
+            Object.keys(MODES).forEach(m => {
+                if (!r[m]) r[m] = {};
+                const old = loadPref('best_' + m, null); // migrate earlier "best level" saves
+                if (old && !(r[m].level && r[m].level.v)) r[m].level = { v: old.level, lvl: old.level };
+            });
+            return r;
+        };
+        const STAT_DEFS = [
+            { k: 'level', icon: '🧭', title: 'Furthest Level', fmt: v => `Level ${v}` },
+            { k: 'total', icon: '💎', title: 'Highest Total Score', fmt: v => v.toLocaleString(), sub: 'whole run' },
+            { k: 'levelScore', icon: '📈', title: 'Best Single Level', fmt: v => v.toLocaleString(), sub: 'points in one level' },
+            { k: 'move', icon: '⚡', title: 'Best Single Move', fmt: v => '+' + v.toLocaleString(), sub: 'points in one move' },
+            { k: 'streak', icon: '🔥', title: 'Longest Streak', fmt: v => `${v} in a row`, sub: 'quick matches' },
+            { k: 'bigClear', icon: '💥', title: 'Biggest Clear', fmt: v => `${v} cards`, sub: 'in one move' },
+            { k: 'fastest', icon: '⏱️', title: 'Fastest Level', dir: 'min', fmt: v => fmtTime(v), sub: 'to clear a level' },
+            { k: 'fewest', icon: '🎯', title: 'Fewest Moves', dir: 'min', fmt: v => `${v} moves`, sub: 'to clear a level' },
+            { k: 'most', icon: '🐢', title: 'Marathon Level', fmt: v => `${v} moves`, sub: 'longest level cleared' },
+            { k: 'ppm', icon: '📊', title: 'Best Points per Move', fmt: v => `${v} pts`, sub: 'per move, one level' }
+        ];
+        const MODE_COLORS = {
+            easy: { c: '#4ade80', bg: 'rgba(34,197,94,0.16)' },
+            normal: { c: '#38bdf8', bg: 'rgba(56,189,248,0.16)' },
+            hard: { c: '#fb923c', bg: 'rgba(251,146,60,0.17)' },
+            insane: { c: '#e879f9', bg: 'rgba(232,121,249,0.17)' }
+        };
+        const fmtTime = (sec) => { sec = Math.round(sec); const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = sec % 60; return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`; };
+        const LIFE_KEY = 'life_v1';
+        const loadLife = () => Object.assign({ runs: 0, levels: 0, moves: 0, ms: 0, forged: 0, matches: 0, points: 0 }, loadPref(LIFE_KEY, null) || {});
+        const lifeAdd = (k, n = 1) => { const l = loadLife(); l[k] = (l[k] || 0) + n; savePref(LIFE_KEY, l); };
+        const uid = () => Math.random().toString(36).substr(2, 9);
+
+        const generateCard = (difficultyMode, currentLevel, currentMoves) => {
+            const mode = MODES[difficultyMode] || MODES.normal;
+            const rand = Math.random();
+            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            const number = Math.floor(Math.random() * (8 + currentLevel)) + 1; // L1: 1-9, L2: 1-10, L5: 1-13 ...
+
+            const available = [...CORE_EMOJIS, ...HYPOTHESIS_DATA.game_data.noise_concepts.slice(0, mode.extraCards)];
+            const dynamicClockChance = mode.clockChance + (currentLevel * 0.005) + (currentMoves * 0.0003);
+
+            if (rand < dynamicClockChance) {
+                const isFloat = Math.random() < 0.5;
+                return { id: uid(), type: 'block', subType: isFloat ? 'float' : 'sink', emoji: isFloat ? '🎈' : '⚓', color, number: 0 };
+            }
+            if (rand < dynamicClockChance + 0.08) return { id: uid(), type: 'heart', emoji: HEART_EMOJIS[color], color, number: 0 };
+            if (rand < dynamicClockChance + 0.11) return { id: uid(), type: 'h_clear', emoji: '🧨', color, number: 0 };
+            if (rand < dynamicClockChance + 0.14) return { id: uid(), type: 'v_clear', emoji: '🚀', color, number: 0 };
+            if (rand < dynamicClockChance + 0.17) return { id: uid(), type: 'hammer', emoji: '🔨', color: 'grey', number: 0 };
+
+            return { id: uid(), type: 'molecule', emoji: available[Math.floor(Math.random() * available.length)], color, number };
+        };
+
+        const applyColumnPhysics = (col) => {
+            const sinkers = []; const normals = []; const floaters = [];
+            col.forEach(c => {
+                if (c.type === 'block') {
+                    if (c.subType === 'sink') sinkers.push(c);
+                    else floaters.push(c);
+                } else normals.push(c);
+            });
+            return [...sinkers, ...normals, ...floaters];
+        };
+
+        const checkValidMoves = (cols) => {
+            const allCards = cols.flat();
+            if (allCards.length < 2) return false;
+
+            if (allCards.some(c => c.type === 'heart' || c.type === 'h_clear' || c.type === 'v_clear')) return true;
+            const hammers = allCards.filter(c => c.type === 'hammer');
+            if (hammers.length >= 2) return true;
+            if (hammers.length >= 1 && allCards.some(c => c.type === 'molecule' || c.type === 'block')) return true;
+
+            for (let i = 0; i < allCards.length; i++) {
+                for (let j = i + 1; j < allCards.length; j++) {
+                    const c1 = allCards[i], c2 = allCards[j];
+                    if (c1.type === 'molecule' && c2.type === 'molecule' && (c1.emoji === c2.emoji || c1.color === c2.color || c1.number === c2.number)) return true;
+                }
+            }
+            return false;
+        };
+
+        const executeChainReaction = (initialQueue, currentCols) => {
+            let queue = [...initialQueue];
+            let destroyed = new Set();
+            let destroyedCards = [];
+            let destroyedList = [];
+
+            while (queue.length > 0) {
+                let { col, row, card, blast } = queue.shift();
+                if (!card) continue;
+
+                let key = `${col},${row}`;
+                if (destroyed.has(key)) continue;
+
+                destroyed.add(key);
+
+                if (blast) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        for (let dr = -1; dr <= 1; dr++) {
+                            const cc = col + dc, rr = row + dr;
+                            if (currentCols[cc] && currentCols[cc][rr] && !destroyed.has(`${cc},${rr}`)) {
+                                queue.push({ col: cc, row: rr, card: currentCols[cc][rr] });
+                            }
+                        }
+                    }
+                } else if (card.type === 'heart') {
+                    currentCols.forEach((cList, cIdx) => {
+                        cList.forEach((c, rIdx) => {
+                            if (c.color === card.color && !destroyed.has(`${cIdx},${rIdx}`)) {
+                                queue.push({ col: cIdx, row: rIdx, card: c });
+                            }
+                        });
+                    });
+                } else if (card.type === 'h_clear') {
+                    currentCols.forEach((cList, cIdx) => {
+                        if (cList[row] && !destroyed.has(`${cIdx},${row}`)) {
+                            queue.push({ col: cIdx, row: row, card: cList[row] });
+                        }
+                    });
+                } else if (card.type === 'v_clear') {
+                    currentCols[col].forEach((c, rIdx) => {
+                        if (!destroyed.has(`${col},${rIdx}`)) {
+                            queue.push({ col: col, row: rIdx, card: c });
+                        }
+                    });
+                }
+            }
+
+            let wipedCardsCount = 0;
+            let newCols = currentCols.map((cList, cIdx) => {
+                return cList.filter((c, rIdx) => {
+                    if (destroyed.has(`${cIdx},${rIdx}`)) {
+                        wipedCardsCount++;
+                        destroyedCards.push(c);
+                        destroyedList.push({ col: cIdx, row: rIdx, card: c });
+                        return false;
+                    }
+                    return true;
+                });
+            });
+
+            return { newCols, wipedCardsCount, destroyedCards, destroyedList };
+        };
+
+        // =========================================================================
+        // STANDALONE DOWNLOAD BUILDER (rebuilds a complete single-file copy of this game)
+        // =========================================================================
+        const STANDALONE_LIBS = [
+            { src: "https://cdn.tailwindcss.com" },
+            { src: "https://unpkg.com/react@18.3.1/umd/react.production.min.js", cross: true },
+            { src: "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js", cross: true },
+            { src: "https://unpkg.com/@babel/standalone@7.24.7/babel.min.js" },
+            { src: "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" }
+        ];
+        const buildStandaloneHtml = () => {
+            const css = document.getElementById('game-css').textContent;
+            const src = document.getElementById('game-src').textContent;
+            const close = "</scr" + "ipt>";
+            const libs = STANDALONE_LIBS.map(l => `    <script ${l.cross ? 'crossorigin ' : ''}src="${l.src}">${close}`).join("\n");
+            return [
+                "<!DOCTYPE html>",
+                '<html lang="en">',
+                "<head>",
+                '    <meta charset="UTF-8">',
+                '    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">',
+                "    <title>BioArcade: Research Simulator</title>",
+                '    <link rel="preconnect" href="https://fonts.googleapis.com">',
+                '    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+                '    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">',
+                libs,
+                '    <style id="game-css">',
+                css,
+                "    </style>",
+                "</head>",
+                "<body>",
+                '    <div id="root"></div>',
+                '    <script type="text/babel" id="game-src">',
+                src,
+                "    " + close,
+                "</body>",
+                "</html>"
+            ].join("\n");
+        };
+
+        // --- Inline icons (no external icon library needed) ---
+        const Icon = ({ d, children, size = 20, sw = 2 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+                {d ? <path d={d} /> : null}{children}
+            </svg>
+        );
+        const IconX = (p) => <Icon {...p} d="M18 6 6 18M6 6l12 12" />;
+        const IconDownload = (p) => <Icon {...p} d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3" />;
+        const IconVol = (p) => <Icon {...p}><path d="M11 5 6 9H2v6h4l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" /></Icon>;
+        const IconMute = (p) => <Icon {...p}><path d="M11 5 6 9H2v6h4l5 4V5z" /><path d="m22 9-6 6m0-6 6 6" /></Icon>;
+        const IconHelp = (p) => <Icon {...p}><circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" /></Icon>;
+        const IconMusic = (p) => <Icon {...p}><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></Icon>;
+        const IconSkip = (p) => <Icon {...p}><path d="M5 4l10 8-10 8V4z" /><path d="M19 5v14" /></Icon>;
+        const IconFlask = (p) => <Icon {...p} d="M10 2v7.5L4.5 19a2 2 0 0 0 1.7 3h11.6a2 2 0 0 0 1.7-3L14 9.5V2M8.5 2h7M7 16h10" />;
+        const IconBook = (p) => <Icon {...p} d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z" />;
+        const IconPhone = (p) => <Icon {...p}><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M12 18h.01" /></Icon>;
+        const IconTablet = (p) => <Icon {...p}><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M12 18h.01" /></Icon>;
+        const IconMonitor = (p) => <Icon {...p}><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></Icon>;
+        const VIEWPORT_ICONS = { phone: IconPhone, tablet: IconTablet, desktop: IconMonitor };
+        const VIEWPORT_STYLES = {
+            phone: "border-emerald-400 text-emerald-300 bg-emerald-950/70",
+            tablet: "border-orange-400 text-orange-300 bg-orange-950/60",
+            desktop: "border-cyan-400 text-cyan-300 bg-cyan-950/60"
+        };
+
+        const ModalShell = ({ children }) => (
+            <div className="absolute inset-0 z-40 panel flex flex-col p-3 sm:p-4" style={{ paddingTop: 'max(12px, env(safe-area-inset-top))', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+                {children}
+            </div>
+        );
+        const ModalHeader = ({ icon, title, color, onClose }) => {
+            const palette = {
+                green: "border-emerald-700/70 text-emerald-400",
+                blue: "border-indigo-600/80 text-blue-400",
+                amber: "border-amber-700/70 text-amber-400"
+            }[color];
+            return (
+                <div className={`mono flex items-center justify-between gap-2 px-4 py-3 mb-3 rounded-2xl border-2 bg-black/60 shrink-0 ${palette}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                        {icon}
+                        <h2 className="text-lg sm:text-xl font-extrabold uppercase tracking-wide truncate">{title}</h2>
+                    </div>
+                    {onClose && <button onClick={onClose} className="text-gray-300 hover:text-white active:scale-90 p-1"><IconX size={26} /></button>}
+                </div>
+            );
+        };
+
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            const [modeKey, setModeKey] = useState('normal');
+            const [level, setLevel] = useState(1);
+
+            const [columns, setColumns] = useState(Array(8).fill([]));
+            const [score, setScore] = useState(0);
+            const [moves, setMoves] = useState(0);
+            const [molecules, setMolecules] = useState({});
+            const [rooms, setRooms] = useState(() => generateRooms(1, 'normal'));
+
+            const [selected, setSelected] = useState(null);
+            const [toasts, setToasts] = useState([]);
+            const [activeModal, setActiveModal] = useState('setup');
+            const [clueQueue, setClueQueue] = useState([]);
+            const [globalSolves, setGlobalSolves] = useState(HYPOTHESIS_DATA.global_solves);
+            const [started, setStarted] = useState(false);
+            const [bankedScore, setBankedScore] = useState(0); // points from levels already completed this run
+            const lastMoveRef = useRef({ moves: 0, score: 0, level: 1 });
+            const announced = useRef({});
+            const runOver = useRef(false); // true once a run has ended so it is never re-saved
+            const [textScale, setTextScale] = useState(() => loadPref('textScale2', 'medium')); // small | medium | large | xl
+            useEffect(() => { savePref('textScale2', textScale); }, [textScale]);
+            const [fxOn, setFxOn] = useState(() => loadPref('fx', true));
+            useEffect(() => { savePref('fx', fxOn); }, [fxOn]);
+            const [clueMode, setClueMode] = useState(() => loadPref('clueMode', 'banner')); // banner | modal | off
+            useEffect(() => { savePref('clueMode', clueMode); }, [clueMode]);
+            const clueBlocking = clueMode === 'modal' && clueQueue.length > 0;
+
+            // audio + viewport controls
+            const [bgmOn, setBgmOn] = useState(() => loadPref('bgm', true));
+            const [sfxOn, setSfxOn] = useState(() => loadPref('sfx', true));
+            const [musicVol, setMusicVol] = useState(() => loadPref('musicVol', 0.6));
+            const [sfxVol, setSfxVol] = useState(() => loadPref('sfxVol', 0.8));
+            const [trackIdx, setTrackIdx] = useState(0);
+            const [vp, setVp] = useState(() => {
+                const saved = loadPref('vp', null);
+                if (saved && VIEWPORTS[saved]) return saved;
+                const w = window.innerWidth;
+                return w <= 600 ? 'phone' : w <= 1000 ? 'tablet' : 'desktop';
+            });
+            const [boardW, setBoardW] = useState(300);
+            const [boardH, setBoardH] = useState(375);
+            const boardWrapRef = useRef(null);
+
+            const mode = MODES[modeKey] || MODES.normal;
+            const currentTarget = mode ? mode.baseTarget * level : 500;
+
+            const addToast = (msg, icon = "💡", color = "bg-emerald-600 border-emerald-400") => {
+                const id = Date.now() + Math.random();
+                setToasts(prev => [...prev.slice(-3), { id, msg, icon, color }]);
+                setTimeout(() => { setToasts(prev => prev.filter(t => t.id !== id)); }, 3000);
+            };
+
+            // ---- audio wiring ----
+            useEffect(() => { Snd.onTrack = (i) => setTrackIdx(i); return () => { Snd.onTrack = null; }; }, []);
+            useEffect(() => { Snd.sfxOn = sfxOn; savePref('sfx', sfxOn); }, [sfxOn]);
+            useEffect(() => { Snd.setMusicVol(musicVol); savePref('musicVol', musicVol); }, [musicVol]);
+            useEffect(() => { Snd.setSfxVol(sfxVol); savePref('sfxVol', sfxVol); }, [sfxVol]);
+            useEffect(() => { savePref('bgm', bgmOn); }, [bgmOn]);
+            useEffect(() => { savePref('vp', vp); }, [vp]);
+            useEffect(() => {
+                const onVis = () => {
+                    if (!Snd.ctx) return;
+                    if (document.hidden) Snd.ctx.suspend(); else Snd.ctx.resume();
+                };
+                document.addEventListener('visibilitychange', onVis);
+                return () => document.removeEventListener('visibilitychange', onVis);
+            }, []);
+
+            useEffect(() => {
+                if (clueMode !== 'banner' || clueQueue.length === 0) return;
+                const t = setTimeout(() => setClueQueue(q => q.slice(1)), 7000);
+                return () => clearTimeout(t);
+            }, [clueMode, clueQueue]);
+
+            const toggleBgm = () => {
+                Snd.init();
+                if (bgmOn) { Snd.stopMusic(); setBgmOn(false); }
+                else { Snd.startMusic(); setBgmOn(true); }
+            };
+            const skipTrack = () => { Snd.init(); Snd.nextTrack(); };
+            const pickTrack = (i) => { Snd.init(); setBgmOn(true); Snd.startMusic(i); };
+            const toggleSfx = () => {
+                const next = !sfxOn;
+                setSfxOn(next);
+                Snd.sfxOn = next;
+                if (next) { Snd.init(); Snd.select(); }
+            };
+            const cycleViewport = () => {
+                const next = VIEWPORT_ORDER[(VIEWPORT_ORDER.indexOf(vp) + 1) % VIEWPORT_ORDER.length];
+                setVp(next);
+                addToast(`Viewport: ${VIEWPORTS[next].label} Mode`, "🖥️", "bg-cyan-700 text-white border-cyan-400");
+            };
+            const downloadGame = () => {
+                try {
+                    const html = buildStandaloneHtml();
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'BioArcade-ResearchSimulator.html';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
+                    addToast(`Downloading standalone HTML game (${Math.round(blob.size / 1024)} KB)...`, "📥", "bg-cyan-700 text-white border-cyan-400");
+                } catch (e) {
+                    addToast("Download blocked in this view. Open the game in its own tab and try again.", "⚠️", "bg-red-600 text-white border-red-400");
+                }
+            };
+
+            // ---- board sizing: fit the 8x10 grid inside whatever space is left ----
+            useEffect(() => {
+                const el = boardWrapRef.current;
+                if (!el) return;
+                const calc = () => {
+                    const r = el.getBoundingClientRect();
+                    const availW = r.width - 8, availH = r.height - 8;
+                    // tall boards on narrow screens; on wide/short screens tiles stretch (up to ~1.9:1) so the board fills the sides
+                    const H = Math.max(200, Math.floor(Math.min(availH, availW * 1.25)));
+                    const chTile = (H - 2 - 36) / 10;
+                    const W = Math.max(160, Math.floor(Math.min(availW, 15.2 * chTile + 30)));
+                    setBoardW(W); setBoardH(H);
+                };
+                calc();
+                const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(calc) : null;
+                if (ro) ro.observe(el);
+                window.addEventListener('resize', calc);
+                return () => { if (ro) ro.disconnect(); window.removeEventListener('resize', calc); };
+            }, [vp]);
+
+            const buildBoard = (selectedMode, lvl) => {
+                let initialCols = [];
+                for (let i = 0; i < 8; i++) {
+                    let col = [];
+                    for (let j = 0; j < 5; j++) col.push(generateCard(selectedMode, lvl, 0));
+                    initialCols.push(applyColumnPhysics(col));
+                }
+                return initialCols;
+            };
+
+            const initGame = (selectedMode) => {
+                Snd.init();
+                runOver.current = false;
+                announced.current = {};
+                lastMoveRef.current = { moves: 0, score: 0, level: 1 };
+                setBankedScore(0);
+                levelMs.current = 0;
+                setLastClear(null);
+                lifeAdd('runs', 1);
+                clearSave();
+                setModeKey(selectedMode);
+                setLevel(1);
+                setScore(0);
+                setMoves(0);
+                setMolecules({});
+                setRooms(generateRooms(1, selectedMode));
+                setClueQueue([]);
+                setSelected(null);
+                setColumns(buildBoard(selectedMode, 1));
+                setStarted(true);
+                setActiveModal(null);
+                if (bgmOn) Snd.startMusic();
+            };
+
+            const continueRun = () => {
+                const sv = loadSave();
+                if (!sv) return;
+                Snd.init();
+                runOver.current = false;
+                setModeKey(sv.modeKey);
+                setLevel(sv.level);
+                setScore(sv.score);
+                setMoves(sv.moves);
+                setMolecules(sv.molecules || {});
+                setRooms(sv.rooms);
+                setBankedScore(sv.bankedScore || 0);
+                levelMs.current = sv.levelMs || 0;
+                announced.current = {};
+                if (typeof sv.globalSolves === 'number') setGlobalSolves(sv.globalSolves);
+                setClueQueue([]);
+                setSelected(null);
+                setColumns(buildBoard(sv.modeKey, sv.level));
+                setStarted(true);
+                setActiveModal(null);
+                if (bgmOn) Snd.startMusic();
+            };
+
+            // ---- personal records + lifetime stats ----
+            const levelMs = useRef(0);       // active play time on the current level
+            const lifePending = useRef(0);
+            const modalRef = useRef(null);
+            modalRef.current = activeModal;
+            const [lastClear, setLastClear] = useState(null);
+
+            const recordStat = (key, value) => {
+                const def = STAT_DEFS.find(d => d.k === key);
+                if (!def || !(value > 0)) return;
+                const recs = loadRecords();
+                const r = recs[modeKey] || (recs[modeKey] = {});
+                const prev = r[key] && r[key].v > 0 ? r[key].v : 0;
+                const better = !prev || (def.dir === 'min' ? value < prev : value > prev);
+                if (!better) return;
+                r[key] = { v: value, lvl: level, t: Date.now() };
+                savePref(REC_KEY, recs);
+                if (prev && key !== 'most' && !announced.current[modeKey + key]) {
+                    announced.current[modeKey + key] = true;
+                    Snd.combo(3);
+                    addToast(`New record: ${def.title}!`, "🏆", "bg-yellow-500 text-black border-yellow-300");
+                }
+            };
+            const recordLevelClear = () => {
+                const sec = Math.max(1, Math.round(levelMs.current / 1000));
+                const mv = Math.max(1, moves);
+                const ppm = Math.round((score / mv) * 10) / 10;
+                recordStat('fastest', sec); recordStat('fewest', mv); recordStat('most', mv); recordStat('ppm', ppm);
+                lifeAdd('levels', 1);
+                setLastClear({ sec, moves: mv, ppm });
+            };
+
+            // play-time clock: only counts while a puzzle is on screen
+            useEffect(() => {
+                if (!started) return;
+                const iv = setInterval(() => {
+                    if (document.hidden || runOver.current || modalRef.current !== null) return;
+                    levelMs.current += 500; lifePending.current += 500;
+                    if (lifePending.current >= 10000) { lifeAdd('ms', lifePending.current); lifePending.current = 0; }
+                }, 500);
+                return () => clearInterval(iv);
+            }, [started]);
+
+            useEffect(() => {
+                if (!started || runOver.current) return;
+                const lm = lastMoveRef.current;
+                const moved = lm.level === level && moves === lm.moves + 1;
+                const gain = moved ? score - lm.score : 0;
+                lm.moves = moves; lm.score = score; lm.level = level;
+                if (moved) { lifeAdd('moves', 1); if (gain > 0) lifeAdd('points', gain); }
+                recordStat('level', level);
+                recordStat('total', bankedScore + score);
+                recordStat('levelScore', score);
+                recordStat('move', gain);
+            }, [started, moves, score, level, bankedScore]);
+
+            const masterReset = () => {
+                try {
+                    const rm = [];
+                    for (let i = 0; i < window.localStorage.length; i++) {
+                        const k = window.localStorage.key(i);
+                        if (/^bioarcade_(save_v1|records_v1|life_v1|best_)/.test(k)) rm.push(k);
+                    }
+                    rm.forEach(k => window.localStorage.removeItem(k));
+                } catch (e) {}
+                runOver.current = true;
+                announced.current = {};
+                lastMoveRef.current = { moves: 0, score: 0, level: 1 };
+                levelMs.current = 0; lifePending.current = 0;
+                setStarted(false); setScore(0); setMoves(0); setLevel(1); setBankedScore(0);
+                setLastClear(null); setSelected(null); setClueQueue([]);
+                setActiveModal('setup');
+                addToast('All records and progress erased', "🗑️", "bg-red-700 text-white border-red-400");
+            };
+
+            // save after every change to the run
+            useEffect(() => {
+                if (!started || runOver.current || activeModal === 'gameover') return;
+                savePref(SAVE_KEY, { v: 1, hyp: HYPOTHESIS_DATA.hypothesis_id, modeKey, level, score, moves, molecules, rooms, globalSolves, bankedScore, levelMs: levelMs.current, t: Date.now() });
+            }, [started, activeModal, modeKey, level, score, moves, molecules, rooms, bankedScore]);
+
+            const nextLevel = () => {
+                Snd.init();
+                const nextLvl = level + 1;
+                setLevel(nextLvl);
+                setScore(0);
+                setMoves(0);
+                setSelected(null);
+                setBankedScore(b => b + score);
+                levelMs.current = 0;
+                setMolecules({});
+                setRooms(generateRooms(nextLvl, modeKey));
+                setClueQueue([]);
+                setColumns(buildBoard(modeKey, nextLvl));
+                setActiveModal(null);
+            };
+
+            const calibratedCount = rooms.filter(r => r.isCalibrated).length;
+            useEffect(() => {
+                if (started && score >= currentTarget && calibratedCount === 6 && activeModal === null && !clueBlocking) {
+                    const t = setTimeout(() => {
+                        recordLevelClear();
+                        Snd.win();
+                        confetti({ particleCount: 300, spread: 150, origin: { y: 0.4 } });
+                        setActiveModal('win');
+                    }, 700);
+                    return () => clearTimeout(t);
+                }
+            }, [score, calibratedCount, activeModal, currentTarget, clueBlocking, started]);
+
+            // --- 1 CARD = 1 MOLECULE XP EXTRACTION ---
+            const routeXPFromDestroyed = (destroyedCards, currentSpecs, currentRooms) => {
+                let nextSpecs = { ...currentSpecs };
+                let affectedMolecules = new Set();
+                let gainedByMolecule = {};
+
+                destroyedCards.forEach(c => {
+                    let targetEmoji = null;
+
+                    if (c.type === 'molecule') {
+                        targetEmoji = c.emoji;
+                    } else if (c.color && c.color !== 'grey') {
+                        const room = currentRooms.find(r => r.color === c.color);
+                        if (room) targetEmoji = room.conceptEmoji;
+                    }
+
+                    if (targetEmoji) {
+                        if (!nextSpecs[targetEmoji]) nextSpecs[targetEmoji] = { xp: 0, level: 0, alignment: 0 };
+                        else nextSpecs[targetEmoji] = { ...nextSpecs[targetEmoji] };
+                        nextSpecs[targetEmoji].xp += 1;
+                        nextSpecs[targetEmoji].level = nextSpecs[targetEmoji].xp;
+                        gainedByMolecule[targetEmoji] = (gainedByMolecule[targetEmoji] || 0) + 1;
+                        affectedMolecules.add(targetEmoji);
+                    }
+                });
+
+                Object.keys(gainedByMolecule).forEach(emoji => {
+                    const room = currentRooms.find(r => r.conceptEmoji === emoji);
+                    const target = room ? room.targetLvl : '?';
+                    const cur = nextSpecs[emoji].xp;
+                    addToast(`+${gainedByMolecule[emoji]} ${emoji} cards (${Math.min(cur, target)}/${target})`, emoji, "bg-emerald-600 text-white border-emerald-400");
+                });
+
+                affectedMolecules.forEach(emoji => {
+                    const room = currentRooms.find(r => r.conceptEmoji === emoji);
+                    if (room && !room.isCalibrated) {
+                        if (nextSpecs[emoji].xp >= room.targetLvl) {
+                            nextSpecs[emoji].alignment = room.targetAlign;
+                            Snd.calibrate();
+                            addToast(`💥 Evidence Threshold Met: ${room.conceptName}!`, emoji, "bg-emerald-500 text-white border-emerald-300");
+                        } else {
+                            const roll = Math.floor(Math.random() * 9) + 1;
+                            nextSpecs[emoji].alignment = roll;
+                            addToast(`🎲 Align Shift: ${emoji} -> ${roll} (Goal: ${room.targetAlign})`, emoji, "bg-indigo-600 text-white border-indigo-400");
+                        }
+                    }
+                });
+
+                return nextSpecs;
+            };
+
+            // --- MOVE-BASED PROGRESSION ---
+            const processTurn = (currentCols, wipedPts, currentMoves) => {
+                let newCols = currentCols.map(col => applyColumnPhysics(col));
+                let isGameOver = false;
+                let penalty = 0;
+                const nextMovesCount = currentMoves + 1;
+                setTimeout(() => Snd.land(), 200);
+
+                if (wipedPts > 0) {
+                    setScore(s => s + wipedPts);
+                    confetti({ particleCount: 80, spread: 90 });
+                }
+
+                const isEmpty = newCols.every(col => col.length === 0);
+                if (isEmpty) {
+                    Snd.burst();
+                    setScore(s => s + 1000);
+                    addToast("🌟 CLEAN SWEEP! +1000 INSIGHT! 🌟", "🏆", "bg-yellow-500 text-black border-yellow-300");
+                    confetti({ particleCount: 300, spread: 150 });
+                }
+
+                // Helper: always drop new cards onto the SHORTEST column(s) so the board fills evenly from the bottom
+                const shortestCol = () => {
+                    let min = Infinity;
+                    newCols.forEach(c => { if (c.length < min) min = c.length; });
+                    const ties = [];
+                    newCols.forEach((c, i) => { if (c.length === min) ties.push(i); });
+                    return ties[Math.floor(Math.random() * ties.length)];
+                };
+
+                // 1. Bottom-Row Auto-Fill Guarantee
+                for (let i = 0; i < 8; i++) {
+                    if (newCols[i].length === 0) newCols[i].push(generateCard(modeKey, level, nextMovesCount));
+                }
+
+                // 2. Gentler Turn Influx (ramps up slowly, capped per difficulty)
+                const blocksToAdd = Math.min(mode.maxInflux || 5, Math.ceil(nextMovesCount * 0.6));
+                for (let i = 0; i < blocksToAdd; i++) {
+                    newCols[shortestCol()].push(generateCard(modeKey, level, nextMovesCount));
+                }
+
+                // 3. Playability Fallback
+                if (!checkValidMoves(newCols)) {
+                    newCols[shortestCol()].push({ id: uid(), type: 'heart', emoji: HEART_EMOJIS['red'], color: 'red', number: 0 });
+                }
+
+                newCols = newCols.map(col => applyColumnPhysics(col));
+
+                // 4. Ceiling Breach Check
+                for (let i = 0; i < 8; i++) {
+                    while (newCols[i].length > 10) {
+                        const overflow = newCols[i].pop();
+                        if (overflow.type === 'block') isGameOver = true;
+                        else if (overflow.type === 'molecule') penalty += overflow.number;
+                    }
+                }
+
+                if (isGameOver) {
+                    runOver.current = true;
+                    clearSave();
+                    Snd.gameover();
+                    setActiveModal('gameover');
+                    return;
+                }
+                if (penalty > 0) {
+                    setScore(s => Math.max(0, s - penalty));
+                    addToast(`Ceiling Bleed: -${penalty} Insight`, "⚠️", "bg-red-600 text-white border-red-400");
+                }
+
+                setColumns(newCols);
+                setMoves(nextMovesCount);
+                setSelected(null);
+            };
+
+            // --- AUTO-THESIS CALIBRATION ---
+            const triggerAutoThesis = (currentSpecs) => {
+                let updatedRooms = [...rooms];
+                let changed = false;
+                let newlyCalibrated = [];
+
+                updatedRooms.forEach((room, idx) => {
+                    if (room.isCalibrated) return;
+                    const spec = currentSpecs[room.conceptEmoji];
+                    if (!spec) return;
+
+                    const curXP = spec.xp || 0;
+                    if (curXP >= room.targetLvl && spec.alignment === room.targetAlign) {
+                        updatedRooms[idx] = { ...updatedRooms[idx], isCalibrated: true };
+                        changed = true;
+                        newlyCalibrated.push(updatedRooms[idx]);
+                        Snd.calibrate();
+                        confetti({ particleCount: 80, spread: 60, colors: [COLOR_HEX[room.color], "#fff"] });
+                        addToast(`Evidence Link Confirmed: ${room.conceptName}!`, room.conceptEmoji, "bg-emerald-600 text-white border-emerald-400");
+                    }
+                });
+
+                if (changed) {
+                    setRooms(updatedRooms);
+                    if (clueMode !== 'off') setClueQueue(prev => [...prev, ...newlyCalibrated]);
+                }
+            };
+
+            // ================= VISUAL FX ENGINE =================
+            const innerW = boardW - 2, innerH = boardH - 2;
+            const cw = (innerW - 28) / 8, ch = (innerH - 36) / 10;
+            const px = (x) => x * (cw + 4), py = (y) => (9 - y) * (ch + 4);
+            const cxOf = (x) => px(x) + cw / 2, cyOf = (y) => py(y) + ch / 2;
+            const fxId = useRef(0);
+            const shakeN = useRef(0);
+            const shakeTimer = useRef(null);
+            const streakRef = useRef({ n: 0, t: 0 });
+            const [fx, setFx] = useState([]);
+            const [shake, setShake] = useState({ n: 0, lvl: 0 });
+
+            const cardFace = (c) => c.type === 'block' ? (c.subType === 'float' ? '🎈' : '⚓') : c.emoji;
+            const addFx = (items, life = 1200) => {
+                if (!fxOn || !items.length) return;
+                const tagged = items.map(it => ({ ...it, id: ++fxId.current }));
+                setFx(prev => [...prev, ...tagged].slice(-180));
+                setTimeout(() => setFx(prev => prev.filter(f => !tagged.some(t => t.id === f.id))), life);
+            };
+            const doShake = (lvl) => {
+                if (!fxOn) return;
+                shakeN.current += 1;
+                setShake({ n: shakeN.current, lvl });
+                clearTimeout(shakeTimer.current);
+                shakeTimer.current = setTimeout(() => setShake({ n: 0, lvl: 0 }), lvl === 2 ? 600 : 400);
+            };
+            const bumpStreak = () => {
+                const now = Date.now(), st = streakRef.current;
+                st.n = (now - st.t > 4000) ? 0 : st.n + 1;
+                st.t = now;
+                recordStat('streak', st.n + 1);
+                return st.n;
+            };
+            const makeParts = (total) => {
+                const count = total > 40 ? 0 : total > 20 ? 2 : 4;
+                return Array.from({ length: count }, () => {
+                    const a = Math.random() * Math.PI * 2, r = 18 + Math.random() * 30;
+                    return { dx: Math.cos(a) * r, dy: Math.sin(a) * r };
+                });
+            };
+            const ghostsFrom = (list, ox, oy, base, perDist) => list.map(({ col, row, card }) => ({
+                t: 'ghost', x: col, y: row, face: cardFace(card), color: card.color,
+                delay: base + Math.min(420, Math.hypot(col - ox, row - oy) * perDist), parts: makeParts(list.length)
+            }));
+            const ringFx = (x, y, color, size, delay = 0) => ({ t: 'ring', cx: cxOf(x), cy: cyOf(y), color, size, delay });
+            const textFx = (cx, cy, text, color = '#fde047', size = 18, delay = 0) => ({ t: 'text', cx, cy, text, color, size, delay });
+
+            const numFx = (cx, cy, text, color, size, delay) => ({ t: 'num', cx, cy, text, color, size, delay, drift: (Math.random() - 0.5) * 36, rise: 40 + Math.random() * 40 });
+            // big toast: tier word + the TOTAL points for the move
+            const moveToast = (pts, n) => {
+                const byCount = n >= 25 ? 4 : n >= 15 ? 3 : n >= 8 ? 2 : n >= 4 ? 1 : 0;
+                const byPts = pts >= 1800 ? 4 : pts >= 900 ? 3 : pts >= 400 ? 2 : pts >= 150 ? 1 : 0;
+                const tier = Math.max(byCount, byPts);
+                if (tier) Snd.combo(tier);
+                addFx([{ t: 'toast', delay: 250, total: pts, word: ['', 'NICE!', 'GREAT!', 'AMAZING!', 'INSANE!!'][tier],
+                    color: ['#fde047', '#86efac', '#fde047', '#fb923c', '#f472b6'][tier], size: Math.round(innerW * (0.06 + tier * 0.013)) }], 1700);
+            };
+
+            // clears caused by power-ups
+            const burstFx = (kind, ox, oy, list, opt = {}) => {
+                if (!fxOn) return;
+                const gold = '#fde047';
+                const items = [];
+                const d0 = kind === 'dynamite' ? 140 : kind === 'rocket' ? 60 : 0;
+                items.push(...ghostsFrom(list, ox, oy, d0, kind === 'heart' ? 34 : 24));
+                const hex = COLOR_HEX[opt.color] || '#ffffff';
+                if (kind === 'rocket') {
+                    items.push({ t: 'beamV', x: ox, color: '#93c5fd', delay: 40 });
+                    items.push({ t: 'rocket', cx: cxOf(ox), cy: cyOf(oy), dir: -1, dist: cyOf(oy) + 30 });
+                    items.push({ t: 'rocket', cx: cxOf(ox), cy: cyOf(oy), dir: 1, dist: innerH - cyOf(oy) + 30 });
+                    items.push(ringFx(ox, oy, '#60a5fa', cw * 2.4));
+                    doShake(1);
+                } else if (kind === 'dynamite') {
+                    items.push({ t: 'spark', cx: cxOf(ox), cy: cyOf(oy) });
+                    items.push({ t: 'beamH', y: oy, color: '#fdba74', delay: 140 });
+                    items.push({ t: 'flare', cx: cxOf(ox), cy: cyOf(oy), dir: -1, dist: cxOf(ox) + 30, delay: 140 });
+                    items.push({ t: 'flare', cx: cxOf(ox), cy: cyOf(oy), dir: 1, dist: innerW - cxOf(ox) + 30, delay: 140 });
+                    items.push(ringFx(ox, oy, '#fb923c', cw * 2.6, 140));
+                    doShake(1);
+                } else if (kind === 'heart') {
+                    items.push(ringFx(ox, oy, hex, innerW * 1.3));
+                    items.push({ t: 'flash', color: hex, alpha: 0.22 });
+                    list.slice(0, 8).forEach(g => items.push({ t: 'float', cx: cxOf(g.col), cy: cyOf(g.row), emoji: HEART_EMOJIS[opt.color] || '❤️', drift: (Math.random() - 0.5) * 40, delay: Math.min(300, Math.hypot(g.col - ox, g.row - oy) * 34) }));
+                    if (list.length >= 14) doShake(1);
+                } else if (kind === 'mega') {
+                    items.push({ t: 'flash', color: '#ffffff', alpha: 0.5 });
+                    items.push(ringFx(ox, oy, '#f472b6', innerW * 1.6));
+                    items.push(ringFx(ox, oy, gold, innerW * 1.1, 120));
+                    items.push(textFx(innerW / 2, innerH * 0.28, 'MEGA BLAST!', '#f472b6', Math.round(innerW * 0.085)));
+                    doShake(2);
+                } else if (kind === 'hammerHit' || kind === 'hammerShatter') {
+                    items.push({ t: 'hammer', cx: cxOf(ox), cy: cyOf(oy) });
+                    items.push(ringFx(ox, oy, '#c084fc', cw * 2.4, 120));
+                    doShake(1);
+                } else if (kind === 'hammerBlast') {
+                    [[ox, oy], [opt.ox2, opt.oy2]].forEach(([bx, by]) => {
+                        items.push({ t: 'blast3', x: bx, y: by });
+                        items.push(ringFx(bx, by, '#f97316', cw * 4.2));
+                        items.push({ t: 'boom', cx: cxOf(bx), cy: cyOf(by) });
+                    });
+                    items.push({ t: 'flash', color: '#fb923c', alpha: 0.35 });
+                    doShake(2);
+                }
+                // every cleared card flies out its own score: base 25 + the card's number (e.g. 25+18 = 43)
+                const valOf = opt.perFn || ((c) => cardPts(c));
+                const pts = list.reduce((a, g) => a + valOf(g.card), 0) + (opt.bonus || 0);
+                const numSize = Math.round(innerW * (list.length > 12 ? 0.04 : 0.05));
+                const hues = ['#fde047', '#ffffff', '#fb923c', '#86efac'];
+                list.slice(0, 60).forEach((g, i) => {
+                    const v = valOf(g.card);
+                    if (v > 0) items.push(numFx(cxOf(g.col), cyOf(g.row), `+${v}`, hues[i % 4], numSize,
+                        d0 + 80 + Math.min(420, Math.hypot(g.col - ox, g.row - oy) * 24)));
+                });
+                addFx(items, 1500);
+                moveToast(pts, list.length);
+            };
+
+            // pair matches and forged power-ups
+            const matchFx = (kind, a, b, horiz, pts, streak) => {
+                if (!fxOn) return;
+                const items = [];
+                const gold = '#fde047';
+                const mx = (cxOf(a.col) + cxOf(b.col)) / 2, my = (cyOf(a.row) + cyOf(b.row)) / 2;
+                const toward = (g, tx, ty) => ({ t: 'ghost', x: g.col, y: g.row, face: cardFace(g.card), color: g.card.color, delay: 0, merge: true, parts: [], mx: tx - cxOf(g.col), my: ty - cyOf(g.row) });
+                if (kind === 'forge') {
+                    items.push(toward(a, cxOf(b.col), cyOf(b.row)));
+                    items.push({ t: 'link', x1: cxOf(a.col), y1: cyOf(a.row), x2: cxOf(b.col), y2: cyOf(b.row) });
+                    items.push({ t: 'ring', cx: cxOf(b.col), cy: cyOf(b.row), color: gold, size: cw * 3.2, delay: 140 });
+                    items.push({ t: 'sparkles', cx: cxOf(b.col), cy: cyOf(b.row), delay: 140 });
+                    items.push(textFx(cxOf(b.col), cyOf(b.row) - ch * 0.7, horiz ? '🧨 FORGED!' : '🚀 FORGED!', gold, Math.round(innerW * 0.06), 140));
+                    items.push(numFx(cxOf(b.col), cyOf(b.row), `+${pts}`, '#ffffff', Math.round(innerW * 0.055), 220));
+                    doShake(0);
+                } else {
+                    items.push(toward(a, mx, my));
+                    items.push(toward(b, mx, my));
+                    items.push({ t: 'ring', cx: mx, cy: my, color: COLOR_HEX[b.card.color] || '#fff', size: cw * 2.2, delay: 200 });
+                    items.push({ t: 'sparkles', cx: mx, cy: my, delay: 200, small: true });
+                    const h1 = Math.ceil(pts / 2), h2 = pts - h1;
+                    items.push(numFx(cxOf(a.col), cyOf(a.row), `+${h1}`, '#fde047', Math.round(innerW * 0.045), 0));
+                    items.push(numFx(cxOf(b.col), cyOf(b.row), `+${h2}`, '#ffffff', Math.round(innerW * 0.045), 40));
+                }
+                if (streak >= 2) items.push(textFx(innerW / 2, innerH * 0.12, `STREAK x${streak + 1}`, '#67e8f9', Math.round(innerW * 0.06), 100));
+                addFx(items, 1400);
+                moveToast(pts, 2);
+            };
+
+            // chain reaction wrapper that also tracks the biggest clear
+            const chain = (queue, cols) => { const res = executeChainReaction(queue, cols); recordStat('bigClear', res.wipedCardsCount); return res; };
+
+            // --- USER INTERACTION HANDLER ---
+            const handleCardClick = (colIdx, rowIdx, card) => {
+                if (activeModal || clueBlocking) return;
+                Snd.init();
+
+                if (card.type === 'block') {
+                    if (!(selected && selected.card.type === 'hammer')) {
+                        addToast(`Hazards cannot be paired! Use a Heart, Line Clear, or Hammer!`, card.emoji, "bg-red-600 text-white border-red-400");
+                        setSelected(null);
+                        return;
+                    }
+                }
+
+                if (!selected) {
+                    if (card.type === 'heart' || card.type === 'h_clear' || card.type === 'v_clear') {
+                        let initialQueue = [{ col: colIdx, row: rowIdx, card: card }];
+                        const { newCols, wipedCardsCount, destroyedCards, destroyedList } = chain(initialQueue, columns);
+
+                        let newSpecs = routeXPFromDestroyed(destroyedCards, molecules, rooms);
+                        setMolecules(newSpecs);
+                        triggerAutoThesis(newSpecs);
+
+                        if (card.type === 'heart') { Snd.heartPop(); burstFx('heart', colIdx, rowIdx, destroyedList, { color: card.color }); }
+                        else if (card.type === 'h_clear') { Snd.dynamite(); burstFx('dynamite', colIdx, rowIdx, destroyedList); }
+                        else { Snd.rocket(); burstFx('rocket', colIdx, rowIdx, destroyedList); }
+                        if (card.type === 'heart') addToast(`Data Blast: ${card.color.toUpperCase()}!`, card.emoji, "bg-rose-600 text-white border-rose-400");
+                        else if (card.type === 'h_clear') addToast(`Row Cleared!`, card.emoji, "bg-amber-500 text-white border-amber-400");
+                        else if (card.type === 'v_clear') addToast(`Column Cleared!`, card.emoji, "bg-blue-500 text-white border-blue-400");
+
+                        processTurn(newCols, clearPts(destroyedList), moves);
+                        return;
+                    }
+                    Snd.select();
+                    setSelected({ col: colIdx, row: rowIdx, card });
+                    return;
+                }
+
+                if (selected.col === colIdx && selected.row === rowIdx) { setSelected(null); return; }
+
+                const c1 = selected.card, c2 = card;
+                let newCols = columns.map(c => [...c]);
+
+                const removeSelectedCards = () => {
+                    if (selected.col === colIdx) {
+                        if (selected.row > rowIdx) { newCols[selected.col].splice(selected.row, 1); newCols[colIdx].splice(rowIdx, 1); }
+                        else { newCols[colIdx].splice(rowIdx, 1); newCols[selected.col].splice(selected.row, 1); }
+                    } else { newCols[selected.col].splice(selected.row, 1); newCols[colIdx].splice(rowIdx, 1); }
+                };
+
+                // COMBO: HAMMER + EXPLOSIVE
+                if ((c1.type === 'hammer' && ['heart', 'h_clear', 'v_clear'].includes(c2.type)) ||
+                    (c2.type === 'hammer' && ['heart', 'h_clear', 'v_clear'].includes(c1.type))) {
+                    let explosiveCard = c1.type === 'hammer' ? c2 : c1;
+                    let initialQueue = [];
+                    columns.forEach((col, c) => col.forEach((cd, r) => {
+                        if (cd.type === explosiveCard.type) initialQueue.push({ col: c, row: r, card: cd });
+                    }));
+
+                    const res = chain(initialQueue, columns);
+                    let newSpecs = routeXPFromDestroyed(res.destroyedCards, molecules, rooms);
+                    setMolecules(newSpecs);
+                    triggerAutoThesis(newSpecs);
+
+                    Snd.hammerBlast();
+                    burstFx('mega', colIdx, rowIdx, res.destroyedList);
+                    addToast(`MEGA DETONATION!`, "💥", "bg-pink-600 text-white border-pink-400");
+                    confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                    processTurn(res.newCols, clearPts(res.destroyedList), moves);
+                    return;
+                }
+
+                // COMBO: HAMMER + HAMMER -> both hammers explode in a 3x3 area (chains like other bombs)
+                if (c1.type === 'hammer' && c2.type === 'hammer') {
+                    let initialQueue = [
+                        { col: selected.col, row: selected.row, card: c1, blast: true },
+                        { col: colIdx, row: rowIdx, card: c2, blast: true }
+                    ];
+                    const res = chain(initialQueue, columns);
+                    let newSpecs = routeXPFromDestroyed(res.destroyedCards, molecules, rooms);
+                    setMolecules(newSpecs);
+                    triggerAutoThesis(newSpecs);
+                    Snd.hammerBlast();
+                    burstFx('hammerBlast', selected.col, selected.row, res.destroyedList, { ox2: colIdx, oy2: rowIdx });
+                    addToast(`HAMMER BLAST: Broke ${res.wipedCardsCount} Instruments!`, "🔨", "bg-purple-600 text-white border-purple-400");
+                    confetti({ particleCount: 120, spread: 90, origin: { y: 0.5 } });
+                    processTurn(res.newCols, clearPts(res.destroyedList), moves);
+                    return;
+                }
+
+                // COMBO: HAMMER + HAZARD
+                if ((c1.type === 'hammer' && c2.type === 'block') || (c2.type === 'hammer' && c1.type === 'block')) {
+                    let initialQueue = [{ col: selected.col, row: selected.row, card: c1 }, { col: colIdx, row: rowIdx, card: c2 }];
+                    const res = chain(initialQueue, columns);
+                    let newSpecs = routeXPFromDestroyed(res.destroyedCards, molecules, rooms);
+                    setMolecules(newSpecs);
+                    triggerAutoThesis(newSpecs);
+                    Snd.hammerHit();
+                    burstFx('hammerHit', colIdx, rowIdx, res.destroyedList, { perFn: c => c.type === 'block' ? 90 : 0 });
+                    setScore(s => s + 90);
+                    addToast(`Smashed Hazard Clock! (+90)`, "🔨", "bg-purple-700 text-white border-purple-400");
+                    processTurn(res.newCols, 0, moves);
+                    return;
+                }
+
+                // COMBO: HAMMER + MOLECULE
+                if ((c1.type === 'hammer' && c2.type === 'molecule') || (c2.type === 'hammer' && c1.type === 'molecule')) {
+                    const targetMolecule = c1.type === 'molecule' ? c1 : c2;
+                    let initialQueue = [{ col: selected.col, row: selected.row, card: c1 }, { col: colIdx, row: rowIdx, card: c2 }];
+                    columns.forEach((col, c) => col.forEach((cd, r) => { if (cd.emoji === targetMolecule.emoji) initialQueue.push({ col: c, row: r, card: cd }); }));
+
+                    const res = chain(initialQueue, columns);
+                    let newSpecs = routeXPFromDestroyed(res.destroyedCards, molecules, rooms);
+                    setMolecules(newSpecs);
+                    triggerAutoThesis(newSpecs);
+
+                    Snd.hammerHit();
+                    const shatterFn = (c) => c.type === 'hammer' ? 0 : 30 + (c.number || 0);
+                    const shatterPts = res.destroyedList.reduce((a, g) => a + shatterFn(g.card), 0) + 20;
+                    { const tp = c1.type === 'molecule' ? { x: selected.col, y: selected.row } : { x: colIdx, y: rowIdx };
+                      burstFx('hammerShatter', tp.x, tp.y, res.destroyedList, { perFn: shatterFn, bonus: 20 }); }
+                    setScore(s => s + shatterPts);
+                    addToast(`Shattered ${res.wipedCardsCount - 1} ${targetMolecule.emoji}! (+${shatterPts})`, "🔨", "bg-purple-700 text-white border-purple-400");
+                    processTurn(res.newCols, 0, moves);
+                    return;
+                }
+
+                // COMBO: REGULAR MOLECULE PAIRING
+                if (c1.type === 'molecule' && c2.type === 'molecule' && (c1.emoji === c2.emoji || c1.color === c2.color || c1.number === c2.number)) {
+                    // Side-by-side match -> Dynamite, stacked match -> Rocket (replaces the tapped card, other card is consumed)
+                    const sideBySide = selected.row === rowIdx && Math.abs(selected.col - colIdx) === 1;
+                    const stacked = selected.col === colIdx && Math.abs(selected.row - rowIdx) === 1;
+                    const forged = sideBySide || stacked;
+                    const pts = (c1.number * c2.number) + 15;
+                    const posA = { col: selected.col, row: selected.row, card: c1 }, posB = { col: colIdx, row: rowIdx, card: c2 };
+                    const streakN = bumpStreak();
+                    if (forged) {
+                        newCols[colIdx][rowIdx] = sideBySide
+                            ? { id: uid(), type: 'h_clear', emoji: '🧨', color: c2.color, number: 0, anim: 'forge' }
+                            : { id: uid(), type: 'v_clear', emoji: '🚀', color: c2.color, number: 0, anim: 'forge' };
+                        newCols[selected.col].splice(selected.row, 1);
+                        addToast(sideBySide ? `Side-by-side match forged a Dynamite! 🧨` : `Stacked match forged a Rocket! 🚀`, sideBySide ? "🧨" : "🚀", "bg-orange-600 text-white border-orange-300");
+                        matchFx('forge', posA, posB, sideBySide, pts, streakN);
+                        Snd.forge();
+                        lifeAdd('forged');
+                    } else {
+                        removeSelectedCards();
+                        matchFx('match', posA, posB, false, pts, streakN);
+                        Snd.matchStep(streakN);
+                        lifeAdd('matches');
+                    }
+                    setScore(s => s + pts);
+
+                    let newSpecs = { ...molecules };
+
+                    [c1, c2].forEach(cd => {
+                        const emoji = cd.emoji;
+                        newSpecs[emoji] = newSpecs[emoji] ? { ...newSpecs[emoji] } : { xp: 0, level: 0, alignment: 0 };
+                        newSpecs[emoji].xp += 1;
+                        newSpecs[emoji].level = newSpecs[emoji].xp;
+                    });
+
+                    const isExactMatch = (c1.emoji === c2.emoji);
+                    const targetEmoji = c1.emoji;
+                    const targetRoom = rooms.find(r => r.conceptEmoji === targetEmoji);
+
+                    if (isExactMatch) {
+                        const roomTarget = targetRoom ? targetRoom.targetLvl : '?';
+                        const curXP = newSpecs[targetEmoji].xp;
+                        addToast(`+2 ${targetEmoji} Synthesis (${Math.min(curXP, roomTarget)}/${roomTarget})`, targetEmoji, "bg-emerald-600 text-white border-emerald-400");
+                    } else {
+                        addToast(`+1 ${c1.emoji} & +1 ${c2.emoji} Synthesis!`, "🔬", "bg-emerald-600 text-white border-emerald-400");
+                    }
+
+                    if (targetRoom && !targetRoom.isCalibrated && isExactMatch && newSpecs[targetEmoji].xp >= targetRoom.targetLvl) {
+                        newSpecs[targetEmoji].alignment = targetRoom.targetAlign;
+                        Snd.calibrate();
+                        addToast(`🎯 Evidence Link Unlocked: ${targetRoom.conceptName}!`, targetEmoji, "bg-emerald-500 text-white border-emerald-300");
+                    } else {
+                        if (c1.number === c2.number) {
+                            newSpecs[targetEmoji].alignment = alignOf(c1.number);
+                            addToast(`🎲 Pair Match: Align set to ${alignOf(c1.number)}! (Goal: ${targetRoom ? targetRoom.targetAlign : '?'})`, targetEmoji, "bg-cyan-700 text-white border-cyan-400");
+                        } else if (targetRoom && (alignOf(c1.number) === targetRoom.targetAlign || alignOf(c2.number) === targetRoom.targetAlign)) {
+                            newSpecs[targetEmoji].alignment = targetRoom.targetAlign;
+                            addToast(`🎯 Lock Match: Alignment ${targetRoom.targetAlign} Locked!`, targetEmoji, "bg-cyan-600 text-white border-cyan-400");
+                        } else if (targetRoom) {
+                            const roll = Math.floor(Math.random() * 9) + 1;
+                            newSpecs[targetEmoji].alignment = roll;
+                            addToast(`🎲 Alignment Shift: Rolled ${roll} (Goal: ${targetRoom.targetAlign})`, targetEmoji, "bg-indigo-600 text-white border-indigo-400");
+                        }
+                    }
+
+                    setMolecules(newSpecs);
+                    triggerAutoThesis(newSpecs);
+                    processTurn(newCols, 0, moves);
+                    return;
+                }
+
+                setSelected(null);
+            };
+
+            const progressPct = Math.min(100, (score / currentTarget) * 100);
+
+            const googlePrompt = `I'm exploring a literature-based hypothesis (a Swanson-style link between previously unconnected findings) through the BioArcade game. This is a hypothesis, not established fact: "${HYPOTHESIS_DATA.main_claim}" Rationale: ${HYPOTHESIS_DATA.justification} Supporting PMIDs: ${HYPOTHESIS_DATA.cited_pmids.join(', ')}. What experiments could test this fastest, what are the main translational barriers, and which research groups or open datasets could help move it toward a cure?`;
+            const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(googlePrompt)}`;
+
+            const renderFx = (f) => {
+                const d = f.delay || 0;
+                switch (f.t) {
+                    case 'ghost': return (
+                        <React.Fragment key={f.id}>
+                            <div style={{ position: 'absolute', left: px(f.x), top: py(f.y), width: cw, height: ch, '--mx': (f.mx || 0) + 'px', '--my': (f.my || 0) + 'px',
+                                animation: f.merge ? `ghostMerge 0.32s ${d}ms ease-in both` : `ghostOut 0.4s ${d}ms ease-in both` }}
+                                className={`rounded-lg flex items-center justify-center border-b-4 ${TILE_CLASSES[f.color] || 'tile-grey'}`}>
+                                <span style={{ fontSize: tilePx * 0.5 }}>{f.face}</span>
+                            </div>
+                            {f.parts.map((pt, i) => (
+                                <span key={i} style={{ position: 'absolute', left: cxOf(f.x) - 3, top: cyOf(f.y) - 3, width: 6, height: 6, borderRadius: '50%',
+                                    background: COLOR_HEX[f.color] || '#fff', boxShadow: `0 0 6px ${COLOR_HEX[f.color] || '#fff'}`,
+                                    '--dx': pt.dx + 'px', '--dy': pt.dy + 'px', animation: `part 0.5s ${d + 60}ms ease-out both` }} />
+                            ))}
+                        </React.Fragment>
+                    );
+                    case 'ring': return <div key={f.id} style={{ position: 'absolute', left: f.cx - f.size / 2, top: f.cy - f.size / 2, width: f.size, height: f.size, borderRadius: '50%',
+                        border: `4px solid ${f.color}`, boxShadow: `0 0 18px ${f.color}, inset 0 0 14px ${f.color}`, animation: `ring 0.55s ${d}ms ease-out both` }} />;
+                    case 'beamV': return <div key={f.id} style={{ position: 'absolute', left: px(f.x) - 2, top: 0, width: cw + 4, height: '100%',
+                        background: `linear-gradient(90deg, transparent, ${f.color}, #fff, ${f.color}, transparent)`, mixBlendMode: 'screen', animation: `beam 0.45s ${d}ms ease-out both` }} />;
+                    case 'beamH': return <div key={f.id} style={{ position: 'absolute', top: py(f.y) - 2, left: 0, height: ch + 4, width: '100%',
+                        background: `linear-gradient(180deg, transparent, ${f.color}, #fff, ${f.color}, transparent)`, mixBlendMode: 'screen', animation: `beam 0.45s ${d}ms ease-out both` }} />;
+                    case 'rocket': {
+                        const up = f.dir < 0;
+                        return (
+                            <div key={f.id} style={{ position: 'absolute', left: f.cx - 14, top: f.cy - 14, width: 28, height: 28, '--dist': (f.dir * f.dist) + 'px', animation: `moveY 0.5s ${d + 60}ms cubic-bezier(.5,0,.9,.6) both` }}>
+                                <div style={{ position: 'absolute', left: 11, top: up ? 22 : -46, width: 6, height: 48, borderRadius: 6,
+                                    background: up ? 'linear-gradient(to bottom, #fde047, #f97316 50%, transparent)' : 'linear-gradient(to top, #fde047, #f97316 50%, transparent)' }} />
+                                <span style={{ position: 'absolute', inset: 0, fontSize: 26, lineHeight: '28px', textAlign: 'center', transform: `rotate(${up ? -45 : 135}deg)` }}>🚀</span>
+                            </div>
+                        );
+                    }
+                    case 'flare': {
+                        const left = f.dir < 0;
+                        return (
+                            <div key={f.id} style={{ position: 'absolute', left: f.cx - 14, top: f.cy - 14, width: 28, height: 28, '--dist': (f.dir * f.dist) + 'px', animation: `moveX 0.45s ${d}ms cubic-bezier(.4,0,.8,.6) both` }}>
+                                <div style={{ position: 'absolute', top: 11, left: left ? 22 : -46, height: 6, width: 48, borderRadius: 6,
+                                    background: left ? 'linear-gradient(to right, #fde047, #f97316 50%, transparent)' : 'linear-gradient(to left, #fde047, #f97316 50%, transparent)' }} />
+                                <span style={{ position: 'absolute', inset: 0, fontSize: 24, lineHeight: '28px', textAlign: 'center' }}>🔥</span>
+                            </div>
+                        );
+                    }
+                    case 'spark': return <div key={f.id} style={{ position: 'absolute', left: f.cx - 16, top: f.cy - 16, fontSize: 28, lineHeight: '32px', width: 32, textAlign: 'center', animation: 'spark 0.14s linear 1 both' }}>✨</div>;
+                    case 'float': return <div key={f.id} style={{ position: 'absolute', left: f.cx - 12, top: f.cy - 12, fontSize: 22, '--drift': f.drift + 'px', animation: `heartFloat 0.9s ${d}ms ease-out both` }}>{f.emoji}</div>;
+                    case 'hammer': { const sz = cw * 0.9; return <div key={f.id} style={{ position: 'absolute', left: f.cx - sz / 2, top: f.cy - sz / 2, fontSize: sz, lineHeight: 1, animation: 'hammerSwing 0.45s ease-in both' }}>🔨</div>; }
+                    case 'blast3': return <div key={f.id} style={{ position: 'absolute', left: px(f.x - 1) - 2, top: py(f.y + 1) - 2, width: 3 * cw + 12, height: 3 * ch + 12, borderRadius: 12, border: '3px solid #fb923c',
+                        background: 'radial-gradient(circle, rgba(253,224,71,.6), rgba(249,115,22,.2) 60%, transparent)', animation: 'blast3 0.5s ease-out both' }} />;
+                    case 'boom': return <div key={f.id} style={{ position: 'absolute', left: f.cx, top: f.cy, fontSize: cw * 1.6, lineHeight: 1, animation: 'boom 0.5s ease-out both' }}>💥</div>;
+                    case 'flash': return <div key={f.id} style={{ position: 'absolute', inset: 0, background: f.color, '--a': f.alpha, animation: 'flash 0.35s ease-out both' }} />;
+                    case 'link': {
+                        const dx = f.x2 - f.x1, dy = f.y2 - f.y1, len = Math.hypot(dx, dy) + cw * 0.5, ang = Math.atan2(dy, dx) * 180 / Math.PI;
+                        return (
+                            <div key={f.id} style={{ position: 'absolute', left: (f.x1 + f.x2) / 2 - len / 2, top: (f.y1 + f.y2) / 2 - 5, width: len, height: 10, transform: `rotate(${ang}deg)` }}>
+                                <div style={{ width: '100%', height: '100%', borderRadius: 6, background: 'linear-gradient(90deg,#fde047,#fff,#fde047)', boxShadow: '0 0 16px #fde047', animation: 'linkPulse 0.5s ease-out both' }} />
+                            </div>
+                        );
+                    }
+                    case 'sparkles': return (
+                        <React.Fragment key={f.id}>
+                            {Array.from({ length: f.small ? 4 : 7 }, (_, i) => {
+                                const a = (i / (f.small ? 4 : 7)) * Math.PI * 2 + 0.4, r = (f.small ? 26 : 44);
+                                return <span key={i} style={{ position: 'absolute', left: f.cx - 8, top: f.cy - 8, fontSize: 16, '--dx': Math.cos(a) * r + 'px', '--dy': Math.sin(a) * r + 'px', animation: `part 0.7s ${d}ms ease-out both` }}>✨</span>;
+                            })}
+                        </React.Fragment>
+                    );
+                    case 'toast': return (
+                        <div key={f.id} style={{ position: 'absolute', left: innerW / 2, top: innerH * 0.38, transform: 'translate(-50%,-50%)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            <div className="mono" style={{ fontWeight: 900, lineHeight: 1.05, animation: `floatText 1.4s ${d}ms ease-out both` }}>
+                                {f.word && <div style={{ fontSize: f.size, color: f.color, textShadow: `0 2px 0 #000, 0 0 14px ${f.color}` }}>{f.word}</div>}
+                                <div style={{ fontSize: Math.round(f.size * 1.15), color: '#fff7ae', textShadow: '0 2px 0 #000, 0 0 12px #fde047' }}>+{f.total.toLocaleString()}</div>
+                            </div>
+                        </div>
+                    );
+                    case 'num': return (
+                        <div key={f.id} style={{ position: 'absolute', left: f.cx, top: f.cy, transform: 'translate(-50%,-50%)', whiteSpace: 'nowrap' }}>
+                            <div className="mono" style={{ fontSize: f.size, color: f.color, fontWeight: 900, textShadow: `0 1px 0 #000, 0 0 8px ${f.color}`, '--drift': f.drift + 'px', '--rise': f.rise + 'px', animation: `numFly 0.9s ${d}ms ease-out both` }}>{f.text}</div>
+                        </div>
+                    );
+                    case 'text': return (
+                        <div key={f.id} style={{ position: 'absolute', left: f.cx, top: f.cy, transform: 'translate(-50%,-50%)', whiteSpace: 'nowrap' }}>
+                            <div className="mono" style={{ fontSize: f.size, color: f.color, fontWeight: 900, textShadow: `0 2px 0 #000, 0 0 12px ${f.color}`, animation: `floatText 1s ${d}ms ease-out both` }}>{f.text}</div>
+                        </div>
+                    );
+                    default: return null;
+                }
+            };
+
+            const savedRun = activeModal === 'setup' ? loadSave() : null;
+            const bests = {};
+            if (activeModal === 'setup') { const rr = loadRecords(); Object.keys(MODES).forEach(k => { if (rr[k] && rr[k].level && rr[k].level.v) bests[k] = { level: rr[k].level.v }; }); }
+            const VpIcon = VIEWPORT_ICONS[vp];
+            const tilePx = Math.min(cw, ch * 1.2);
+            const iconBtn = "icon-btn w-10 h-10 rounded-xl border flex items-center justify-center active:scale-90 transition-transform";
+            const sfxLabelOn = sfxOn ? "border-emerald-700 text-emerald-300 bg-emerald-950/60" : "border-zinc-700 text-zinc-500 bg-zinc-900";
+
+            return (
+                <div className={`app-bg ts-${textScale} flex flex-col w-full mx-auto relative overflow-hidden`} style={{ height: '100dvh', maxWidth: VIEWPORTS[vp].maxW, paddingTop: 'env(safe-area-inset-top, 0px)', boxSizing: 'border-box' }}>
+
+                    {/* SCIENTIFIC CLUE MODAL */}
+                    {clueMode === 'banner' && clueQueue.length > 0 && activeModal === null && (
+                        <div className="absolute left-2 right-2 bottom-14 z-[55] pointer-events-none flex justify-center">
+                            <div className="pointer-events-auto bg-black/85 border border-emerald-500 rounded-xl p-2.5 max-w-md w-full shadow-[0_0_18px_#10b98188] flex items-start gap-2.5">
+                                <div className="text-3xl shrink-0">{clueQueue[0].conceptEmoji}</div>
+                                <div className="min-w-0 flex-1">
+                                    <div className="mono text-[10px] font-black uppercase tracking-widest text-emerald-400">🔬 {clueQueue[0].conceptName} evidence link confirmed • PMID {clueQueue[0].pmid}</div>
+                                    <div className="text-[11px] text-gray-300 font-serif italic leading-snug line-clamp-5">"{clueQueue[0].quote}"</div>
+                                </div>
+                                <button onClick={() => setClueQueue(q => q.slice(1))} className="shrink-0 w-7 h-7 rounded-lg border border-emerald-700 text-emerald-300 flex items-center justify-center active:scale-90"><IconX size={14} /></button>
+                            </div>
+                        </div>
+                    )}
+                    {clueMode === 'modal' && clueQueue.length > 0 && activeModal === null && (
+                        <div className="absolute inset-0 z-[60] panel flex flex-col items-center justify-center p-6 text-center">
+                            <div className="bg-black/90 border-2 border-emerald-500 rounded-2xl p-5 max-w-md w-full shadow-[0_0_30px_#10b981]">
+                                <div className="flex justify-between items-center mb-4 border-b border-emerald-900 pb-2">
+                                    <span className="text-emerald-400 font-black text-xs sm:text-sm uppercase tracking-widest">🔬 Evidence Link Confirmed</span>
+                                    <span className="bg-blue-900 text-blue-300 text-[10px] sm:text-xs font-black px-2 py-1 rounded mono">PMID: {clueQueue[0].pmid}</span>
+                                </div>
+                                <div className="flex justify-center items-center gap-3 mb-2">
+                                    <div className="text-5xl drop-shadow-md">{clueQueue[0].conceptEmoji}</div>
+                                    <div className="text-2xl font-black text-white">{clueQueue[0].conceptName}</div>
+                                </div>
+                                <p className="text-sm text-emerald-300 mb-5 font-bold">{clueQueue[0].desc}</p>
+                                <div className="bg-black/60 border border-gray-700 p-4 rounded-xl mb-5 text-left relative">
+                                    <div className="absolute -top-3 left-4 bg-black px-2 text-[10px] text-gray-400 font-black tracking-widest uppercase">Supporting Literature</div>
+                                    <h3 className="text-sm sm:text-base text-gray-200 font-serif italic leading-relaxed">"{clueQueue[0].quote}"</h3>
+                                </div>
+                                <button onClick={() => setClueQueue(q => q.slice(1))} className="w-full py-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform border border-emerald-400">
+                                    Save to Evidence Dossier ➔
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TOASTS */}
+                    <div className="absolute right-2 z-50 flex flex-col gap-2 pointer-events-none items-end" style={{ top: 150, maxWidth: '92%' }}>
+                        {toasts.map(t => (
+                            <div key={t.id} className={`${t.color} border-2 px-3 py-1.5 rounded-xl shadow-xl flex items-center gap-2 font-black text-xs sm:text-sm toast-enter`}>
+                                <span className="text-xl drop-shadow-md">{t.icon}</span>
+                                <span className="tracking-wide text-shadow">{t.msg}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* TOP MENU / HUD */}
+                    <div className="shrink-0 px-3 pt-2 pb-2 bg-[#06140c]/95 border-b-2 border-emerald-900/80 shadow-xl z-10">
+                        {/* row 1: ID + control buttons */}
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="mono flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-600/60 bg-emerald-950/60 text-emerald-300 text-xs font-extrabold tracking-wider min-w-0">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                                <span className="truncate">{HYPOTHESIS_DATA.hypothesis_id}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button onClick={cycleViewport} title="Viewport size" className={`${iconBtn} ${VIEWPORT_STYLES[vp]}`}><VpIcon /></button>
+                                <button onClick={downloadGame} title="Download standalone game" className={`${iconBtn} border-cyan-400 text-cyan-300 bg-cyan-950/60`}><IconDownload /></button>
+                                <button onClick={toggleSfx} title="Sound effects" className={`${iconBtn} ${sfxLabelOn}`}>{sfxOn ? <IconVol /> : <IconMute />}</button>
+                                <button onClick={() => setActiveModal('guide')} title="How to play" className={`${iconBtn} border-zinc-600 text-zinc-300 bg-zinc-900`}><IconHelp /></button>
+                            </div>
+                        </div>
+
+                        {/* row 2: music player */}
+                        <div className="mt-2 flex items-center gap-2 p-1.5 rounded-xl border border-emerald-900/70 bg-black/50">
+                            <button onClick={toggleBgm} className={`mono shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-extrabold uppercase tracking-wider active:scale-95 ${bgmOn ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`}>
+                                <IconMusic size={16} />
+                                <span>BGM {bgmOn ? 'ON' : 'OFF'}</span>
+                                <span className="flex items-end gap-[2px] h-3 w-6">
+                                    {[0, 0.15, 0.3, 0.1, 0.25].map((d, i) => (
+                                        bgmOn
+                                            ? <span key={i} className="eq-bar" style={{ animationDelay: `${d}s` }}></span>
+                                            : <span key={i} className="w-[3px] h-[2px] bg-zinc-600 rounded-sm"></span>
+                                    ))}
+                                </span>
+                            </button>
+                            <div className="mono flex-1 min-w-0 text-amber-300 text-xs sm:text-sm font-extrabold truncate">{TRACKS[trackIdx].name}</div>
+                            <button onClick={skipTrack} title="Next track" className="shrink-0 w-10 h-9 rounded-lg border border-amber-700/70 text-amber-300 bg-amber-950/30 flex items-center justify-center active:scale-90"><IconSkip size={18} /></button>
+                        </div>
+
+                        {/* row 3: stats */}
+                        <div className="mono flex justify-between items-end px-1 mt-2">
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400">Score</span>
+                                <span className="leading-none">
+                                    <span className="text-3xl font-black text-amber-400">{Math.round(score)}</span>
+                                    <span className="text-sm font-bold text-emerald-600"> / {currentTarget}</span>
+                                </span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400">Level</span>
+                                <span className="text-3xl font-black text-white leading-none">{level}</span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400">Moves</span>
+                                <span className="text-3xl font-black text-cyan-300 leading-none">{moves}</span>
+                            </div>
+                        </div>
+
+                        {/* progress bar */}
+                        <div className="mt-2 h-8 w-full bg-black rounded-full border-2 border-emerald-900 overflow-hidden relative">
+                            <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-amber-400 transition-all duration-300" style={{ width: `${progressPct}%` }}></div>
+                            <div className="mono absolute inset-0 flex items-center justify-center text-[10px] font-extrabold text-white text-shadow uppercase tracking-widest">
+                                {score >= currentTarget ? 'Hypothesis Ready!' : `${Math.floor(progressPct)}% to goal`}
+                            </div>
+                        </div>
+
+                        {/* node chips */}
+                        <div className="mt-2 grid grid-cols-6 gap-1 bg-black/70 p-1.5 rounded-2xl border border-emerald-950">
+                            {rooms.map((r, i) => {
+                                const spec = molecules[r.conceptEmoji] || { xp: 0, level: 0, alignment: 0 };
+                                const curXP = spec.xp || 0;
+                                const lvlMet = curXP >= r.targetLvl;
+                                const isReady = lvlMet && !r.isCalibrated;
+                                return (
+                                    <div key={i} onClick={() => setActiveModal('thesis')}
+                                        className={`mono flex flex-col items-center justify-center py-1 px-0.5 rounded-xl border cursor-pointer transition-all ${
+                                            r.isCalibrated ? 'bg-emerald-950/90 border-emerald-400 text-emerald-300 shadow-[0_0_10px_#10b981]'
+                                            : isReady ? 'bg-gray-900/90 border-yellow-400 text-white animate-pulse shadow-[0_0_15px_#facc15]'
+                                            : 'bg-gray-950/90 border-gray-800'}`}>
+                                        <span className="leading-none" style={{ fontSize: 22 }}>{r.isCalibrated ? '✅' : r.conceptEmoji}</span>
+                                        {r.isCalibrated ? (
+                                            <span className="font-black text-emerald-300 uppercase mt-0.5" style={{ fontSize: 13 }}>DONE</span>
+                                        ) : (
+                                            <div className="flex flex-col items-center font-black leading-tight mt-0.5 w-full whitespace-nowrap overflow-hidden" style={{ fontSize: 14 }}>
+                                                <span className={lvlMet ? "text-emerald-300" : "text-amber-300"}><span style={{ fontSize: 11 }}>🃏</span>{Math.min(curXP, r.targetLvl)}/{r.targetLvl}</span>
+                                                {isReady ? (
+                                                    <span className="text-amber-300 animate-bounce" style={{ fontSize: 12 }}>⚡MATCH</span>
+                                                ) : (
+                                                    <span className="text-cyan-300 truncate max-w-full">{spec.alignment === r.targetAlign ? '🎯LOCK' : <><span style={{ fontSize: 11 }}>🎲</span>{spec.alignment || 0}/{r.targetAlign}</>}</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* ARCADE BOARD */}
+                    <div ref={boardWrapRef} className="flex-1 min-h-0 relative overflow-hidden">
+                        <div className="absolute left-1/2 bottom-1 -translate-x-1/2 rounded-xl border border-emerald-900/50 bg-black/30 p-0"
+                            style={{ width: boardW, height: boardH }}>
+                            <div className="relative w-full h-full" style={{ '--k': shake.lvl === 2 ? 2.4 : 1, animation: shake.n ? `${shake.n % 2 ? 'shakeA' : 'shakeB'} ${shake.lvl === 2 ? 0.55 : 0.35}s ease-out` : 'none' }}>
+                                <div className="absolute top-0 left-0 right-0 h-5 bg-gradient-to-b from-red-600/30 to-transparent pointer-events-none border-t-2 border-red-500/70 z-20 flex items-center justify-center rounded-t-xl">
+                                    <span className="mono font-black text-red-300 uppercase" style={{ fontSize: 12 }}>⚠ danger zone ⚠</span>
+                                </div>
+
+                                {/* empty slot backdrop */}
+                                <div className="absolute inset-0 grid pointer-events-none" style={{ gridTemplateColumns: 'repeat(8, 1fr)', gridTemplateRows: 'repeat(10, 1fr)', gap: 4 }}>
+                                    {Array.from({ length: 80 }, (_, n) => <div key={n} className="rounded-lg bg-gray-900/40 border border-gray-800/40"></div>)}
+                                </div>
+
+                                {/* cards: absolutely positioned so they slide and fall into place */}
+                                <div className="absolute inset-0">
+                                    {columns.map((col, x) => col.map((card, y) => {
+                                        if (y > 9) return null;
+                                        const isSelected = selected && selected.col === x && selected.row === y;
+                                        const isTop = y === 9, isBottom = y === 0;
+                                        const isSpecial = card.type === 'heart' || card.type === 'h_clear' || card.type === 'v_clear' || card.type === 'hammer';
+                                        const tileClass = TILE_CLASSES[card.color] || "tile-grey";
+                                        return (
+                                            <div key={card.id} data-cell={`${x},${y}`} onClick={() => handleCardClick(x, y, card)}
+                                                className={`absolute ${isSpecial ? 'special-glow' : ''}`}
+                                                style={{ left: 0, top: 0, width: cw, height: ch, borderRadius: 8,
+                                                    transform: `translate(${px(x)}px, ${py(y)}px)`,
+                                                    transition: fxOn ? 'transform 260ms cubic-bezier(.34,1.3,.5,1)' : 'none',
+                                                    zIndex: isSelected ? 30 : (card.type === 'block' && card.subType === 'float' && isTop) ? 20 : 1 }}>
+                                                <div className={`${card.anim === 'forge' ? 'tile-forge' : 'tile-drop'} relative w-full h-full rounded-lg flex items-center justify-center cursor-pointer border-b-4 active:scale-90 transition-transform ${tileClass}
+                                                    ${isSelected ? 'ring-4 ring-white scale-110 shadow-[0_0_20px_#fff]' : 'shadow-md'}
+                                                    ${card.type === 'block' && card.subType === 'float' && isTop ? 'animate-bounce ring-4 ring-red-500' : ''}
+                                                    ${card.type === 'block' && card.subType === 'sink' && isBottom ? 'animate-pulse ring-4 ring-red-500' : ''}`}
+                                                    style={card.anim === 'forge' ? undefined : { animationDelay: `${x * 22}ms` }}>
+                                                    {card.type === 'block' ? (
+                                                        <div className="flex flex-col items-center justify-center leading-none">
+                                                            <span style={{ fontSize: tilePx * 0.36 }}>{card.subType === 'float' ? '🎈🕒' : '⚓🕒'}</span>
+                                                            <span className={`mono font-black px-1 rounded-full uppercase mt-0.5 border ${card.subType === 'float' ? 'bg-cyan-950 text-cyan-300 border-cyan-400' : 'bg-amber-950 text-amber-300 border-amber-400'}`} style={{ fontSize: Math.max(9, tilePx * 0.24) }}>
+                                                                {card.subType === 'float' ? 'FLOAT' : 'SINK'}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="relative leading-none">
+                                                            <span className="drop-shadow-lg" style={{ fontSize: tilePx * 0.5 }}>{card.emoji}</span>
+                                                            {card.type === 'h_clear' && <span className="absolute -bottom-2 -left-2 bg-black/60 rounded px-0.5 border border-white/50" style={{ fontSize: tilePx * 0.3 }}>↔️</span>}
+                                                            {card.type === 'v_clear' && <span className="absolute -bottom-2 -left-2 bg-black/60 rounded px-0.5 border border-white/50" style={{ fontSize: tilePx * 0.3 }}>↕️</span>}
+                                                        </div>
+                                                    )}
+                                                    {card.number > 0 && (
+                                                        <span className="mono absolute -bottom-1 -right-1 bg-black rounded-full flex items-center justify-center font-black text-white border-2 border-white/80 shadow-lg z-10"
+                                                            style={{ width: tilePx * 0.52, height: tilePx * 0.52, fontSize: tilePx * (card.number >= 10 ? 0.26 : 0.34) }}>
+                                                            {card.number}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    }))}
+                                </div>
+
+                                {/* effects: ghosts, beams, rockets, rings, floating text */}
+                                <div className="absolute inset-0 pointer-events-none overflow-hidden z-40 fx-layer">
+                                    {fx.map(f => renderFx(f))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mono shrink-0 text-center text-[11px] text-emerald-300 font-bold py-1 px-2">
+                        Match two tiles: same picture, color or number
+                    </div>
+
+                    {/* BOTTOM MENU */}
+                    <div className="grid grid-cols-5 gap-1.5 px-2 pt-2 bg-[#06140c] border-t-2 border-emerald-900/80 shrink-0" style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}>
+                        <button onClick={() => setActiveModal('thesis')} className="mono py-1.5 rounded-xl bg-emerald-950 border border-emerald-700/70 text-emerald-300 nav-btn font-extrabold uppercase active:scale-95 flex items-center justify-center"><span>🏛️</span>Dossier</button>
+                        <button onClick={() => setActiveModal('team')} className="mono py-2 rounded-xl bg-indigo-950 border border-indigo-600/70 text-blue-300 nav-btn font-extrabold uppercase active:scale-95 flex items-center justify-center"><span>🧪</span>Roster</button>
+                        <button onClick={() => setActiveModal('guide')} className="mono py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-300 nav-btn font-extrabold uppercase active:scale-95 flex items-center justify-center"><span>📖</span>Guide</button>
+                        <button onClick={() => setActiveModal('setup')} className="mono py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-300 nav-btn font-extrabold uppercase active:scale-95 flex items-center justify-center"><span>⚙️</span>Setup</button>
+                        <button onClick={() => setActiveModal('records')} className="mono py-2 rounded-xl bg-amber-950 border border-amber-600/70 text-amber-300 nav-btn font-extrabold uppercase active:scale-95 flex items-center justify-center"><span>🏆</span>Records</button>
+                    </div>
+
+                    {/* ---------------- MODALS ---------------- */}
+
+                    {/* RECORDS */}
+                    {activeModal === 'records' && (() => {
+                        const recs = loadRecords();
+                        const life = loadLife();
+                        const modeKeys = Object.keys(MODES);
+                        const val = (m, k) => { const e = recs[m] && recs[m][k]; return e && e.v > 0 ? e : null; };
+                        const best = (def) => { let b = null; modeKeys.forEach(m => { const e = val(m, def.k); if (e && (!b || (def.dir === 'min' ? e.v < b.v : e.v > b.v))) b = { ...e, mode: m }; }); return b; };
+                        const groups = [
+                            { title: 'Score & Progress', keys: ['level', 'total', 'levelScore', 'move'] },
+                            { title: 'Streaks & Fun', keys: ['streak', 'bigClear'] },
+                            { title: 'Speed & Efficiency', keys: ['fastest', 'fewest', 'most', 'ppm'] }
+                        ];
+                        const lifeRows = [
+                            ['Runs started', life.runs.toLocaleString()],
+                            ['Levels cleared', life.levels.toLocaleString()],
+                            ['Moves made', life.moves.toLocaleString()],
+                            ['Time played', fmtTime(life.ms / 1000)],
+                            ['Pairs matched', life.matches.toLocaleString()],
+                            ['Power-ups forged', life.forged.toLocaleString()],
+                            ['Avg points per move', life.moves ? (Math.round(life.points / life.moves * 10) / 10).toLocaleString() : '–']
+                        ];
+                        return (
+                            <ModalShell>
+                                <ModalHeader color="amber" icon={<span className="text-2xl">🏆</span>} title="Your Records" onClose={() => setActiveModal(null)} />
+                                <div className="hide-scroll overflow-y-auto flex-1 space-y-3 pb-4">
+                                    <div className="flex flex-wrap gap-2">
+                                        {modeKeys.map(m => (
+                                            <span key={m} className="mono px-3 py-1 rounded-full font-extrabold text-xs" style={{ color: MODE_COLORS[m].c, border: `2px solid ${MODE_COLORS[m].c}`, background: MODE_COLORS[m].bg }}>{MODES[m].name}</span>
+                                        ))}
+                                    </div>
+                                    {groups.map(g => (
+                                        <div key={g.title}>
+                                            <div className="mono text-amber-400 font-extrabold uppercase text-sm px-1 mb-2 mt-1">{g.title}</div>
+                                            <div className="grid grid-cols-1 gap-3">
+                                                {g.keys.map(k => {
+                                                    const def = STAT_DEFS.find(d => d.k === k);
+                                                    const b = best(def);
+                                                    const col = b ? MODE_COLORS[b.mode] : null;
+                                                    return (
+                                                        <div key={k} className="p-4 rounded-3xl text-center" style={{ border: `3px solid ${col ? col.c : '#4b5563'}`, background: col ? `linear-gradient(160deg, ${col.bg}, rgba(0,0,0,0.7))` : 'rgba(0,0,0,0.6)', boxShadow: col ? `0 0 16px ${col.bg}` : 'none' }}>
+                                                            <div style={{ fontSize: 40, lineHeight: 1.1 }}>{def.icon}</div>
+                                                            <div className="mono font-extrabold uppercase text-sm" style={{ color: col ? col.c : '#9ca3af' }}>{def.title}</div>
+                                                            <div className="mono font-black text-white leading-tight my-1" style={{ fontSize: 38 }}>{b ? def.fmt(b.v) : '–'}</div>
+                                                            {def.sub && <div className="text-xs text-gray-300">{def.sub}</div>}
+                                                            {b ? (
+                                                                <div className="mono font-extrabold text-sm mt-1" style={{ color: col.c }}>{MODES[b.mode].name}{k !== 'level' ? ` • level ${b.lvl}` : ''}{b.t ? ` • ${new Date(b.t).toLocaleDateString()}` : ''}</div>
+                                                            ) : <div className="text-sm text-gray-400 mt-1">Play to set this one!</div>}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <div className="mono text-amber-400 font-extrabold uppercase text-sm px-1 pt-2">By Difficulty</div>
+                                    {modeKeys.map(m => (
+                                        <div key={m} className="p-4 rounded-3xl" style={{ border: `3px solid ${MODE_COLORS[m].c}`, background: MODE_COLORS[m].bg }}>
+                                            <div className="mono font-black text-lg uppercase" style={{ color: MODE_COLORS[m].c }}>{MODES[m].name}</div>
+                                            <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
+                                                {STAT_DEFS.map(def => { const e = val(m, def.k); return (
+                                                    <React.Fragment key={def.k}>
+                                                        <div className="text-sm text-gray-200">{def.title}</div>
+                                                        <div className="text-sm font-extrabold text-right text-white">{e ? def.fmt(e.v) : '–'}</div>
+                                                    </React.Fragment>
+                                                ); })}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <div className="p-4 rounded-3xl" style={{ border: '3px solid #22d3ee', background: 'rgba(34,211,238,0.10)' }}>
+                                        <div className="mono font-black text-lg uppercase text-cyan-300">Lifetime Stats</div>
+                                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
+                                            {lifeRows.map(([a, b]) => (
+                                                <React.Fragment key={a}><div className="text-sm text-gray-200">{a}</div><div className="text-sm font-extrabold text-right text-white">{b}</div></React.Fragment>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {started && (
+                                        <div className="p-4 rounded-3xl border-2 border-emerald-500 bg-emerald-950/40 text-emerald-100">
+                                            <div className="mono font-black text-lg uppercase text-emerald-300">Current Run</div>
+                                            <div className="text-sm mt-1">{mode.name} • Level {level} • Run total {(bankedScore + score).toLocaleString()}</div>
+                                            <div className="text-sm">{moves} moves • {fmtTime(levelMs.current / 1000)} on this level</div>
+                                        </div>
+                                    )}
+                                    <div className="text-xs text-gray-400 px-1">Records are saved in this browser. Reset everything from Setup.</div>
+                                </div>
+                            </ModalShell>
+                        );
+                    })()}
+
+                    {/* DOSSIER */}
+                    {activeModal === 'thesis' && (
+                        <ModalShell>
+                            <ModalHeader color="green" icon={<IconFlask />} title="Hypothesis Evidence Dossier" onClose={() => setActiveModal(null)} />
+                            <div className="hide-scroll overflow-y-auto flex-1 space-y-3 pb-4">
+                                <div className="mono p-3 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="text-amber-400 font-extrabold text-sm uppercase tracking-wide mb-2">Swanson Triad: Linking Separate Literatures</div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { k: 'origin_a', c: 'text-emerald-400' },
+                                            { k: 'bridge_b', c: 'text-blue-400' },
+                                            { k: 'target_c', c: 'text-amber-400' }
+                                        ].map(({ k, c }) => {
+                                            const t = HYPOTHESIS_DATA.swanson_triad[k];
+                                            return (
+                                                <div key={k} className="rounded-lg border border-gray-700 bg-black/60 p-2 min-w-0">
+                                                    <div className={`text-[11px] font-extrabold ${c}`}>{t.label}</div>
+                                                    <div className="text-[11px] text-gray-300 leading-tight">{t.concept}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                {rooms.map(r => {
+                                    const spec = molecules[r.conceptEmoji] || { xp: 0, level: 0, alignment: 0 };
+                                    const curXP = spec.xp || 0;
+                                    return (
+                                        <div key={r.id} className={`p-3 rounded-2xl border flex items-center justify-between ${r.isCalibrated ? 'bg-emerald-950/70 border-emerald-500' : 'bg-black/60 border-gray-800'}`}>
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-14 h-14 shrink-0 rounded-xl bg-black border border-gray-700 flex items-center justify-center text-3xl">{r.conceptEmoji}</div>
+                                                <div className="min-w-0">
+                                                    <div className="font-extrabold text-white text-lg leading-tight">{r.conceptName}</div>
+                                                    <div className="mono text-sm text-amber-300 font-bold">Cards: {Math.min(curXP, r.targetLvl)}/{r.targetLvl} • Alignment: {spec.alignment || 0}/{r.targetAlign}</div>
+                                                    <div className="mono text-xs text-gray-400">{r.desc}</div>
+                                                    {r.isCalibrated && <div className="text-[11px] italic text-gray-300 font-serif mt-1 leading-snug">"{r.quote}" <span className="mono not-italic text-blue-300">PMID {r.pmid}</span></div>}
+                                                </div>
+                                            </div>
+                                            <div className="text-3xl shrink-0 pl-2">{r.isCalibrated ? '✅' : '🔒'}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </ModalShell>
+                    )}
+
+                    {/* ROSTER */}
+                    {activeModal === 'team' && (
+                        <ModalShell>
+                            <ModalHeader color="blue" icon={<IconBook />} title="Chemical & Bioactive Roster" onClose={() => setActiveModal(null)} />
+                            <div className="hide-scroll overflow-y-auto flex-1 rounded-2xl border border-gray-800 bg-black/50 p-3">
+                                {Object.keys(molecules).length === 0 ? (
+                                    <div className="mono text-center text-gray-400 text-sm p-6">No molecules synthesized yet. Tap pairs on the arcade board to isolate data!</div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {Object.keys(molecules).map(key => {
+                                            const spec = molecules[key];
+                                            const isCore = CORE_EMOJIS.includes(key);
+                                            const room = isCore ? rooms.find(r => r.conceptEmoji === key) : null;
+                                            return (
+                                                <div key={key} className={`border rounded-2xl p-3 flex flex-col items-center ${isCore ? 'bg-indigo-950/70 border-indigo-600' : 'bg-gray-900/80 border-gray-700'}`}>
+                                                    <span className="text-5xl mb-2">{key}</span>
+                                                    <span className="mono text-sm font-black text-white bg-black/50 px-2 py-1 rounded-lg w-full text-center mb-1">
+                                                        Cards: {isCore && room ? Math.min(spec.xp || 0, room.targetLvl) : (spec.xp || 0)}
+                                                    </span>
+                                                    <span className="mono text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 text-center truncate w-full">{isCore && room ? room.conceptName : 'Noise Variant'}</span>
+                                                    <span className="mono text-xs font-bold text-cyan-300 uppercase">Align {spec.alignment || 0}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </ModalShell>
+                    )}
+
+                    {/* GUIDE */}
+                    {activeModal === 'guide' && (
+                        <ModalShell>
+                            <ModalHeader color="green" icon={<IconHelp />} title="How To Play BioArcade" onClose={() => setActiveModal(null)} />
+                            <div className="hide-scroll overflow-y-auto flex-1 space-y-3 pb-3">
+                                <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="mono text-emerald-400 font-extrabold text-lg mb-1">1. Tap To Match & Clear</div>
+                                    <p className="text-sm text-gray-200 leading-relaxed">Tap any two cards on the board that share either the <b className="text-white">Same Emoji</b>, <b className="text-white">Same Color</b>, or <b className="text-white">Same Number</b>. Matching pairs clears them from the board and earns Insight points!</p>
+                                </div>
+                                <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="mono text-amber-400 font-extrabold text-lg mb-1">2. Fair Lowest-Slot Stacking</div>
+                                    <p className="text-sm text-gray-200 leading-relaxed">After each turn, new evidence blocks drop to fill the <b className="text-white">lowest available slots</b> first. They will not pile up into tall columns unfairly!</p>
+                                </div>
+                                <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="mono text-cyan-400 font-extrabold text-lg mb-1">3. Hazard Blocks & Ceiling Warning</div>
+                                    <p className="text-sm text-gray-200 leading-relaxed">Hazard blocks (🎈 Float & ⚓ Sink) cannot be paired directly. Clear them with explosives or hammers before any column exceeds 10 blocks! A hazard block breaching the ceiling ends the run.</p>
+                                </div>
+                                <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="mono text-pink-400 font-extrabold text-lg mb-2">4. Special Power-Ups</div>
+                                    <ul className="mono text-sm text-gray-300 space-y-2">
+                                        <li>❤️ <span className="text-blue-400 font-bold">Hearts:</span> Tap to detonate and wipe all cards of that color!</li>
+                                        <li>🧨 <span className="text-blue-400 font-bold">Dynamite:</span> Tap to clear the entire horizontal row!</li>
+                                        <li>🚀 <span className="text-blue-400 font-bold">Rocket:</span> Tap to clear the entire vertical column!</li>
+                                        <li>🔨 <span className="text-purple-300 font-bold">Hammer:</span> Tap the hammer, then a hazard block to smash it, a molecule to shatter every matching emoji, or an explosive for mega blasts! Tap two hammers together and both explode in a 3x3 blast!</li>
+                                        <li>✨ <span className="text-orange-300 font-bold">Forge Them:</span> Match two molecules that are side by side to create a 🧨 Dynamite, or stacked on top of each other to create a 🚀 Rocket!</li>
+                                    </ul>
+                                </div>
+                                <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="mono text-emerald-400 font-extrabold text-lg mb-1">5. Build the Evidence Chain</div>
+                                    <p className="text-sm text-gray-200 leading-relaxed">Each of the 6 core concepts needs a target number of collected cards (5 on Rookie, rising each level) and a matching Alignment roll to confirm its evidence link. Confirm all six and hit the Insight target to advance the hypothesis. Every level is one more step toward ideas worth testing in the lab!</p>
+                                </div>
+                                <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
+                                    <div className="mono text-amber-400 font-extrabold text-lg mb-1">6. Music & Controls</div>
+                                    <p className="text-sm text-gray-200 leading-relaxed">Use the top bar to toggle music and sound effects, skip tracks, resize the game for phone, tablet or desktop, or download the whole game as a single HTML file. Tracks are public-domain classics synthesized live as dubstep. Power-ups have their own sounds and visuals, and quick matches build a rising-pitch streak. Visual effects can be switched off in Setup.</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setActiveModal(started ? null : 'setup')} className="mono shrink-0 w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold uppercase tracking-widest border border-emerald-300 active:scale-95">Got it, let's play!</button>
+                        </ModalShell>
+                    )}
+
+                    {/* SETUP */}
+                    {activeModal === 'setup' && (
+                        <ModalShell>
+                            <ModalHeader color="amber" icon={<span className="text-2xl">🔬</span>} title="Research Simulator" onClose={started ? () => setActiveModal(null) : null} />
+                            <div className="hide-scroll overflow-y-auto flex-1 space-y-3 pb-3">
+                                <div className="bg-black/70 border border-emerald-900 rounded-2xl p-4">
+                                    <div className="mono text-[10px] text-emerald-500 font-black tracking-widest uppercase mb-1">Hypothesis In Play</div>
+                                    <div className="mono text-sm text-emerald-300 mb-1">{HYPOTHESIS_DATA.hypothesis_id}</div>
+                                    <div className="text-xs text-white italic">"{HYPOTHESIS_DATA.title}"</div>
+                                </div>
+                                <div className="text-[11px] text-emerald-200/80 leading-relaxed bg-emerald-950/40 border border-emerald-900 rounded-2xl p-3">🎯 <b className="text-emerald-300">Mission:</b> turn connected literature into testable hypotheses, faster. Every evidence chain you build is one more idea worth trying in the lab. The goal is accelerating cures, together. Hypotheses here are exploratory, not established findings or medical advice.</div>
+
+                                {!started && savedRun && (
+                                    <button onClick={continueRun} className="mono w-full py-4 rounded-2xl bg-gradient-to-b from-cyan-400 to-cyan-600 text-black font-extrabold uppercase tracking-widest border-2 border-cyan-200 border-b-4 active:scale-95 shadow-[0_0_18px_#22d3ee88]">
+                                        ▶ Continue Run
+                                        <div className="text-[11px] font-bold normal-case tracking-normal text-black/70">{MODES[savedRun.modeKey].name} • Level {savedRun.level} • {savedRun.score}/{MODES[savedRun.modeKey].baseTarget * savedRun.level} Insight • {savedRun.moves} moves</div>
+                                    </button>
+                                )}
+                                {started && (
+                                    <button onClick={() => setActiveModal(null)} className="mono w-full py-3 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-600 text-black font-extrabold uppercase tracking-widest border-2 border-amber-200 active:scale-95">▶ Resume Run</button>
+                                )}
+
+                                <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-1">{started ? 'New Run' : 'Choose Difficulty'}</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {Object.keys(MODES).map(mKey => (
+                                        <button key={mKey} onClick={() => initGame(mKey)}
+                                            className="mono py-3 px-2 rounded-2xl bg-gradient-to-b from-emerald-500 to-emerald-700 text-white font-extrabold text-sm uppercase tracking-wider border-2 border-emerald-300 border-b-4 active:scale-95">
+                                            {MODES[mKey].name}
+                                            <div className="text-[10px] font-bold text-emerald-100/80 normal-case tracking-normal">{MODES[mKey].extraCards} noise distractions{bests[mKey] ? ` • Best: L${bests[mKey].level}` : ''}</div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-2">Audio</div>
+                                <div className="bg-black/60 border border-gray-800 rounded-2xl p-3 space-y-3">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button onClick={toggleBgm} className={`mono py-2 rounded-xl border text-xs font-extrabold uppercase active:scale-95 ${bgmOn ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`}>🎵 Music {bgmOn ? 'On' : 'Off'}</button>
+                                        <button onClick={toggleSfx} className={`mono py-2 rounded-xl border text-xs font-extrabold uppercase active:scale-95 ${sfxOn ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`}>🔊 SFX {sfxOn ? 'On' : 'Off'}</button>
+                                    </div>
+                                    <div>
+                                        <div className="mono text-[11px] text-gray-400 mb-1">Music volume: {Math.round(musicVol * 100)}%</div>
+                                        <input type="range" min="0" max="100" value={Math.round(musicVol * 100)} onChange={e => setMusicVol(parseInt(e.target.value, 10) / 100)} />
+                                    </div>
+                                    <div>
+                                        <div className="mono text-[11px] text-gray-400 mb-1">Effects volume: {Math.round(sfxVol * 100)}%</div>
+                                        <input type="range" min="0" max="100" value={Math.round(sfxVol * 100)} onChange={e => setSfxVol(parseInt(e.target.value, 10) / 100)} />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        {TRACKS.map((tr, i) => (
+                                            <button key={i} onClick={() => pickTrack(i)} className={`w-full text-left px-3 py-2 rounded-xl border active:scale-95 ${trackIdx === i ? 'border-amber-400 bg-amber-950/40' : 'border-gray-800 bg-black/40'}`}>
+                                                <div className={`mono text-xs font-extrabold ${trackIdx === i ? 'text-amber-300' : 'text-gray-300'}`}>{trackIdx === i && bgmOn ? '▶ ' : ''}{tr.name}</div>
+                                                <div className="text-[10px] text-gray-500">{tr.credit} • {tr.bpm} BPM</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-2">Text Size</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[['small', 'Small'], ['medium', 'Medium'], ['large', 'Large'], ['xl', 'Extra Large']].map(([k, label]) => (
+                                        <button key={k} onClick={() => setTextScale(k)} className={`mono py-3 rounded-xl border-2 text-xs font-extrabold uppercase active:scale-95 ${textScale === k ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-300 bg-zinc-900'}`}>{label}</button>
+                                    ))}
+                                </div>
+                                <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-2">Visual Effects</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={() => setFxOn(true)} className={`mono py-2 rounded-xl border text-xs font-extrabold uppercase active:scale-95 ${fxOn ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`}>✨ On</button>
+                                    <button onClick={() => { setFxOn(false); setFx([]); }} className={`mono py-2 rounded-xl border text-xs font-extrabold uppercase active:scale-95 ${!fxOn ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`}>Off</button>
+                                </div>
+                                <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-2">Citation Popups</div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[['banner', 'Banner'], ['modal', 'Full Popup'], ['off', 'Off']].map(([k, label]) => (
+                                        <button key={k} onClick={() => { setClueMode(k); if (k !== 'modal' || clueQueue.length === 0) setClueQueue([]); }} className={`mono py-2 rounded-xl border text-xs font-extrabold uppercase active:scale-95 ${clueMode === k ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`}>{label}</button>
+                                    ))}
+                                </div>
+                                <div className="text-[10px] text-gray-500 -mt-1">Banner never blocks play and auto-hides. Calibrated quotes are always saved in the Dossier.</div>
+
+                                <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-2">Display & Export</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={cycleViewport} className={`mono py-3 rounded-xl border text-xs font-extrabold uppercase active:scale-95 flex items-center justify-center gap-2 ${VIEWPORT_STYLES[vp]}`}><VpIcon size={16} /> {VIEWPORTS[vp].label}</button>
+                                    <button onClick={downloadGame} className="mono py-3 rounded-xl border border-cyan-400 text-cyan-300 bg-cyan-950/60 text-xs font-extrabold uppercase active:scale-95 flex items-center justify-center gap-2"><IconDownload size={16} /> Download</button>
+                                </div>
+                                <button onClick={() => setActiveModal('guide')} className="mono w-full py-3 rounded-xl border border-zinc-600 text-zinc-300 bg-zinc-900 text-xs font-extrabold uppercase active:scale-95">📖 How to play</button>
+                                <div className="mono text-xs text-red-400 font-extrabold uppercase tracking-widest pt-3">Danger Zone</div>
+                                <button onClick={() => setActiveModal('reset')} className="mono w-full py-3 rounded-xl border-2 border-red-600 text-red-300 bg-red-950/50 text-sm font-extrabold uppercase active:scale-95">🗑️ Reset All Stats & Progress</button>
+                            </div>
+                        </ModalShell>
+                    )}
+
+                    {/* MASTER RESET CONFIRM */}
+                    {activeModal === 'reset' && (
+                        <div className="absolute inset-0 z-[70] panel flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
+                            <div className="text-7xl mb-3">⚠️</div>
+                            <h2 className="text-3xl font-black text-red-400 uppercase mb-3">Reset everything?</h2>
+                            <p className="text-base font-bold text-gray-100 mb-2 max-w-sm">This will permanently erase:</p>
+                            <ul className="text-base text-gray-200 mb-4 max-w-sm text-left list-disc pl-6 space-y-1">
+                                <li>All records and high scores</li>
+                                <li>Your lifetime stats (streaks, times, moves)</li>
+                                <li>Your saved run: level, score and progress</li>
+                            </ul>
+                            <p className="text-sm text-amber-300 font-bold mb-6 max-w-sm">This cannot be undone. Your sound and text size settings are kept.</p>
+                            <button onClick={() => setActiveModal('setup')} className="w-full max-w-xs py-4 rounded-2xl bg-gradient-to-b from-emerald-500 to-emerald-700 text-white font-black text-xl uppercase border-2 border-emerald-300 active:scale-95 mb-3">Keep my progress</button>
+                            <button onClick={masterReset} className="w-full max-w-xs py-3 rounded-2xl bg-red-950 text-red-300 font-black text-base uppercase border-2 border-red-600 active:scale-95">Yes, erase everything</button>
+                        </div>
+                    )}
+
+                    {/* GAME OVER */}
+                    {activeModal === 'gameover' && (
+                        <div className="absolute inset-0 z-50 panel flex flex-col items-center justify-center p-6 text-center">
+                            <div className="text-8xl mb-4">💀🕒</div>
+                            <h2 className="text-4xl font-black text-red-500 mb-2 uppercase text-shadow">Hypothesis Stalled</h2>
+                            <div className="mono text-sm text-amber-300 font-extrabold mb-3">Reached level {level} • Run total {(bankedScore + score).toLocaleString()}</div>
+                            <p className="text-base font-bold text-gray-300 mb-8 max-w-sm">A hazard block breached the ceiling. Every cure starts with experiments that fail. Clear hazards with Chain Reactions, Hearts, or Hammers and try again!</p>
+                            <button onClick={() => initGame(modeKey)} className="w-full max-w-xs py-5 rounded-2xl bg-gradient-to-b from-red-500 to-red-700 text-white font-black text-2xl uppercase tracking-widest shadow-[0_0_30px_#ef4444] border-2 border-red-300 border-b-[6px] active:scale-95">Restart Run</button>
+                            <button onClick={() => setActiveModal('setup')} className="mono mt-4 text-sm text-gray-400 underline">Change difficulty</button>
+                        </div>
+                    )}
+
+                    {/* LEVEL WIN */}
+                    {activeModal === 'win' && (
+                        <div className="absolute inset-0 z-50 panel flex flex-col items-center justify-center p-6 text-center overflow-y-auto">
+                            <div className="text-7xl mb-3 animate-bounce">💡</div>
+                            <h2 className="text-3xl font-black text-amber-400 mb-1 uppercase text-shadow">Hypothesis Advanced!</h2>
+                            <p className="text-sm text-emerald-300 mb-3 font-bold bg-black/50 p-2 rounded-xl border border-emerald-500">Evidence chain connected in {moves} moves, one step closer to a testable idea!</p>
+                            {lastClear && <p className="mono text-base text-cyan-200 font-bold mb-3">⏱️ {fmtTime(lastClear.sec)} • 🎯 {lastClear.moves} moves • 📊 {lastClear.ppm} pts/move</p>}
+
+                            <div className="bg-black/80 p-4 rounded-2xl border-2 border-amber-500/50 mb-5 text-left w-full max-w-md shadow-2xl">
+                                <div className="text-xs text-amber-500 font-black mb-1 uppercase tracking-widest">Hypothesis To Test:</div>
+                                <p className="text-sm font-serif italic text-white leading-relaxed mb-3">"{HYPOTHESIS_DATA.main_claim}"</p>
+                                <div className="mono text-[10px] text-gray-400 mb-1">Supporting PMIDs: {HYPOTHESIS_DATA.cited_pmids.join(', ')}</div>
+                                <div className="text-[10px] text-gray-500 mb-3 italic">A hypothesis for exploration, not a proven result or medical advice.</div>
+                                <div className="flex flex-col gap-2">
+                                    <a href={googleSearchUrl} target="_blank" rel="noopener noreferrer" className="block text-center text-xs font-black text-white bg-blue-600 hover:bg-blue-500 py-2.5 rounded-lg border border-blue-400 shadow-md active:scale-95">🔍 Dig Deeper with Google</a>
+                                </div>
+                            </div>
+
+                            <button onClick={nextLevel} className="w-full max-w-sm py-4 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-600 text-black font-black text-xl uppercase tracking-widest shadow-[0_0_30px_#f59e0b] border-2 border-amber-200 border-b-[6px] active:scale-95">Next Hypothesis ➔</button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    
+    
+    </script>
+</body>
+</html>
