@@ -90,6 +90,7 @@ footer.credits{max-width:940px;margin:0 auto;padding:22px clamp(14px,4vw,32px) 4
 @media print{html{zoom:1!important}footer.credits{display:none!important}.plate{break-inside:avoid}.chapter{break-before:page}body{background:#fff!important}header,.home,#run,#lib,.bar,dialog,.paper .btn{display:none!important}main{padding:0;max-width:none}
 .paper{background:#fff!important;border:0;padding:0;color:#111!important}.paper *{color:#111!important;background:transparent!important;border-color:#bbb!important;box-shadow:none!important}
 .paper h3{margin-top:18px}.link,blockquote,.mol{break-inside:avoid}}
+@media(max-width:640px){.modeseg{flex-wrap:wrap}.modeseg button{flex:1 1 calc(50% - 4px);min-width:0}}
 </style>
 <script src="/_aistudio-iframe.js?v=6634132a"></script></head>
 <body>
@@ -111,8 +112,9 @@ footer.credits{max-width:940px;margin:0 auto;padding:22px clamp(14px,4vw,32px) 4
     <h1 data-i="h1"></h1>
     <p class="sub" data-i="sub"></p>
     <form id="form" autocomplete="off">
-      <div class="modeseg" id="modeSeg" role="tablist" aria-label="Mode"><button type="button" data-m="discovery" aria-selected="true">Discovery</button><button type="button" data-m="review" aria-selected="false">Literature review</button><button type="button" data-m="autonomous" aria-selected="false">Autonomous</button></div>
+      <div class="modeseg" id="modeSeg" role="tablist" aria-label="Mode"><button type="button" data-m="discovery" aria-selected="true">Discovery</button><button type="button" data-m="review" aria-selected="false">Literature review</button><button type="button" data-m="autonomous" aria-selected="false">Autonomous</button><button type="button" data-m="randomnano" aria-selected="false">Random Nano</button></div>
       <p class="note" id="autoNote" hidden>Autonomous mode: seed with two concepts as usual. After each build, Alchemy picks one random, not-yet-run follow-up pair from every suggestion collected so far and runs it, then repeats. It never repeats a pair, and stops only when no new pairs remain or you press Cancel. Every run is saved to your library.</p>
+      <p class="note" id="nanoNote" hidden>Random Nano mode: no concepts needed. Alchemy fetches a food and pathology pair from pathmap.org (the same source as Suggest for me), runs a discovery on it, then fetches a brand-new pair and repeats until you press Cancel. Pairs already in your library are skipped, follow-up ideas are not reused, and the question box is ignored. Every run is saved to your library.</p>
       <label class="field"><span data-i="la"></span><input id="A" required data-ph="pa"></label>
       <div class="bridge" aria-hidden="true"><b></b><em>B?</em><b></b></div>
       <label class="field"><span data-i="lb"></span><input id="B" required data-ph="pb"></label>
@@ -188,7 +190,7 @@ footer.credits{max-width:940px;margin:0 auto;padding:22px clamp(14px,4vw,32px) 4
 "use strict";
 /* ===== Frozen engine configuration (hidden from the UI) ===== */
 const CFG = Object.freeze({mode:"Pathmap Mini",library:"PubMed",format:"Preprint Format",rigor:"Strict (Verification)",tagCloud:true,
-  delayMs:1000,breadth:20,depth:3,quotes:10,evals:1,maxChars:500000,gemmaDocs:16,minQuotes:6});
+  delayMs:1000,breadth:30,depth:4,quotes:10,evals:1,maxChars:500000,gemmaDocs:16,minQuotes:10});
 const APP_VERSION="1.0.1";
 
 /* ===== i18n ===== */
@@ -341,6 +343,7 @@ let abortC=null;
 /* ===== Original PathMap Boolean prompt, audit helpers, share endpoint ===== */
 const FOOD_BIAS="AMBIGUITY RULE (food first): when a term in the user's concepts has more than one meaning, interpret it as the food, ingredient, beverage, plant, animal or dietary item whenever that reading is plausible, and never substitute a country, nationality, language, brand or person. Example: 'turkey' means turkey meat or the bird Meleagris gallopavo, NOT the country Turkey or Turkish populations, so 'turkey x COPD' is about eating turkey meat and COPD, never COPD in Turkish people. The same applies to terms such as date, lime, plum, mace, chile, cress and mustard.";
 const BOOL_PROMPT="You are an  expert librarian and systematic reviewer. Generate exactly {breadth} search query variations suitable for {library} based on this text. \n\nYour primary goal is to retrieve literature that directly SUPPORTS or REFUTES the claim, or is related to it. Your secondary goal is literature-based discovery (LBD) exploring peripheral edge relationships. Use OR to discover edges and overlooked abstracts.\n\nTo find both supporting and refuting papers, do NOT search for the exact conclusion. Instead, search for the intersection of the core variables (e.g., Variable A AND Variable B).  USE \"OR\" for edge discovery.\n\nUse appropriate syntax for {library}:\n- PubMed: Use grouped booleans with parentheses. Group synonyms using OR (e.g., (\"Term 1\" OR \"Synonym 1\")). Connect distinct core concepts using AND. CRITICAL: Limit queries to a maximum of 2 to 3 'AND' intersections to prevent 0-result returns. Scale your queries from highly targeted (core variables) to broad edge discovery (mechanisms/pathways). Include MeSH terms.\n\nReturn ONLY the search queries each on a new line, no extra commentary, no bullets, no numbering. \nDisambiguation: if a term is ambiguous, search for its FOOD meaning first (for example turkey = 'turkey meat' OR 'Meleagris gallopavo' OR poultry), use food-side synonyms and MeSH terms, and do not use geographic or ethnic terms such as Turkish or Turkey[ad] unless the user clearly means a place or population.\n\nRemember, scale the suggestions to evaluate the direct relationship FIRST, followed by the peripheral discovery edges.";
+const BOOL_PROMPT_AUTO=BOOL_PROMPT.replace("Your primary goal is to retrieve literature that directly SUPPORTS or REFUTES the claim, or is related to it. Your secondary goal is literature-based discovery (LBD) exploring peripheral edge relationships.","Your primary goal is literature-based discovery (LBD): retrieve each concept's own literature AND the intermediate mechanisms, pathways, molecules and entities (bridges) that could link them, so that an unstated, unpublished connection can be found. Do NOT try to confirm, refute or review a claim.").replace("To find both supporting and refuting papers, do NOT search for the exact conclusion. Instead, search","Do NOT search for the exact conclusion. Instead, search").replace("Remember, scale the suggestions to evaluate the direct relationship FIRST, followed by the peripheral discovery edges.","Remember, scale the suggestions from each concept's own literature and any direct overlap, out to the peripheral bridge edges (mechanisms/pathways) that connect them.");
 const SHARE_URL="https://phosita.tech/intake.php";
 const SENT=/(?<=[.!?])\s+(?=[A-Z0-9(\["“])/;
 function evidenceMap(syn,ents,byPmid){const fields=[syn.mechanism,syn.summary,syn.friendly_answer,syn.repurposed_solutions,syn.contradictions,...((syn.themes||[]).map(t=>t.text))].map(S).filter(Boolean),out=[];
@@ -506,7 +509,7 @@ async function pipeline(A,B,s){
   STAGE="boolean_queries";
   log("Generating Boolean Queries...");
   const topic=RUN.mode==="review"?`${A}${B?" and "+B:""}`:`${A} and ${B}`,qtext=topic+(RUN.cue?`\nQuestion/cue: ${RUN.cue}`:"")+(CTX.round>0?`\nEarlier searches did not retrieve evidence that could support a valid answer. Use different edge terms, mechanisms and synonyms than these earlier queries: ${(CTX.allQs||[]).slice(-12).join(" | ")}`:"");
-  const rawQ=await ai(BOOL_PROMPT.replace(/{library}/g,"PubMed").replace(/{breadth}/g,CFG.breadth)+`\nText: "${qtext}"`,"You return only plain text line-separated queries.",s);
+  const rawQ=await ai((RUN.autonomous?BOOL_PROMPT_AUTO:BOOL_PROMPT).replace(/{library}/g,"PubMed").replace(/{breadth}/g,CFG.breadth)+`\nText: "${qtext}"`,"You return only plain text line-separated queries.",s);
   qs=rawQ.split(/\r?\n/).map(l=>l.replace(/```[a-zA-Z]*/gi,"").replace(/```/g,"").trim()).filter(Boolean).slice(0,CFG.breadth);
   if(!qs.length)throw new Error("The model returned no usable queries.");
   log(`Generated ${qs.length} queries`,"ok");tr("parsed_queries",{queries:qs});STAGE="pubmed_search";
@@ -540,15 +543,15 @@ async function pipeline(A,B,s){
   const avoidTxt=()=>CTX.avoid.length?`\n\nEARLIER ATTEMPTS THAT COULD NOT BE SUPPORTED AFTER MANY AUDITS (do not repeat them; choose a different bridge or a different pair of domains):\n- ${CTX.avoid.slice(-3).join("\n- ")}\n`:"";
   const MINQ=CFG.minQuotes,jrep=(k,v)=>(k[0]==="_"||["pv","probe","chem","plain","probes"].includes(k))?undefined:v;
   const sysD=PERSONA+"\nYou are also a Literature-Based Discovery engine. Output strict JSON only.";
-  const mkBaseD=()=>`${RAG}\n\nConcept A (preferred Domain A): "${A}"\nConcept B (preferred Domain C): "${B}"${RUN.cue?`\nUSER CUE (the user\'s question; address it in your discovery where the dataset allows): "${RUN.cue}"`:""}\n\nDATASET (the only allowed source of facts):\n${corpus}\n\n`+
+  const mkBaseD=()=>`${RAG}\n\nConcept A (preferred Domain A): "${A}"\nConcept B (preferred Domain C): "${B}"\n\nDATASET (the only allowed source of facts):\n${corpus}\n\n`+
 `You are an advanced Literature-Based Discovery (LBD) system executing Swanson’s complementary-but-disjoint (A-B-C) model. Your goal is to find hidden, unpublished connections across the provided dataset.\n`+
 `Strict Discovery Protocol: 1. Identify distinct, isolated sub-literatures (Domain A and Domain C) within the dataset that share NO direct citations, co-mentions, or common contextual paragraphs. 2. Find an intermediate biological mechanism, protein, path, or entity (Bridge B) that appears independently in both isolated domains (A-to-B and B-to-C). 3. Synthesize a novel, unstated hypothesis (A-to-C).\n`+
 `Negative Constraint (Crucial): DO NOT output any connection if the relationship between Concept A and Concept C is explicitly mentioned, paired, or summarized anywhere in the source text. If a connection (like "OMN resilience to SMN stabilization") is already explicitly stated or grouped as a concept in the data, it is considered "already known" and must be disqualified.\n`+
 `Domain choice: the user's Concept A and Concept B are the preferred Domain A and Domain C. If the dataset contains no valid unstated connection between them, do NOT give up: choose ANY two isolated domains that exist in the dataset (preferably involving at least one of the user's concepts) and report that discovery, naming the domains you used. There is almost always a valid discovery in a dataset this size, so always return exactly ONE discovery.${avoidTxt()}\n`+
-`Evidence: do NOT type quotes. For each quote give an ANCHOR SET for ONE complete sentence of an abstract: "start" = the FIRST THREE WORDS of that sentence and "end" = the LAST THREE WORDS of that sentence including its final punctuation, each copied exactly as written (case, punctuation, spelling; no ellipses), plus the "pmid" of that abstract. The system extracts the full verbatim sentence between your anchors. If the prompt says "at least ${MINQ} quotes" then there must be at least ${MINQ} matching citations! Give at least ${MINQ} anchor sets in total and up to 10: at least 3 in a_quotes (A-to-B evidence) and at least 3 in c_quotes (B-to-C evidence), at most ${CFG.quotes} per source abstract. Each sentence must be at least 6 words. The Bridge B must be named in at least one a_quotes sentence AND at least one c_quotes sentence. Cite only sentences that directly support the claim they back, and word every claim carefully and no more strongly than those sentences support.\n`+
+`Evidence: copy each quote VERBATIM, character for character, from the abstract text provided: one complete sentence (or a long exact span of one sentence) from a single abstract, plus the "pmid" of THAT abstract. Do not paraphrase, shorten with ellipses, merge sentences, or change any capital letter, number, symbol or punctuation. The system checks every quote byte-for-byte against the abstract of the PMID you cite; a quote not found exactly in that PMID is rejected. If the prompt says "at least ${MINQ} quotes" then there must be at least ${MINQ} matching citations! Give at least ${MINQ} quotes in total and as many more as needed (the write-up needs detailed data, so prefer specific sentences with numbers, doses, species, models and measured outcomes over general statements): at least 3 in a_quotes (A-to-B evidence) and at least 3 in c_quotes (B-to-C evidence), at most ${CFG.quotes} per source abstract. Each sentence must be at least 6 words. The Bridge B must be named in at least one a_quotes sentence AND at least one c_quotes sentence. Cite only sentences that directly support the claim they back, and word every claim carefully and no more strongly than those sentences support.\n`+
 `Molecules: list EVERY molecule, element, metal, toxin, therapeutic, nutrient or other chemical entity that is an element of YOUR discovery. For each give "aliases" (abbreviations or synonyms exactly as the abstracts write them) and at most 3 PMIDs, from the dataset, that actually mention that entity. Give source_organism (Latin binomial) when it derives from an organism, else "". Use category "metabolite" for small-molecule metabolites, including microbial and host ones. follow_ups: give 3-4 follow-up searches worth running next (concept pairs using specific entities, with a one-sentence reason). search_terms: short PubMed keywords (1-3 words each) for Domain A, the bridge and Domain C.\n${tail}\n`+
 `Return ONLY JSON: {"status":"discovery","follow_ups":[{"concept_a":"","concept_b":"","why":""}],"known_links_excluded":["already-known A-C links you disqualified, with PMID"],`+
-`"discovery":{"domain_a":"name of the Domain A used","domain_c":"name of the Domain C used","hypothesis":"clear, novel statement","literature_a":"entity/concept and source context","literature_c":"entity/concept and source context","bridge_b":"the shared mechanism/protein linking them","rationale":"1-2 sentences explaining why this hidden connection is mechanistically plausible","search_terms":{"a":"","b":"","c":""},"a_quotes":[{"pmid":"","start":"first three words","end":"last three words."}],"c_quotes":[{"pmid":"","start":"","end":""}]},`+
+`"discovery":{"domain_a":"name of the Domain A used","domain_c":"name of the Domain C used","hypothesis":"clear, novel statement","literature_a":"entity/concept and source context","literature_c":"entity/concept and source context","bridge_b":"the shared mechanism/protein linking them","rationale":"1-2 sentences explaining why this hidden connection is mechanistically plausible","search_terms":{"a":"","b":"","c":""},"a_quotes":[{"pmid":"","quote":"exact sentence copied from that abstract"}],"c_quotes":[{"pmid":"","quote":""}]},`+
 `"molecules":[{"name":"","aliases":[""],"category":"therapeutic|toxin|metal|element|nutrient|protein_or_gene|metabolite|other","source_organism":"","role":"role in the discovery","pmids":["123"]}]}`;
 
   /* ===== Robust Quote Anchor Alignment ===== */
@@ -653,39 +656,18 @@ async function pipeline(A,B,s){
     const ok=[],bad=[],seen=new Set();
     (Array.isArray(list)?list:[]).forEach(x=>{
       const pm=String(x?.pmid??"").replace(/^\s*PMID:?\s*/i,"").trim();
-      let st=String(x?.start??"").replace(/\s+/g," ").trim();
-      let en=String(x?.end??"").replace(/\s+/g," ").trim();
-      const rawQ=String(x?.quote??x?.text??x?.sentence??"").replace(/\s+/g," ").trim();
-
-      if(!st&&!en&&rawQ){
-        const w=rawQ.split(" ");
-        st=w.slice(0,3).join(" ");
-        en=w.slice(-3).join(" ");
-      }
-      st=st.replace(/(\.\.\.|…)+/g," ").replace(/\s+/g," ").trim();
-      en=en.replace(/(\.\.\.|…)+/g," ").replace(/\s+/g," ").trim();
-
-      const id=`PMID ${pm}, start "${st}", end "${en}"`;
-      if(!st&&!en&&!rawQ){
-        bad.push({id,pmid:pm,why:"both a start anchor and an end anchor are required"});
-        return;
-      }
-
+      const q=String(x?.quote??x?.text??x?.sentence??"").replace(/\s+/g," ").trim();
+      const id=`PMID ${pm}, quote "${q.slice(0,90)}${q.length>90?"...":""}"`;
+      if(!q){bad.push({id,pmid:pm,why:'no quote given: put the full verbatim sentence, copied exactly from the abstract, in the "quote" field'});return}
+      if(q.split(" ").length<4){bad.push({id,pmid:pm,why:"quote is too short; give a full sentence"});return}
       const pref=byPmid.get(pm);
-      let r=pref?findSpan(pref,st,en,rawQ):{why:`PMID ${pm} is not one of the provided abstracts`},used=pm;
-      if(!r.span)for(const d of byPmid.values()){
-        if(d===pref)continue;
-        const r2=findSpan(d,st,en,rawQ);
-        if(r2.span){r=r2;used=d.pmid;break}
-      }
-      if(!r.span){bad.push({id,pmid:pm,why:r.why,ctx:pref?pref.nabs:""});return}
-      const sourceAbstract = byPmid.get(used)?.nabs || byPmid.get(used)?.abs || "";
-      if (sourceAbstract && !sourceAbstract.includes(r.span)) {
-        bad.push({id,pmid:used,why:`Strict Misquote: extracted quote "${r.span.slice(0,35)}..." was not found verbatim in abstract ${used}`});
-        return;
-      }
-      const k=used+"|"+r.span;
-      if(!seen.has(k)){seen.add(k);ok.push({pmid:used,quote:r.span})}
+      if(!pref){bad.push({id,pmid:pm,why:`PMID ${pm} is not one of the provided abstracts`});return}
+      if(!(pref.nabs||"").includes(q)){
+        let other=null;for(const d of byPmid.values()){if(d!==pref&&(d.nabs||"").includes(q)){other=d.pmid;break}}
+        bad.push({id,pmid:pm,why:other?`this exact text is NOT in PMID ${pm}; it appears in PMID ${other}. Cite the PMID that really contains it.`:`this text is not found byte-for-byte in the abstract of PMID ${pm}; copy the sentence exactly as written (case, punctuation, spelling, no ellipses)`,ctx:pref.nabs});
+        return}
+      const k=pm+"|"+q;
+      if(!seen.has(k)){seen.add(k);ok.push({pmid:pm,quote:q})}
     });
     return{ok,bad};
   }
@@ -697,26 +679,9 @@ async function pipeline(A,B,s){
     const a=resolve(D.a_quotes),c=resolve(D.c_quotes);D._a=a.ok;D._c=c.ok;
     const all=[...a.ok,...c.ok],uniq=[...new Map(all.map(q=>[q.pmid+"|"+q.quote,q])).values()];
     if(uniq.length<MINQ)bad.push({id:"Quote count",why:`only ${uniq.length} valid quote(s); at least ${MINQ} matching citations are required`});
-    if(a.ok.length<2||c.ok.length<2)bad.push({id:"Quote balance",why:`each side needs evidence (A-to-B has ${a.ok.length}, B-to-C has ${c.ok.length})`});
-
-    const bridgeText = unl(D.bridge_b||"");
-    const bw=norm(bridgeText).split(" ").filter(w=>w.length>=3&&!/^(pathway|pathways|protein|signaling|factor|receptor|acid|production|induced|mediated|the|and)$/.test(w)).map(w=>w.slice(0,6));
-    const molTokens=(Array.isArray(cur.molecules)?cur.molecules:[]).flatMap(m=>[m.name,...(m.aliases||[])]).map(x=>norm(x).slice(0,6)).filter(x=>x.length>=3&&norm(bridgeText).includes(x));
-    const allBridgeKeys=[...new Set([...bw,...molTokens])];
-
-    if(allBridgeKeys.length&&a.ok.length&&c.ok.length){
-      const aT=a.ok.map(q=>norm(q.quote)).join(" "),cT=c.ok.map(q=>norm(q.quote)).join(" ");
-      const aAbs=a.ok.map(q=>norm(byPmid.get(q.pmid)?.nabs||"")).join(" ");
-      const cAbs=c.ok.map(q=>norm(byPmid.get(q.pmid)?.nabs||"")).join(" ");
-      const inA=allBridgeKeys.some(w=>aT.includes(w)||aAbs.includes(w));
-      const inC=allBridgeKeys.some(w=>cT.includes(w)||cAbs.includes(w));
-      if(!inA||!inC){
-        bad.push({id:"Bridge B",why:`the Bridge B "${S(D.bridge_b).slice(0,80)}" is not represented in ${!inA?"the A-to-B":"the B-to-C"} evidence; it must appear independently in the evidence on BOTH sides`});
-      }
-    }
 
     // Non-blocking anchor drops: If we already meet the minimum required valid quote count, discard missed anchors rather than looping
-    if(uniq.length<MINQ||a.ok.length<2||c.ok.length<2){
+    if(uniq.length<MINQ){
       [...a.bad,...c.bad].forEach(x=>bad.push(x));
     }
     return{bad,uniq:uniq.length,passed:uniq};
@@ -726,8 +691,8 @@ async function pipeline(A,B,s){
     const queries={ab:q(a,b),bc:q(b,c),ac:q(a,c),abc:q(a,b,c)},out={terms:{a,b,c},queries};
     for(const k in queries){out[k]=await countQ(queries[k],s);await sleep(380,s)}out.valid=out.ab>0&&out.bc>0;return out}
   /* ---------- Stage 1: discovery. Loops until every quote verifies (at least MINQ) or the user cancels. No fallback to a "best" attempt. ---------- */
-  const LOOP="⚠️⚠️⚠️ CRITICAL VERIFICATION FAILURE (RETRY LOOP DETECTED) ⚠️⚠️⚠️\nYour previous response was REJECTED because your quotes failed strict byte-perfect validation.\n\nTO BREAK THE LOOP, FOLLOW THESE 3 ABSOLUTE RULES:\n1. NO REPAIRING: If an anchor set failed, do NOT attempt to edit or tweak it. Either give anchors for a completely different, 100% verbatim sentence from the source, or discard it entirely.\n2. PERMISSION TO DISCARD: Replace discarded anchor sets with other real sentences until you have at least "+MINQ+" valid ones. Never hallucinate just to meet a quota.\n3. BYTE-PERFECT COPY: You must perform a direct, literal copy-paste of the first three and last three words. Ellipses (...) are BANNED. Do not change a single capital letter, punctuation mark, or space.\n=======================================================\n";
-  const mkFeedback=(au,n)=>(n>=3?LOOP:"")+`### CRITICAL QUOTE VALIDATION FAILURE (ATTEMPT ${n}) ###\nThe validator executed a 100% strict, character-by-character search for your anchor sets in the abstracts. Your response was REJECTED because of the following problems.\n\n❌ FAILED (you must fix or delete these):\n`+au.bad.map(x=>`\n- ERROR: ${x.id}\n  FACT: ${x.why}${x.ctx?`\n  \n  Below is the complete, true text of PMID ${x.pmid} that you MUST read:\n  ${x.ctx}\n`:""}`).join("")+(au.passed.length?`\n✅ PASSED (DO NOT CHANGE THESE):\n`+au.passed.map(q=>`- "${q.quote}" (Source: PMID ${q.pmid})`).join("\n")+"\n":"")+`\nINSTRUCTION: Study the actual abstracts provided. Correct the casing, punctuation, spelling, or map the anchors to their true PMID. Do NOT use ellipses.`;
+  const LOOP="⚠️⚠️⚠️ CRITICAL VERIFICATION FAILURE (RETRY LOOP DETECTED) ⚠️⚠️⚠️\nYour previous response was REJECTED because your quotes failed strict byte-perfect validation.\n\nTO BREAK THE LOOP, FOLLOW THESE 3 ABSOLUTE RULES:\n1. NO REPAIRING: If a quote failed, do NOT attempt to edit or tweak it. Either give a completely different, 100% verbatim sentence from the source, or discard it entirely.\n2. PERMISSION TO DISCARD: Replace discarded quotes with other real sentences until you have at least "+MINQ+" valid ones. Never hallucinate just to meet a quota.\n3. BYTE-PERFECT COPY: You must perform a direct, literal copy-paste of the WHOLE sentence. Ellipses (...) are BANNED. Do not change a single capital letter, punctuation mark, or space.\n=======================================================\n";
+  const mkFeedback=(au,n)=>(n>=3?LOOP:"")+`### CRITICAL QUOTE VALIDATION FAILURE (ATTEMPT ${n}) ###\nThe validator executed a 100% strict, character-by-character search for your quotes in the abstracts. Your response was REJECTED because of the following problems.\n\n❌ FAILED (you must fix or delete these):\n`+au.bad.map(x=>`\n- ERROR: ${x.id}\n  FACT: ${x.why}${x.ctx?`\n  \n  Below is the complete, true text of PMID ${x.pmid} that you MUST read:\n  ${x.ctx}\n`:""}`).join("")+(au.passed.length?`\n✅ PASSED (DO NOT CHANGE THESE):\n`+au.passed.map(q=>`- "${q.quote}" (Source: PMID ${q.pmid})`).join("\n")+"\n":"")+`\nINSTRUCTION: Study the actual abstracts provided. Copy each sentence exactly from the abstract text shown, or cite the PMID it truly appears in. Do NOT use ellipses.`;
   function buildMolecules(list){const seenM=new Set(),out=[];
     for(const m of list||[]){const name=String(m&&m.name||"").trim(),k=name.toLowerCase();if(!name||seenM.has(k))continue;
       const names=[name,...(Array.isArray(m.aliases)?m.aliases:[])].map(x=>norm(String(x))).filter(x=>x.length>=3);
@@ -746,14 +711,14 @@ async function pipeline(A,B,s){
     const reg=q=>{const k=q.pmid+"|"+q.quote;if(seenQ.has(k))return seenQ.get(k);if((perSrc[q.pmid]=(perSrc[q.pmid]||0)+1)>CFG.quotes)return null;const id="Q"+(quotes.length+1);const o={id,pmid:q.pmid,quote:q.quote};quotes.push(o);byId.set(id,o);seenQ.set(k,id);return id};
     const mkR=()=>`${RAG}\n\nTOPIC: "${A}"${B?` and "${B}"`:""}\nQUESTION: ${RUN.cue||"Give a comprehensive, evidence-based literature review of this topic."}\n\nDATASET (the only allowed source of facts):\n${corpus}\n\n`+
 `You are a rigorous systematic reviewer and strict scientific fact-checker. Your primary goal is to report what the dataset says that directly SUPPORTS or REFUTES the question, or is related to it. Use ONLY the dataset.${avoidTxt()}\n"friendly_answer": Address the user intent directly. Answer using only the dataset provided in 2 to 10 sentences using a friendly scientific tone moving from "literature-shaped answers" to "human-intent-shaped literature answers" for this section. "summary": a concise evidence summary. "themes": 2 to 5 themes (supporting evidence, refuting evidence, mechanisms, gaps); each has a "heading", a "text" in which EVERY factual sentence ends with [PMID n] using only PMIDs in the dataset, and "quotes". "contradictions": Identify conflicting evidence within the evidence set (if any) and flag the dispute here. "evidence_gaps": explicitly state the gaps and missing evidence. "suggested_experiments": generate 1-3 suggested experiments. "suggested_studies": generate 1-3 suggested studies.\n`+
-`Evidence: do NOT type quotes. For each quote give an ANCHOR SET for ONE complete sentence of an abstract: "start" = the FIRST THREE WORDS of that sentence and "end" = the LAST THREE WORDS of that sentence including its final punctuation, each copied exactly as written (case, punctuation, spelling; no ellipses), plus the "pmid". The system extracts the full verbatim sentence between your anchors. If the prompt says "at least ${MINQ} quotes" then there must be at least ${MINQ} matching citations! Give at least ${MINQ} anchor sets in total and up to 10 per theme, at most ${CFG.quotes} per source abstract; each sentence at least 6 words. Word every claim carefully and no more strongly than the evidence supports.\n`+
+`Evidence: copy each quote VERBATIM, character for character, from the abstract text provided: one complete sentence (or a long exact span of one sentence) from a single abstract, plus the "pmid" of THAT abstract. Do not paraphrase, shorten with ellipses, merge sentences, or change any capital letter, number, symbol or punctuation. The system checks every quote byte-for-byte against the abstract of the PMID you cite; a quote not found exactly in that PMID is rejected. If the prompt says "at least ${MINQ} quotes" then there must be at least ${MINQ} matching citations! Give at least ${MINQ} quotes in total and as many more as needed per theme, at most ${CFG.quotes} per source abstract; each sentence at least 6 words. Word every claim carefully and no more strongly than the evidence supports.\n`+
 `Molecules: list the molecules, elements, metals, toxins, therapeutics, nutrients or other chemical entities central to the topic; for each give aliases (abbreviations exactly as the abstracts write them) and at most 3 PMIDs from the dataset that mention it. follow_ups: 3-4 follow-up searches worth running next.\n${tail}\n`+
-`Return ONLY JSON: {"title":"","friendly_answer":"","summary":"","themes":[{"heading":"","text":"","quotes":[{"pmid":"","start":"first three words","end":"last three words."}]}],"contradictions":"","evidence_gaps":"","molecules":[{"name":"","aliases":[""],"category":"therapeutic|toxin|metal|element|nutrient|protein_or_gene|metabolite|other","source_organism":"","role":"","pmids":["123"]}],"suggested_experiments":[""],"suggested_studies":[""],"limitations":"","tags":[{"t":"term","w":3}],"follow_ups":[{"concept_a":"","concept_b":"","why":""}]}`;
+`Return ONLY JSON: {"title":"","friendly_answer":"","summary":"","themes":[{"heading":"","text":"","quotes":[{"pmid":"","quote":"exact sentence copied from that abstract"}]}],"contradictions":"","evidence_gaps":"","molecules":[{"name":"","aliases":[""],"category":"therapeutic|toxin|metal|element|nutrient|protein_or_gene|metabolite|other","source_organism":"","role":"","pmids":["123"]}],"suggested_experiments":[""],"suggested_studies":[""],"limitations":"","tags":[{"t":"term","w":3}],"follow_ups":[{"concept_a":"","concept_b":"","why":""}]}`;
     let n=0,promptR=mkR(),streak=0,revMols=null,veri=null,final=null,rfail=0;
     while(true){
       if(s&&s.aborted)throw new DOMException("Aborted","AbortError");
       n++;STAGE="review_attempt_"+n;
-      log(n===1?"Researching the topic: one pass over the abstracts with anchored quotes...":`Review attempt ${n}: repeats until the quotes verify and the strict audit passes, or you cancel...`);
+      log(n===1?"Researching the topic: one pass over the abstracts with verbatim quotes...":`Review attempt ${n}: repeats until the quotes verify and the strict audit passes, or you cancel...`);
       let cur=null,fb="",v=null;
       try{cur=parseJSON(await ai(promptR,PERSONA+"\nOutput strict JSON only.",s))}catch(e){if(e.name==="AbortError")throw e;fb=`Your previous reply was not valid JSON (${e.message}). Reply with ONLY one valid JSON object.`;log("Reply was not valid JSON: "+e.message,"e")}
       if(cur){const themes=Array.isArray(cur.themes)?cur.themes:[],bad=[],okQ=[];
@@ -802,7 +767,7 @@ async function pipeline(A,B,s){
   while(true){
     if(s&&s.aborted)throw new DOMException("Aborted","AbortError");
     n++;STAGE="discovery_attempt_"+n;
-    log(n===1?"Discovering ONE Swanson A-B-C hypothesis (anchor sets are resolved to exact abstract text)...":`Discovery attempt ${n}: repeats until at least ${MINQ} quotes verify, or you cancel...`);
+    log(n===1?"Discovering ONE Swanson A-B-C hypothesis (every quote is checked byte-for-byte against its cited abstract)...":`Discovery attempt ${n}: repeats until at least ${MINQ} quotes verify, or you cancel...`);
     let cur=null,fb="";
     try{cur=parseJSON(await ai(promptD,sysD,s))}catch(e){if(e.name==="AbortError")throw e;fb=`Your previous reply was not valid JSON (${e.message}). Reply with ONLY one valid JSON object.`;log("Reply was not valid JSON: "+e.message,"e")}
     if(cur){const au=verifyD(cur);tr("citation_audit",{attempt:n,valid_quotes:au.uniq,failures:au.bad});
@@ -835,8 +800,8 @@ async function pipeline(A,B,s){
   const pr=D.probe,probeTxt=pr?`PubMed title/abstract counts for [A="${pr.terms.a}", bridge="${pr.terms.b}", C="${pr.terms.c}"]: A+bridge=${pr.ab}, bridge+C=${pr.bc}, A+C=${pr.ac}, A+bridge+C=${pr.abc}.${pr.valid?"":" UNRELIABLE (a bridge side returned 0)."}`:"unavailable";
   const core=JSON.stringify({domain_a:D.domain_a,domain_c:D.domain_c,hypothesis:D.hypothesis,literature_a:D.literature_a,literature_c:D.literature_c,bridge_b:D.bridge_b,rationale:D.rationale,known_links_excluded:disc.known_links_excluded||[]});
   const sysW=`${PERSONA}\nYou are also writing in ${CFG.format}. Output strict JSON only.`;
-  const baseW=`${RAG}\n\nUser concepts: A="${A}", B="${B}"${RUN.cue?`, cue: "${RUN.cue}"`:""}\n\nDISCOVERY (fixed; do not change the hypothesis or bridge):\n${core}\n\nVERIFIED QUOTES (exact abstract sentences):\n${qText}\n\nSELECTED ABSTRACTS (the only allowed source of literature facts):\n${cdocText}\n\nMOLECULAR DATA (PubChem, PUG View and PubMed probes; cite as PubChem CID, not PMID):\n${molText}\n\nNOVELTY PROBE (informational): ${probeTxt}\n\n`+
-`Write the final discovery write-up using ONLY the data above. Word every claim carefully and no more strongly than the quotes support (may, suggests, is associated with), preferring the abstracts' own wording rather than coining new compound terms; state study designs and never extrapolate across species or disease without saying so. If the molecular data (for example size, charge, lipophilicity or barrier heuristics) weakens or refutes part of the hypothesis, say so plainly in molecular_assessment, contradictions and limitations, and word the abstract and mechanism as a hypothesis that remains open under that caveat; you may add a qualifier (such as a route or condition) but must not change the bridge. Reporting refuting data honestly is correct and is not a failure. "friendly_answer": Address the user intent directly. Answer using only the dataset provided in 2 to 10 sentences using a friendly scientific tone moving from "literature-shaped answers" to "human-intent-shaped literature answers" for this section; if the discovery does not directly involve the user's concepts, say so plainly and explain how it relates. "abstract": 100-160 words stating the hypothesis AS a hypothesis, the bridge and a testable prediction; no "here we investigate". "mechanism": 2-3 paragraphs; EVERY factual sentence ends with [PMID n] using ONLY PMIDs in the selected abstracts; your own inference sentences start with "Inference:". "novelty_delta": why the A-to-C link is not stated in the selected abstracts. "molecular_assessment": for each molecule say whether the PubChem, PUG View and probe data supports, refutes, is neutral to, or is insufficient for the hypothesis and why (1-2 sentences, using only the provided data). Quote values exactly as shown in MOLECULAR DATA; never add formulas, identifiers or properties from memory. "contradictions": Identify conflicting evidence within the evidence set (if any) and flag the dispute here. "repurposed_solutions": identify and explain repurposed Solution potentials. "ipsc": You are an advanced Stem Cell Bioengineer and Disease Modeling Expert. Your goal is to design a rigorous, highly specific induced Pluripotent Stem Cell (iPSC) experimental protocol to empirically validate the core molecular mechanisms, toxicities, or therapeutic interventions identified in the provided dataset. Strict Modeling Protocol: 1. Identify the specific target cell lineage affected in the literature (e.g., dopaminergic neurons, cardiomyocytes, hepatocytes) and mandate differentiation to this precise state. 2. Establish rigorous genetic contexts, mandating patient-derived lines paired with CRISPR/Cas9-corrected isogenic controls. 3. Define specific stress tests, toxicant exposures, or therapeutic applications based strictly on the dataset. 4. Identify precise, measurable phenotypic or molecular readouts. Negative Constraint (Crucial): DO NOT suggest generic or vague assays (e.g., "measure cell viability"). You must specify exact molecular targets, morphological changes, or electrophysiological readouts explicitly tied to the provided context. "suggested_experiments": generate 1-3 suggested experiments. "suggested_studies": generate 1-3 suggested studies. ${tail}\n`+
+  const baseW=`${RAG}\n\nUser concepts: A="${A}", B="${B}"\n\n${RUN.cue?`USER QUESTION (context for "friendly_answer" ONLY; it is not a source of facts and must not change the discovery, the hypothesis or any other field): "${RUN.cue}"\n\n`:""}DISCOVERY (fixed; do not change the hypothesis or bridge):\n${core}\n\nVERIFIED QUOTES (exact abstract sentences):\n${qText}\n\nSELECTED ABSTRACTS (the only allowed source of literature facts):\n${cdocText}\n\nMOLECULAR DATA (PubChem, PUG View and PubMed probes; cite as PubChem CID, not PMID):\n${molText}\n\nNOVELTY PROBE (informational): ${probeTxt}\n\n`+
+`Write the final discovery write-up using ONLY the data above. Word every claim carefully and no more strongly than the quotes support (may, suggests, is associated with), preferring the abstracts' own wording rather than coining new compound terms; state study designs and never extrapolate across species or disease without saying so. If the molecular data (for example size, charge, lipophilicity or barrier heuristics) weakens or refutes part of the hypothesis, say so plainly in molecular_assessment, contradictions and limitations, and word the abstract and mechanism as a hypothesis that remains open under that caveat; you may add a qualifier (such as a route or condition) but must not change the bridge. Reporting refuting data honestly is correct and is not a failure. "friendly_answer": Address the user intent directly. Answer using only the dataset provided in 2 to 10 sentences using a friendly scientific tone moving from "literature-shaped answers" to "human-intent-shaped literature answers" for this section; if a USER QUESTION is given, answer it ONLY if the verified quotes directly support an answer; otherwise do not force one, say plainly that the discovery does not answer it, and redirect: share the discovery that was validated and state how the question or the user's concepts relate to it, if at all. If the discovery does not directly involve the user's concepts, say so plainly and explain how it relates. "abstract": 100-160 words stating the hypothesis AS a hypothesis, the bridge and a testable prediction; no "here we investigate". "mechanism": 2-3 paragraphs; EVERY factual sentence ends with [PMID n] using ONLY PMIDs in the selected abstracts; your own inference sentences start with "Inference:". "novelty_delta": why the A-to-C link is not stated in the selected abstracts. "molecular_assessment": for each molecule say whether the PubChem, PUG View and probe data supports, refutes, is neutral to, or is insufficient for the hypothesis and why (1-2 sentences, using only the provided data). Quote values exactly as shown in MOLECULAR DATA; never add formulas, identifiers or properties from memory. "contradictions": Identify conflicting evidence within the evidence set (if any) and flag the dispute here. "repurposed_solutions": identify and explain repurposed Solution potentials. "ipsc": You are an advanced Stem Cell Bioengineer and Disease Modeling Expert. Your goal is to design a rigorous, highly specific induced Pluripotent Stem Cell (iPSC) experimental protocol to empirically validate the core molecular mechanisms, toxicities, or therapeutic interventions identified in the provided dataset. Strict Modeling Protocol: 1. Identify the specific target cell lineage affected in the literature (e.g., dopaminergic neurons, cardiomyocytes, hepatocytes) and mandate differentiation to this precise state. 2. Establish rigorous genetic contexts, mandating patient-derived lines paired with CRISPR/Cas9-corrected isogenic controls. 3. Define specific stress tests, toxicant exposures, or therapeutic applications based strictly on the dataset. 4. Identify precise, measurable phenotypic or molecular readouts. Negative Constraint (Crucial): DO NOT suggest generic or vague assays (e.g., "measure cell viability"). You must specify exact molecular targets, morphological changes, or electrophysiological readouts explicitly tied to the provided context. "suggested_experiments": generate 1-3 suggested experiments. "suggested_studies": generate 1-3 suggested studies. ${tail}\n`+
 `Return ONLY JSON: {"friendly_answer":"","title":"title of the discovery","abstract":"","novelty_delta":"","mechanism":"","molecular_assessment":[{"name":"","supports_or_refutes":"supports|refutes|neutral|insufficient","note":""}],"contradictions":"","repurposed_solutions":"","ipsc":{"lineage":"Target Differentiation Lineage","design":"Experimental Design & Controls","assays":"Specific Assays & Readouts","phenotype":"Expected Results (Disease Phenotype)","rescue":"Expected Results (Rescue/Intervention)","translational":"Translational Value, 1-2 sentences"},"suggested_experiments":[""],"suggested_studies":[""],"limitations":"state the gaps and missing evidence","tags":[{"t":"term","w":3}]} with w from 1 to 5.`;
   const assemble=w=>({status:"discovery",friendly_answer:w.friendly_answer,known_links_excluded:disc.known_links_excluded||[],follow_ups:disc.follow_ups||[],title:w.title,abstract:w.abstract,discovery:{...D,novelty_delta:w.novelty_delta},molecules,molecular_assessment:w.molecular_assessment,mechanism:w.mechanism,contradictions:w.contradictions,repurposed_solutions:w.repurposed_solutions,ipsc:w.ipsc,suggested_experiments:w.suggested_experiments,suggested_studies:w.suggested_studies,limitations:w.limitations,tags:w.tags});
   const ents=()=>[...molecules.flatMap(m=>[m.name,...(m.aliases||[])]),unl(D.bridge_b||"")].filter(x=>x&&String(x).length>=3);
@@ -1328,7 +1293,7 @@ function buildSummary(outcome,r,extra){if(!TR||SUMMARY_DONE)return;SUMMARY_DONE=
     ...(extra||{}),build_log:lines})}
 /* One full build (retrieval, discovery or review, audit, save, optional share). Does not touch the screen beyond the log. */
 async function execRun(A,B,cue,mode,share,meta){
-  RUN={mode,cue};TR=[];lastTrace=TR;SUMMARY_DONE=false;RUN_T0=Date.now();$("expT").hidden=true;
+  RUN={mode,cue,autonomous:!!(meta&&(meta.autonomous||meta.random_nano))};TR=[];lastTrace=TR;SUMMARY_DONE=false;RUN_T0=Date.now();$("expT").hidden=true;
   tr("run_start",{app:"pathmap-alchemy/"+APP_VERSION,app_version:APP_VERSION,concept_a:A,concept_b:B,cue:RUN.cue,mode:RUN.mode,config:{...CFG,gemma_cap_enabled:capOn()},provider:cfg.provider,model:cfg.model,endpoint:cfg.provider==="local"?cfg.base:undefined,language:lang,share_choice:share,user_agent:navigator.userAgent,...(meta||{})});
   try{const r=await pipelineLoop(A,B,abortC.signal);lastResult=r;tr("final_result",{result:r.syn,veridicality:r.veri,attempts:r.attempts,quotes:r.quotes,molecules:r.molecules,mesh:r.mesh,copub:r.copub});$("expT").hidden=false;r.libId=libAdd(r);
     try{log(`Drawing patent-style figures: ${buildFigures(r).length} figure(s) generated from the verified data`,"ok")}catch(e){log("Figure generation skipped: "+e.message,"e")}
@@ -1338,10 +1303,11 @@ async function execRun(A,B,cue,mode,share,meta){
   catch(err){tr("run_error",{name:err.name,message:err.message});buildSummary(err.name==="AbortError"?"cancelled":"error",null,{error:err.message,...(meta||{})});throw err}}
 function startRunUI(){showE($("homeErr"),"");showE($("runErr"),"");$("runErr").className="err";term.replaceChildren();show("run");
   const t0=Date.now();$("timer").textContent="0:00";timer=setInterval(()=>{const s=(Date.now()-t0)/1000|0;$("timer").textContent=(s/60|0)+":"+String(s%60).padStart(2,"0")},1000);abortC=new AbortController()}
-async function go(A,B,cue,mode){mode=mode||curMode;cue=cue===undefined?$("Q").value.trim():cue;if(!A||(!B&&mode!=="review"))return;$("A").value=A;$("B").value=B||"";$("Q").value=cue;RUN={mode,cue};
+async function go(A,B,cue,mode){mode=mode||curMode;cue=cue===undefined?$("Q").value.trim():cue;if(mode!=="randomnano"&&(!A||(!B&&mode!=="review")))return;$("A").value=A;$("B").value=B||"";$("Q").value=cue;RUN={mode,cue};
   if(!connected){show("home");showE($("homeErr"),T("need"));openSet();return}
   const share=await askShare();
   if(mode==="autonomous")return goAuto(A,B,cue,share);
+  if(mode==="randomnano")return goNano(share);
   startRunUI();
   try{const r=await execRun(A,B,cue,mode,share);render(r);setDig(r);show("result")}
   catch(err){term.querySelectorAll(".cur").forEach(x=>x.classList.remove("cur"));
@@ -1373,10 +1339,45 @@ async function goAuto(A,B,cue,share){
       lastR?h("button",{class:"btn",type:"button",onclick:()=>{lastResult=lastR;render(lastR);setDig(lastR);show("result")}},"Open last result"):"",
       lastR?h("button",{class:"btn",type:"button",onclick:()=>exportAs("trace")},"Download last trace"):"",
       h("button",{class:"btn",type:"button",onclick:()=>{renderLib();show("lib")}},"Library"),h("button",{class:"btn",type:"button",onclick:()=>show("home")},"Back to search")));box.hidden=false}}
+/* Random Nano mode: fetch a food x pathology pair from pathmap.org (same source as "Suggest for me"), run a discovery on it, then fetch a NEW pair and repeat until the user cancels. Follow-up pairs are not reused. */
+async function fetchPair(s){
+  const r=await fetch(SUGGEST_URL+"?t="+Date.now(),{cache:"no-store",signal:AbortSignal.any?AbortSignal.any([s,AbortSignal.timeout(15000)]):AbortSignal.timeout(15000)});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json(),pick=v=>typeof v==="string"?v.replace(/[\u0000-\u001f]/g," ").trim().slice(0,120):"";
+  let a=pick(j.pair_item_nutrition),c=pick(j.pair_item_pathology);
+  if(!a||!c){const v=Object.values(j||{}).filter(x=>typeof x==="string");a=a||pick(v[0]);c=c||pick(v[1])}
+  if(!a||!c)throw new Error("unexpected response");
+  return{a,b:c}}
+async function goNano(share){
+  startRunUI();
+  const pairKey=(a,b)=>[norm(a),norm(b)].sort().join("|"),done=new Set(libLoad().filter(x=>x.mode!=="review").map(x=>pairKey(x.A,x.B))),ran=[];
+  let n=0,fails=0,lastR=null;
+  log("Random Nano mode started. Each run uses a new food × pathology pair from pathmap.org. Pairs already in your library are skipped. Press Cancel to stop.","ok");
+  try{
+    while(!abortC.signal.aborted){
+      let pair=null;
+      for(let t=0;t<8&&!pair;t++){
+        try{const p=await fetchPair(abortC.signal);if(done.has(pairKey(p.a,p.b))){log(`Pair already run, fetching another: ${p.a} × ${p.b}`);continue}pair=p}
+        catch(e){if(e.name==="AbortError")break;fails++;log(`Could not get a pair from pathmap.org: ${e.name==="TimeoutError"?"timed out":e.message}`,"e");if(fails>=3)break;try{await sleep(2000,abortC.signal)}catch(_){break}}}
+      if(abortC.signal.aborted)break;
+      if(!pair){log(fails>=3?"Stopping after 3 failed attempts in a row.":"No new pair found after several tries. Random Nano mode finished.","e");break}
+      n++;done.add(pairKey(pair.a,pair.b));$("A").value=pair.a;$("B").value=pair.b;$("Q").value="";
+      log(`──── Random Nano run ${n}: ${pair.a} × ${pair.b} ────`,"ok");
+      try{const r=await execRun(pair.a,pair.b,"","discovery",share,{random_nano:true,random_nano_run:n});
+        lastR=r;ran.push(r.libId);fails=0;log(`Run ${n} complete. Fetching the next pair...`,"ok")}
+      catch(e){if(e.name==="AbortError")break;fails++;log(`Run ${n} skipped: ${friendly(e)}`,"e");if(fails>=3){log("Stopping after 3 failed runs in a row.","e");break}}
+    }
+  }finally{clearInterval(timer);const stopped=abortC&&abortC.signal.aborted;abortC=null;TR=null;
+    term.querySelectorAll(".cur").forEach(x=>x.classList.remove("cur"));log(`${stopped?"Random Nano stopped":"Random Nano ended"}: ${ran.length} run(s) saved to your library.`,stopped?"e":"ok");
+    const box=$("runErr");box.className="notice good";box.replaceChildren(h("div",null,`${ran.length} run(s) completed and saved to your library.`),h("div",{class:"acts",style:"margin-top:10px"},
+      ran.length?h("button",{class:"btn solid",type:"button",onclick:()=>openBook(ran,"Random Nano session")},"Open session as a book"):"",
+      lastR?h("button",{class:"btn",type:"button",onclick:()=>{lastResult=lastR;render(lastR);setDig(lastR);show("result")}},"Open last result"):"",
+      lastR?h("button",{class:"btn",type:"button",onclick:()=>exportAs("trace")},"Download last trace"):"",
+      h("button",{class:"btn",type:"button",onclick:()=>{renderLib();show("lib")}},"Library"),h("button",{class:"btn",type:"button",onclick:()=>show("home")},"Back to search")));box.hidden=false}}
 $("form").onsubmit=e=>{e.preventDefault();go($("A").value.trim(),$("B").value.trim())};
 $("expT").onclick=()=>exportAs("trace");$("expJ").onclick=()=>exportAs("json");$("expL").onclick=()=>exportAs("jsonl");
 $("libB").onclick=()=>{if(!abortC){libFilter="";renderLib();show("lib")}};$("libBack").onclick=()=>show("home");$("libClear").onclick=()=>{if(confirm("Delete all saved runs?")){libSave([]);renderLib()}};
-document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{curMode=b.dataset.m;document.querySelectorAll("#modeSeg button").forEach(x=>x.setAttribute("aria-selected",String(x===b)));$("B").required=curMode!=="review";$("autoNote").hidden=curMode!=="autonomous";$("goBtn").textContent=curMode==="discovery"?T("go"):curMode==="autonomous"?"Start Autonomous Mode":"Run Literature Review"});
+document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>{curMode=b.dataset.m;document.querySelectorAll("#modeSeg button").forEach(x=>x.setAttribute("aria-selected",String(x===b)));$("A").required=curMode!=="randomnano";$("B").required=curMode!=="review"&&curMode!=="randomnano";$("autoNote").hidden=curMode!=="autonomous";$("nanoNote").hidden=curMode!=="randomnano";$("goBtn").textContent=curMode==="discovery"?T("go"):curMode==="autonomous"?"Start Autonomous Mode":curMode==="randomnano"?"Start Random Nano":"Run Literature Review"});
 $("libProj").onchange=()=>{libProjF=$("libProj").value;libFilter="";renderLib()};
 const libIds=()=>libSel.size?[...libSel]:libShown().map(x=>x.id);
 const libApply=fn=>{if(!libSel.size){showE($("libMsg"),"Select one or more runs first.");return}const lib=libLoad();lib.forEach(x=>{if(libSel.has(x.id))fn(x)});libSave(lib);showE($("libMsg"),"");renderLib()};
@@ -1437,7 +1438,7 @@ const GUIDE=`
 
 <h3 id="g-start">Quick start</h3>
 <div class="gstep"><i>1</i><div><strong>Connect a model.</strong> Tap the ${GI.gear.replace(/width="20" height="20"/,'width="16" height="16"')} gear, choose Gemini, Localhost or OpenRouter, paste a key if needed, and press Save. The top pill turns green when it works.</div></div>
-<div class="gstep"><i>2</i><div><strong>Pick a mode</strong> (Discovery, Literature review or Autonomous) and type your concepts. A question is optional.</div></div>
+<div class="gstep"><i>2</i><div><strong>Pick a mode</strong> (Discovery, Literature review, Autonomous or Random Nano) and type your concepts (Random Nano picks them for you). A question is optional.</div></div>
 <div class="gstep"><i>3</i><div><strong>Press the big green button</strong> and watch the log. A run usually takes a few minutes.</div></div>
 <div class="gstep"><i>4</i><div><strong>Read the report</strong>, then download it as PDF, check it with Dig Deeper, or run a suggested follow-up.</div></div>
 <div class="gstep"><i>5</i><div><strong>Find it again later</strong> in My Library. Every finished run is saved automatically on this device.</div></div>
@@ -1455,13 +1456,15 @@ ${gc(GI.gear,'Settings (gear)','Choose the AI provider, paste a key, pick the mo
 <h3 id="g-modes">Choose a mode</h3>
 ${gc('🔗','Discovery','Finds ONE hidden A → B → C link: two concepts that never appear together, joined by a shared middle term (the bridge). Every claim is backed by exact quotes.','You have two ideas that might be connected in a way nobody wrote down, for example a food and a disease.','This is the Swanson literature-based discovery method. Alchemy is allowed to report that nothing is there.')}
 ${gc('📚','Literature review','Summarises what PubMed says about one topic (a second concept is optional): themes, contradictions, evidence gaps, and suggested studies.','You want the state of the evidence rather than a new idea.','Fast, quote-backed grounding in a topic before you go deeper.')}
-${gc('♾️','Autonomous','Runs your seed as a Discovery, then automatically picks a random unexplored follow-up pair from all suggestions so far, runs it, and repeats. It never repeats a pair (including pairs already in your library).','You want to explore a whole territory hands-off, for example overnight.','It stops when there are no new pairs left, after 3 failures in a row, or when you press Cancel run. Each run is saved, and at the end you can open the whole session as a book.')}
+${gc('♾️','Autonomous','Runs your seed as a Discovery, then automatically picks a random unexplored follow-up pair from all suggestions so far, runs it, and repeats. It never repeats a pair (including pairs already in your library). Its searches are written for discovery: they gather each concept\'s literature and the bridge mechanisms between them, rather than papers that confirm or refute a claim.','You want to explore a whole territory hands-off, for example overnight.','It stops when there are no new pairs left, after 3 failures in a row, or when you press Cancel run. Each run is saved, and at the end you can open the whole session as a book.')}
+${gc('🎲','Random Nano','No concepts needed. Fetches a food and pathology pair from pathmap.org (the same source as Suggest for me), runs a Discovery on it, then fetches a brand-new pair and repeats until you press Cancel. Pairs already in your library are skipped and follow-up ideas are not reused. The question box is ignored.','You want to build up many food × pathology discoveries hands-off, for example overnight.','It keeps going until you cancel, or stops after 3 failures in a row (a failed run or an unreachable pathmap.org). Each run is saved as a normal Discovery, and at the end you can open the whole session as a book.')}
 ${gc('✨','Suggest for me','Fetches a random food and health-condition pair from pathmap.org and fills Concept A and Concept B for you. You still press the run button yourself.','You are not sure what to explore, or want a fresh idea.','Quick way to try the app. Press it again for a different pair, or edit the fields before running.')}
-${gc('💬','Question / cue (optional)','A sentence that steers the AI, for example "Could steam from cooking reach the brain?"','You have a specific question in mind.','The report includes an "Answer to your question" section that answers it directly from the evidence.')}
+${gc('💬','Question / cue (optional)','A sentence that steers the search, for example "Could steam from cooking reach the brain?" In Discovery, the cue is used when writing the PubMed searches. The AI that finds the hypothesis never sees it, so a hard question cannot derail the discovery.','You have a specific question in mind.','The report includes an "Answer to your question" section. It answers directly only when the verified quotes support an answer. Otherwise it says so, shares the discovery that was validated, and explains how your question relates to it. Literature review mode answers the question directly from the evidence.')}
 
 <h3 id="g-run">While it runs</h3>
+${gc('🔭','How wide the search is','Each run asks the AI for 30 different Boolean searches and takes up to 4 abstracts from each, so up to 120 abstracts per run.','Automatic. It helps find new or unpublished links and reduces cases where nothing is found.','Gemma models with the 16-abstract limit on still receive a random sample of 16 from that larger pool.')}
 ${gc('🖥️','Thoughts log and timer','A live log of every step: query writing, PubMed search, quote checking, PubChem lookups, audits.','Watch it if you are curious, or ignore it.','Nothing is hidden. If a step fails the log says why.')}
-${gc('⛔','Cancel run','Stops the current run (or the whole autonomous session).','It is taking too long or you typed the wrong concepts.','Finished runs stay saved. Only the run in progress is lost.')}
+${gc('⛔','Cancel run','Stops the current run (or the whole Autonomous or Random Nano session).','It is taking too long or you typed the wrong concepts.','Finished runs stay saved. Only the run in progress is lost.')}
 ${gc('🔁','Retries and audits','You may see "attempt 2" or a "Restart". The app re-checks quotes and claims and tries again until they hold up.','It happens automatically.','This is how it avoids invented citations. A few retries are normal.')}
 
 <h3 id="g-report">Reading the report</h3>
@@ -1496,7 +1499,7 @@ ${gc('☁️','Gemini API','Paste a free key from Google AI Studio and pick a mo
 ${gc('💻','Localhost','Point to Ollama or LM Studio on your own computer. Start Ollama with OLLAMA_ORIGINS=* so the browser may call it.','You want privacy, no limits, or offline use.','Nothing leaves your machine except PubMed and PubChem lookups.')}
 ${gc('🔀','OpenRouter','Paste an OpenRouter key and a model name.','You want a different or paid model.','Wide choice of models with one key.')}
 ${gc('🔒','Your API key','The key stays in memory for this tab only. It is never saved, shared or put in traces, and it is sent only to the provider you chose.','Reloading the page clears it, so paste it again.','Safe on shared computers.')}
-${gc('✂️','Gemma 16-abstract limit','Switch that limits Gemma models to a random sample of 16 abstracts per prompt.','Keep it ON for small context windows. Turn it OFF for localhost or paid models with large context.','More abstracts can give richer results when the model can handle them.')}
+${gc('✂️','Gemma 16-abstract limit','Switch that limits Gemma models to a random sample of 16 abstracts per prompt, picked from the pool of up to 120 that the search finds.','Keep it ON for small context windows. Turn it OFF for localhost or paid models with large context (such as 256k), which can read the full pool.','More abstracts can give richer results when the model can handle them.')}
 
 <h3 id="g-share">Sharing (optional)</h3>
 ${gc('🌍','Share with the global library','Before a run you are asked whether to share the finished result with the PathMap research library. Choose Keep private to share nothing.','If you want your discoveries to contribute to open research.','Shared data: concepts, write-up, quotes, molecules, model name, app version and the run trace. Never your API key. Use "Learn more" in the dialog for details, and reset your choice from the ? About window.')}
