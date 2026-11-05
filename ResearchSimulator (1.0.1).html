@@ -15,6 +15,9 @@
     <style id="game-css">
 
 
+
+
+
         html, body { height: 100%; margin: 0; }
         body { background-color: #030d07; color: #f0fdf4; overflow: hidden; touch-action: manipulation; font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
         .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace; }
@@ -144,6 +147,9 @@
         @media (prefers-reduced-motion: reduce) { .fx-layer { display: none; } .tile-drop, .tile-forge, .special-glow { animation: none !important; } }
     
     
+    
+    
+    
     </style>
 </head>
 <body>
@@ -151,96 +157,99 @@
     <script type="text/babel" id="game-src">
 
 
+
+
+
         const { useState, useEffect, useCallback, useRef } = React;
 
         // =========================================================================
         // HYPOTHESIS DATA: one literature-derived hypothesis powers each run
         // =========================================================================
-        const DEFAULT_HYPOTHESIS = {
-    "hypothesis_id": "RS_HYP_E56EFE59",
-    "title": "Spermidine-Modified Ginger Extracellular Vesicles for Intranasal Delivery of CRISPR Therapeutics in C9orf72 ALS/FTD",
-    "main_claim": "Spermidine-modified ginger extracellular vesicles administered via intranasal hydrogels can serve as a non-invasive, blood-brain-barrier-bypassing delivery platform for Cas9 or Cas13 gene-editing machinery to treat C9orf72-linked amyotrophic lateral sclerosis and frontotemporal dementia.",
-    "justification": "While Domain A establishes plant-derived and ginger extracellular vesicles as safe, brain-targeted nanocarriers capable of nose-to-brain delivery and bypassing the blood-brain barrier, Domain C and literature on extracellular vesicles highlight their broader utility in transporting macromolecular therapeutics across biological barriers to treat…",
+            const DEFAULT_HYPOTHESIS = {
+    "hypothesis_id": "RS_HYP_FD03993A",
+    "title": "Onion Extract and Quercetin: Potential Caspase-3 Modulation in Neuroinflammation",
+    "main_claim": "Onion-derived flavonoids, particularly quercetin, may inhibit neuroinflammation in anti-NMDAR encephalitis by downregulating the apoptotic executioner Caspase-3, thereby preserving neuronal integrity against the excitotoxic stress associated with autoimmune receptor disruption.",
+    "justification": "Caspase-3 is a central mediator of neuronal apoptosis; its documented downregulation by onion extracts in neuro- and reproductive-tissue stress models suggests a potential mechanism for limiting neuronal loss in the inflammatory milieu of anti-NMDAR encephalitis.",
     "swanson_triad": {
         "origin_a": {
             "label": "ORIGIN A",
-            "concept": "Spermidine modified ginger extracellular…",
-            "pmid": "41252430"
+            "concept": "Allium cepa (wax onion)",
+            "pmid": "37337719"
         },
         "bridge_b": {
             "label": "BRIDGE B",
-            "concept": "Extracellular vesicles",
+            "concept": "Caspase-3",
             "sub": "Shared intermediate"
         },
         "target_c": {
             "label": "TARGET C",
-            "concept": "Cas9 CRISPR Gene Therapy for C9orf72 ALS /…",
-            "pmid": "39284324"
+            "concept": "anti-N-methyl-d-aspartate receptor…",
+            "pmid": "31288717"
         }
     },
     "cited_pmids": [
-        "41252430",
-        "40139523",
-        "33991589",
-        "39284324",
-        "34428481"
+        "37337719",
+        "33682109",
+        "33417197",
+        "31288717",
+        "35458696"
     ],
     "global_solves": 0,
     "game_data": {
         "core_concepts": [
             {
                 "id": "c1",
-                "emoji": "🧪",
-                "name": "Extracellular Vesicles",
+                "emoji": "🥚",
+                "name": "Glutathione",
                 "desc": "Evidence term",
-                "pmid": "41252430",
-                "quote": "Here, we engineered an intranasal thermosensitive hydrogel (EVs@IN) encapsulating Chlorella vulgaris-derived 🧪 extracellular vesicles (EVs) for sustained nose-to-brain delivery.",
-                "quote_verbatim": "Here, we engineered an intranasal thermosensitive hydrogel (EVs@IN) encapsulating Chlorella vulgaris-derived extracellular vesicles (EVs) for sustained nose-to-brain delivery."
+                "pmid": "37337719",
+                "quote": "The addition of 100 μg/ml OPE reduced the oocyte fragmentation rate, decreased the reactive oxygen species (ROS) level, increased the 🥚 glutathione (GSH) level, and improved the mitochondrial membrane potential compared with the control group.",
+                "quote_verbatim": "The addition of 100 μg/ml OPE reduced the oocyte fragmentation rate, decreased the reactive oxygen species (ROS) level, increased the glutathione (GSH) level, and improved the mitochondrial membrane potential compared with the control group."
             },
             {
                 "id": "c2",
-                "emoji": "🌱",
-                "name": "Blood-Brain Barrier",
-                "desc": "Evidence term",
-                "pmid": "40139523",
-                "quote": "Plant extracellular vesicles (PEVs) have emerged important roles in central nervous system (CNS) disorders. PEVs are nanoscale vesicles (30-150 nm) that mediate intercellular communication and exhibit unique therapeutic potential due to their natural biocompatibility, minimal immunogenicity, and ability to cross the 🌱 blood-brain barrier (BBB).",
-                "quote_verbatim": "Plant extracellular vesicles (PEVs) have emerged important roles in central nervous system (CNS) disorders. PEVs are nanoscale vesicles (30-150 nm) that mediate intercellular communication and exhibit unique therapeutic potential due to their natural biocompatibility, minimal immunogenicity, and ability to cross the blood-brain barrier (BBB)."
+                "emoji": "🔥",
+                "name": "Caspase-3",
+                "desc": "Protein_or_gene",
+                "pmid": "33682109",
+                "quote": "Conversely, IL-1β and 🔥 caspase-3 gene expression were upregulated by dexamethasone and normalised in the treated group.",
+                "quote_verbatim": "Conversely, IL-1β and caspase-3 gene expression were upregulated by dexamethasone and normalised in the treated group."
             },
             {
                 "id": "c3",
-                "emoji": "🧠",
-                "name": "Depression",
+                "emoji": "🧬",
+                "name": "Oocytes",
                 "desc": "Evidence term",
-                "pmid": "41252430",
-                "quote": "Our findings establish plant-derived EVs within a sustained-release intranasal platform as a promising, scalable and BBB-bypassing strategy for the rapid treatment of 🧠 depression and potentially other neuropsychiatric disorders.",
-                "quote_verbatim": "Our findings establish plant-derived EVs within a sustained-release intranasal platform as a promising, scalable and BBB-bypassing strategy for the rapid treatment of depression and potentially other neuropsychiatric disorders."
+                "pmid": "37337719",
+                "quote": "The addition of OPE also increased the expression of SOD1, CAT, and GPX3 genes, and the caspase-3 activity in OPE-treated aged 🧬 oocytes was significantly lower than that in untreated aged oocytes and similar to that in fresh oocytes.",
+                "quote_verbatim": "The addition of OPE also increased the expression of SOD1, CAT, and GPX3 genes, and the caspase-3 activity in OPE-treated aged oocytes was significantly lower than that in untreated aged oocytes and similar to that in fresh oocytes."
             },
             {
                 "id": "c4",
                 "emoji": "💊",
-                "name": "Extracellular vesicles 4",
-                "desc": "B evidence",
-                "pmid": "33991589",
-                "quote": "💊 They can then be used as therapeutics, alone or combined with a bioactive molecule, for the treatment of CNS diseases, as they can cross the blood-brain barrier more easily than synthetic nanomedicines and are less immunogenic.",
-                "quote_verbatim": "They can then be used as therapeutics, alone or combined with a bioactive molecule, for the treatment of CNS diseases, as they can cross the blood-brain barrier more easily than synthetic nanomedicines and are less immunogenic."
+                "name": "Chitosan",
+                "desc": "Evidence term",
+                "pmid": "33417197",
+                "quote": "Encapsulation of the extract on 💊 chitosan nano particles decreased IC50 in different cell lines and induced apoptosis through decreasing BCL-2 level and increasing caspase-3 and caspase-9 activity.",
+                "quote_verbatim": "Encapsulation of the extract on chitosan nano particles decreased IC50 in different cell lines and induced apoptosis through decreasing BCL-2 level and increasing caspase-3 and caspase-9 activity."
             },
             {
                 "id": "c5",
-                "emoji": "🔬",
-                "name": "Biomarkers",
-                "desc": "Evidence term",
-                "pmid": "39284324",
-                "quote": "As an effective mediator to penetrate through BBB in both directions, extracellular vesicles (EVs) have attracted much attention in the early diagnosis and treatment of NDDs because of their superior performance as drug carriers and detection 🔬 biomarkers. Brain-derived EVs in body fluids contain disease-related biomolecules can be used as early diagnostic biomarkers for NDDs.",
-                "quote_verbatim": "As an effective mediator to penetrate through BBB in both directions, extracellular vesicles (EVs) have attracted much attention in the early diagnosis and treatment of NDDs because of their superior performance as drug carriers and detection biomarkers. Brain-derived EVs in body fluids contain disease-related biomolecules can be used as early diagnostic biomarkers for NDDs."
+                "emoji": "🧠",
+                "name": "anti-N-methyl-d-aspartate…",
+                "desc": "Target C evidence",
+                "pmid": "31288717",
+                "quote": "🧠 However, an acute inflammatory process after cerebral trauma or stroke may also result in a prolonged lesion formation, leading to a severe neuronal loss.",
+                "quote_verbatim": "However, an acute inflammatory process after cerebral trauma or stroke may also result in a prolonged lesion formation, leading to a severe neuronal loss."
             },
             {
                 "id": "c6",
-                "emoji": "🛡️",
-                "name": "Brain",
-                "desc": "Evidence term",
-                "pmid": "34428481",
-                "quote": "The evidence that EVs might be able to cross the blood-🛡️ brain barrier (BBB) make them very promising candidates as nanocarriers to treat brain pathologies.",
-                "quote_verbatim": "The evidence that EVs might be able to cross the blood-brain barrier (BBB) make them very promising candidates as nanocarriers to treat brain pathologies."
+                "emoji": "🧪",
+                "name": "Quercetin",
+                "desc": "Metabolite",
+                "pmid": "35458696",
+                "quote": "Various in vivo and in vitro studies have demonstrated the role of 🧪 quercetin and here a detailed review of quercetin as a curative agent in neurodegeneration, diabetes, cancer, and inflammation has been carried out.",
+                "quote_verbatim": "Various in vivo and in vitro studies have demonstrated the role of quercetin and here a detailed review of quercetin as a curative agent in neurodegeneration, diabetes, cancer, and inflammation has been carried out."
             }
         ],
         "noise_concepts": [
@@ -248,6 +257,7 @@
             "🧫",
             "🦷",
             "🦴",
+            "🔬",
             "🌡️",
             "💉",
             "🩹",
@@ -260,27 +270,61 @@
             "🍄",
             "🫀",
             "👁️",
-            "🧬",
             "🩸",
-            "🔥",
+            "🛡️",
             "💧"
         ]
     }
 };
 
         // To plug in real PubMed-derived data, define window.BIOARCADE_HYPOTHESIS (same shape as
-        // DEFAULT_HYPOTHESIS: exactly 6 core_concepts plus a noise_concepts list) in a <script> placed
+        // DEFAULT_HYPOTHESIS: 6 to 10 core_concepts (ten in current datasets) plus a noise_concepts list) in a <script> placed
         // before this one. If it is missing or malformed the built-in hypothesis is used.
-        const HYPOTHESIS_DATA = (() => {
+        const isValidHypothesis = (o) => !!(o && o.game_data && Array.isArray(o.game_data.core_concepts) &&
+            o.game_data.core_concepts.length >= 6 && o.game_data.core_concepts.length <= 10 &&
+            Array.isArray(o.game_data.noise_concepts) && Array.isArray(o.cited_pmids) && o.swanson_triad);
+        // `let` so "Next Hypothesis" can swap in a freshly fetched hypothesis
+        let HYPOTHESIS_DATA = (() => {
             try {
                 const o = window.BIOARCADE_HYPOTHESIS;
-                if (o && o.game_data && Array.isArray(o.game_data.core_concepts) && o.game_data.core_concepts.length === 6 &&
-                    Array.isArray(o.game_data.noise_concepts) && Array.isArray(o.cited_pmids) && o.swanson_triad) return o;
+                if (isValidHypothesis(o)) return o;
             } catch (e) {}
             return DEFAULT_HYPOTHESIS;
         })();
 
-        const CORE_EMOJIS = HYPOTHESIS_DATA.game_data.core_concepts.map(c => c.emoji);
+        let CORE_EMOJIS = HYPOTHESIS_DATA.game_data.core_concepts.map(c => c.emoji);
+
+        // ---- pull a fresh hypothesis from the PHP endpoint (same page that injects the first one) ----
+        const HYPOTHESIS_URL = 'https://phosita.tech/randgame.php';
+        const extractHypothesis = (text) => {
+            const tryParse = (str) => { try { return JSON.parse(str); } catch (e) {} try { return (new Function('return (' + str + ')'))(); } catch (e) {} return null; };
+            const direct = tryParse(text.trim());          // endpoint returned bare JSON
+            if (isValidHypothesis(direct)) return direct;
+            if (direct && isValidHypothesis(direct.hypothesis)) return direct.hypothesis;
+            // endpoint returned the game page: pull the injected object literal out of the HTML
+            const re = /(?:window\.)?(?:BIOARCADE_HYPOTHESIS|DEFAULT_HYPOTHESIS)\s*=\s*\{/g;
+            let m;
+            while ((m = re.exec(text))) {
+                const start = m.index + m[0].length - 1;
+                let depth = 0, inStr = null, esc = false, end = -1;
+                for (let i = start; i < text.length; i++) {
+                    const ch = text[i];
+                    if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === inStr) inStr = null; continue; }
+                    if (ch === '"' || ch === "'") inStr = ch;
+                    else if (ch === '{') depth++;
+                    else if (ch === '}' && --depth === 0) { end = i; break; }
+                }
+                if (end > 0) { const obj = tryParse(text.slice(start, end + 1)); if (isValidHypothesis(obj)) return obj; }
+            }
+            return null;
+        };
+        const fetchNewHypothesis = async () => {
+            const res = await fetch(HYPOTHESIS_URL + (HYPOTHESIS_URL.includes('?') ? '&' : '?') + '_=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const h = extractHypothesis(await res.text());
+            if (!h) throw new Error('No valid hypothesis in response');
+            return h;
+        };
         const COLORS = ["red", "yellow", "blue", "orange", "green", "purple"];
         const HEART_EMOJIS = { red: "❤️", yellow: "💛", blue: "💙", orange: "🧡", green: "💚", purple: "💜" };
         const TILE_CLASSES = { red: "tile-red", yellow: "tile-yellow", blue: "tile-blue", orange: "tile-orange", green: "tile-green", purple: "tile-purple", grey: "tile-grey" };
@@ -825,7 +869,7 @@
             const mode = MODES[difficultyMode] || MODES.normal;
             return HYPOTHESIS_DATA.game_data.core_concepts.map((concept, i) => ({
                 id: concept.id,
-                color: COLORS[i],
+                color: COLORS[i % COLORS.length],
                 conceptEmoji: concept.emoji,
                 conceptName: concept.name,
                 desc: concept.desc,
@@ -845,7 +889,10 @@
         const SAVE_KEY = 'save_v1';
         const loadSave = () => {
             const sv = loadPref(SAVE_KEY, null);
-            if (!sv || sv.hyp !== HYPOTHESIS_DATA.hypothesis_id || !MODES[sv.modeKey] || !Array.isArray(sv.rooms) || sv.rooms.length !== 6) return null;
+            if (!sv || !MODES[sv.modeKey] || !Array.isArray(sv.rooms)) return null;
+            if (isValidHypothesis(sv.hypData)) return sv.rooms.length === sv.hypData.game_data.core_concepts.length ? sv : null;
+            // older saves (no embedded hypothesis) only restore if they match the hypothesis currently loaded
+            if (sv.hyp !== HYPOTHESIS_DATA.hypothesis_id || sv.rooms.length !== HYPOTHESIS_DATA.game_data.core_concepts.length) return null;
             return sv;
         };
         const clearSave = () => { try { window.localStorage.removeItem('bioarcade_' + SAVE_KEY); } catch (e) {} };
@@ -1101,6 +1148,20 @@
             const [clueQueue, setClueQueue] = useState([]);
             const [globalSolves, setGlobalSolves] = useState(HYPOTHESIS_DATA.global_solves);
             const [started, setStarted] = useState(false);
+            const [loadingNext, setLoadingNext] = useState(false);
+            const [hypLoading, setHypLoading] = useState(() => { try { return !isValidHypothesis(window.BIOARCADE_HYPOTHESIS); } catch (e) { return true; } });
+            useEffect(() => {
+                if (!hypLoading) return;
+                let dead = false;
+                fetchNewHypothesis().then(h => {
+                    if (dead) return;
+                    HYPOTHESIS_DATA = h;
+                    CORE_EMOJIS = h.game_data.core_concepts.map(c => c.emoji);
+                    setGlobalSolves(typeof h.global_solves === 'number' ? h.global_solves : 0);
+                    setRooms(generateRooms(1, 'normal'));
+                }).catch(() => {}).then(() => { if (!dead) setHypLoading(false); });
+                return () => { dead = true; };
+            }, []);
             const [bankedScore, setBankedScore] = useState(0); // points from levels already completed this run
             const lastMoveRef = useRef({ moves: 0, score: 0, level: 1 });
             const announced = useRef({});
@@ -1125,13 +1186,15 @@
                 const w = window.innerWidth;
                 return w <= 600 ? 'phone' : w <= 1000 ? 'tablet' : 'desktop';
             });
-            const [boardW, setBoardW] = useState(300);
-            const [boardH, setBoardH] = useState(375);
+            const [baseTileSize, setBaseTileSize] = useState(38);
             const boardWrapRef = useRef(null);
-            const ZOOM_MIN = 0.6, ZOOM_MAX = 2.0, ZOOM_STEP = 0.15;
-            const [zoom, setZoom] = useState(() => { const z = Number(loadPref('zoom', 1)); return z >= ZOOM_MIN && z <= ZOOM_MAX ? z : 1; });
+            const ZOOM_MIN = 0.6, ZOOM_MAX = 2.0, ZOOM_STEP = 0.1;
+            const [zoom, setZoom] = useState(() => { const z = Number(loadPref('zoom', 1)); return z >= ZOOM_MIN && z <= ZOOM_MAX ? Math.round(z * 10) / 10 : 1; });
             useEffect(() => { savePref('zoom', zoom); }, [zoom]);
-            const zoomBy = (d) => setZoom(z => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + d) * 100) / 100)));
+            const zoomBy = (d) => setZoom(z => {
+                const next = Math.round((z + d) * 10) / 10;
+                return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+            });
             const zoomReset = () => setZoom(1);
             useEffect(() => {
                 const onKey = (e) => {
@@ -1153,7 +1216,7 @@
 
             const addToast = (msg, icon = "💡", color = "bg-emerald-600 border-emerald-400") => {
                 const id = Date.now() + Math.random();
-                setToasts(prev => [...prev.slice(-3), { id, msg, icon, color }]);
+                setToasts(prev => [...prev.slice(-1), { id, msg, icon, color }]); // two rows max
                 setTimeout(() => { setToasts(prev => prev.filter(t => t.id !== id)); }, 3000);
             };
 
@@ -1216,17 +1279,21 @@
             };
 
             // ---- board sizing: fit the 8x10 grid inside whatever space is left ----
+            // ---- board sizing: maintain square tiles and fit within available bounds ----
             useEffect(() => {
                 const el = boardWrapRef.current;
                 if (!el) return;
                 const calc = () => {
                     const r = el.getBoundingClientRect();
-                    const availW = r.width - 8, availH = r.height - 8;
-                    // tall boards on narrow screens; on wide/short screens tiles stretch (up to ~1.9:1) so the board fills the sides
-                    const H = Math.max(200, Math.floor(Math.min(availH, availW * 1.25)));
-                    const chTile = (H - 2 - 36) / 10;
-                    const W = Math.max(160, Math.floor(Math.min(availW, 15.2 * chTile + 30)));
-                    setBoardW(W); setBoardH(H);
+                    const availW = Math.max(160, r.width - 24);
+                    const availH = Math.max(200, r.height - 24);
+
+                    // An 8-col by 10-row grid: compute largest square tile that fits both dimensions
+                    const maxTileW = Math.floor((availW - 28) / 8);
+                    const maxTileH = Math.floor((availH - 36) / 10);
+                    const baseTile = Math.max(18, Math.min(maxTileW, maxTileH));
+
+                    setBaseTileSize(baseTile);
                 };
                 calc();
                 const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(calc) : null;
@@ -1246,6 +1313,7 @@
             };
 
             const initGame = (selectedMode) => {
+                if (hypLoading) return;
                 Snd.init();
                 runOver.current = false;
                 announced.current = {};
@@ -1272,6 +1340,7 @@
             const continueRun = () => {
                 const sv = loadSave();
                 if (!sv) return;
+                if (isValidHypothesis(sv.hypData)) { HYPOTHESIS_DATA = sv.hypData; CORE_EMOJIS = sv.hypData.game_data.core_concepts.map(c => c.emoji); }
                 Snd.init();
                 runOver.current = false;
                 setModeKey(sv.modeKey);
@@ -1370,11 +1439,22 @@
             // save after every change to the run
             useEffect(() => {
                 if (!started || runOver.current || activeModal === 'gameover') return;
-                savePref(SAVE_KEY, { v: 1, hyp: HYPOTHESIS_DATA.hypothesis_id, modeKey, level, score, moves, molecules, rooms, globalSolves, bankedScore, levelMs: levelMs.current, t: Date.now() });
+                savePref(SAVE_KEY, { v: 1, hyp: HYPOTHESIS_DATA.hypothesis_id, hypData: HYPOTHESIS_DATA, modeKey, level, score, moves, molecules, rooms, globalSolves, bankedScore, levelMs: levelMs.current, t: Date.now() });
             }, [started, activeModal, modeKey, level, score, moves, molecules, rooms, bankedScore]);
 
-            const nextLevel = () => {
+            const nextLevel = async () => {
+                if (loadingNext) return;
                 Snd.init();
+                setLoadingNext(true);
+                try {
+                    const fresh = await fetchNewHypothesis();
+                    HYPOTHESIS_DATA = fresh;
+                    CORE_EMOJIS = fresh.game_data.core_concepts.map(c => c.emoji);
+                    setGlobalSolves(typeof fresh.global_solves === 'number' ? fresh.global_solves : 0);
+                } catch (e) {
+                    addToast("Couldn't load a new hypothesis, replaying the current one", "⚠️", "bg-red-600 text-white border-red-400");
+                }
+                setLoadingNext(false);
                 const nextLvl = level + 1;
                 setLevel(nextLvl);
                 setScore(0);
@@ -1391,7 +1471,7 @@
 
             const calibratedCount = rooms.filter(r => r.isCalibrated).length;
             useEffect(() => {
-                if (started && score >= currentTarget && calibratedCount === 6 && activeModal === null && !clueBlocking) {
+                if (started && score >= currentTarget && rooms.length > 0 && calibratedCount === rooms.length && activeModal === null && !clueBlocking) {
                     const t = setTimeout(() => {
                         recordLevelClear();
                         Snd.win();
@@ -1414,7 +1494,8 @@
                     if (c.type === 'molecule') {
                         targetEmoji = c.emoji;
                     } else if (c.color && c.color !== 'grey') {
-                        const room = currentRooms.find(r => r.color === c.color);
+                        const sameColor = currentRooms.filter(r => r.color === c.color);
+                        const room = sameColor.length ? sameColor[Math.floor(Math.random() * sameColor.length)] : null;
                         if (room) targetEmoji = room.conceptEmoji;
                     }
 
@@ -1556,15 +1637,17 @@
             };
 
             // ================= VISUAL FX ENGINE =================
-            const bW = Math.round(boardW * zoom), bH = Math.round(boardH * zoom);
-            const innerW = bW - 2, innerH = bH - 2;
-            const cw = (innerW - 28) / 8, ch = (innerH - 36) / 10;
-            const px = (x) => x * (cw + 4), py = (y) => (9 - y) * (ch + 4);
+            const tileSize = Math.max(14, Math.round(baseTileSize * zoom));
+            const cw = tileSize, ch = tileSize;
+            const gap = 4;
+            const bW = 8 * cw + 7 * gap, bH = 10 * ch + 9 * gap;
+            const innerW = bW, innerH = bH;
+            const px = (x) => x * (cw + gap), py = (y) => (9 - y) * (ch + gap);
             const cxOf = (x) => px(x) + cw / 2, cyOf = (y) => py(y) + ch / 2;
             const fxId = useRef(0);
             const shakeN = useRef(0);
             const shakeTimer = useRef(null);
-            const streakRef = useRef({ n: 0, t: 0 });
+            const streakRef = useRef({ c: 0 }); // matches in a row; only a clock tap or a bad pair resets it
             const [fx, setFx] = useState([]);
             const [shake, setShake] = useState({ n: 0, lvl: 0 });
 
@@ -1583,12 +1666,12 @@
                 shakeTimer.current = setTimeout(() => setShake({ n: 0, lvl: 0 }), lvl === 2 ? 600 : 400);
             };
             const bumpStreak = () => {
-                const now = Date.now(), st = streakRef.current;
-                st.n = (now - st.t > 4000) ? 0 : st.n + 1;
-                st.t = now;
-                recordStat('streak', st.n + 1);
-                return st.n;
+                const st = streakRef.current;
+                st.c += 1;
+                recordStat('streak', st.c);
+                return st.c - 1;
             };
+            const breakStreak = () => { streakRef.current.c = 0; };
             const makeParts = (total) => {
                 const count = total > 40 ? 0 : total > 20 ? 2 : 4;
                 return Array.from({ length: count }, () => {
@@ -1712,6 +1795,7 @@
 
                 if (card.type === 'block') {
                     if (!(selected && selected.card.type === 'hammer')) {
+                        breakStreak(); // tapping a clock ends the streak
                         addToast(`Hazards cannot be paired! Use a Heart, Line Clear, or Hammer!`, card.emoji, "bg-red-600 text-white border-red-400");
                         setSelected(null);
                         return;
@@ -1902,13 +1986,15 @@
                     return;
                 }
 
+                // two molecules that don't pair = bad pair, ends the streak (specials/hammers never do)
+                if (c1.type === 'molecule' && c2.type === 'molecule') breakStreak();
                 setSelected(null);
             };
 
             const progressPct = Math.min(100, (score / currentTarget) * 100);
 
             const digHyp = String(HYPOTHESIS_DATA.main_claim || '').slice(0, 500);
-            const digPrompt = "I am using PathMap Alchemy and it made this literature based hypothesis discovery. Is it a plausible/scientifically-valueabke hypothesis? Is it new and unpublished? What impact on the world would occur if true. Explain it to me.\n\nHypothesis: " + digHyp;
+            const digPrompt = "I am using PathMap Alchemy and it made this literature based hypothesis discovery. Is it a plausible/scientifically-valuable hypothesis? Is it new and unpublished? What impact on the world would occur if true. Explain it to me.\n\nHypothesis: " + digHyp;
             const googleSearchUrl = "https://www.google.com/search?q=" + encodeURIComponent(digPrompt);
             const chatGptUrl = "https://chatgpt.com/?q=" + encodeURIComponent(digPrompt);
 
@@ -2008,8 +2094,11 @@
             const iconBtn = "icon-btn w-10 h-10 rounded-xl border flex items-center justify-center active:scale-90 transition-transform";
             const sfxLabelOn = sfxOn ? "border-emerald-700 text-emerald-300 bg-emerald-950/60" : "border-zinc-700 text-zinc-500 bg-zinc-900";
 
+            const idealWindowW = Math.max(380, Math.round(bW + 48));
+            const containerMaxW = Math.min(VIEWPORTS[vp].maxW, Math.max(idealWindowW, vp === 'phone' ? 440 : vp === 'tablet' ? 580 : 640));
+
             return (
-                <div className={`app-bg ts-${textScale} flex flex-col w-full mx-auto relative overflow-hidden`} style={{ height: '100dvh', maxWidth: VIEWPORTS[vp].maxW, paddingTop: 'env(safe-area-inset-top, 0px)', boxSizing: 'border-box' }}>
+                <div className={`app-bg ts-${textScale} flex flex-col w-full mx-auto relative overflow-hidden`} style={{ height: '100dvh', maxWidth: containerMaxW, paddingTop: 'env(safe-area-inset-top, 0px)', boxSizing: 'border-box' }}>
 
                     {/* SCIENTIFIC CLUE MODAL */}
                     {clueMode === 'banner' && clueQueue.length > 0 && activeModal === null && (
@@ -2019,6 +2108,10 @@
                                 <div className="min-w-0 flex-1">
                                     <div className="mono text-[10px] font-black uppercase tracking-widest text-emerald-400">🔬 {clueQueue[0].conceptName} evidence link confirmed • PMID {clueQueue[0].pmid}</div>
                                     <div className="text-[11px] text-gray-300 font-serif italic leading-snug line-clamp-5">"{clueQueue[0].quote}"</div>
+<label className="mt-1.5 flex items-center gap-2 cursor-pointer text-emerald-200 font-bold" style={{ fontSize: 12 }}>
+<input type="checkbox" checked={false} onChange={() => { setClueMode('off'); setClueQueue([]); }} style={{ width: 18, height: 18 }} />
+Hide popups
+</label>
                                 </div>
                                 <button onClick={() => setClueQueue(q => q.slice(1))} className="shrink-0 w-7 h-7 rounded-lg border border-emerald-700 text-emerald-300 flex items-center justify-center active:scale-90"><IconX size={14} /></button>
                             </div>
@@ -2043,22 +2136,16 @@
                                 <button onClick={() => setClueQueue(q => q.slice(1))} className="w-full py-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform border border-emerald-400">
                                     Save to Evidence Dossier ➔
                                 </button>
+<label className="mt-3 justify-center flex items-center gap-2 cursor-pointer text-emerald-200 font-bold" style={{ fontSize: 13 }}>
+<input type="checkbox" checked={false} onChange={() => { setClueMode('off'); setClueQueue([]); }} style={{ width: 18, height: 18 }} />
+Hide popups
+</label>
                             </div>
                         </div>
                     )}
 
-                    {/* TOASTS */}
-                    <div className="absolute right-2 z-50 flex flex-col gap-2 pointer-events-none items-end" style={{ top: 150, maxWidth: '92%' }}>
-                        {toasts.map(t => (
-                            <div key={t.id} className={`${t.color} border-2 px-3 py-1.5 rounded-xl shadow-xl flex items-center gap-2 font-black text-xs sm:text-sm toast-enter`}>
-                                <span className="text-xl drop-shadow-md">{t.icon}</span>
-                                <span className="tracking-wide text-shadow">{t.msg}</span>
-                            </div>
-                        ))}
-                    </div>
-
                     {/* TOP MENU / HUD (compact) */}
-                    <div className="hud shrink-0 px-2 pt-1.5 pb-1.5 bg-[#06140c]/95 border-b-2 border-emerald-900/80 shadow-xl z-10">
+                    <div className="hud relative shrink-0 px-2 pt-1.5 pb-1.5 bg-[#06140c]/95 border-b-2 border-emerald-900/80 shadow-xl z-10">
                         {/* row 1: stats + control buttons */}
                         <div className="flex items-center justify-between gap-2">
                             <div className="mono flex items-center gap-3 min-w-0">
@@ -2091,13 +2178,13 @@
                             </div>
                         </div>
 
-                        {/* extras (collapsible): id, music, download */}
+                        {/* dropdown: compact, overlays the top of the board only */}
                         {hudOpen && (
-                            <div className="mt-1.5 flex flex-col gap-1.5">
-                                <div className="mono flex items-center gap-2 px-2 py-1 rounded-lg border border-emerald-600/60 bg-emerald-950/60 text-emerald-300 font-extrabold tracking-wider min-w-0" style={{ fontSize: 11 }}>
+                            <div className="mt-1.5 flex flex-col gap-1.5 p-1.5 rounded-xl border border-emerald-800/70 bg-black/60">
+                                <div className="mono flex items-center gap-2 px-2 py-1 rounded-lg border border-emerald-700/70 bg-emerald-950/60 text-emerald-300 font-extrabold min-w-0" style={{ fontSize: 12 }}>
                                     <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
                                     <span className="truncate flex-1">{HYPOTHESIS_DATA.hypothesis_id}</span>
-                                    <button onClick={downloadGame} title="Download standalone game" className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md border border-cyan-400 text-cyan-300 bg-cyan-950/60 active:scale-95"><IconDownload size={14} /><span style={{ fontSize: 10 }}>SAVE</span></button>
+                                    <button onClick={downloadGame} title="Download standalone game" className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md border border-cyan-400 text-cyan-300 bg-cyan-950/60 active:scale-95"><IconDownload size={14} /><span style={{ fontSize: 11 }}>SAVE</span></button>
                                 </div>
                                 <div className="flex items-center gap-2 p-1 rounded-lg border border-emerald-900/70 bg-black/50">
                                     <button onClick={toggleBgm} className={`mono shrink-0 flex items-center gap-1.5 px-2 py-1.5 rounded-md border font-extrabold uppercase tracking-wider active:scale-95 ${bgmOn ? 'border-emerald-400 text-emerald-300 bg-emerald-950/70' : 'border-zinc-600 text-zinc-400 bg-zinc-900'}`} style={{ fontSize: 11 }}>
@@ -2110,8 +2197,8 @@
                             </div>
                         )}
 
-                        {/* node chips */}
-                        <div className="mt-1.5 grid grid-cols-6 gap-1 bg-black/70 p-1 rounded-xl border border-emerald-950">
+                        {/* node chips: 5 x 2, large */}
+                        <div className="mt-1.5 grid gap-1.5 bg-black/70 p-1.5 rounded-xl border border-emerald-950" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
                             {rooms.map((r, i) => {
                                 const spec = molecules[r.conceptEmoji] || { xp: 0, level: 0, alignment: 0 };
                                 const curXP = spec.xp || 0;
@@ -2119,15 +2206,15 @@
                                 const isReady = lvlMet && !r.isCalibrated;
                                 return (
                                     <div key={i} onClick={() => setActiveModal('thesis')}
-                                        className={`mono flex flex-col items-center justify-center py-0.5 px-0.5 rounded-lg border cursor-pointer transition-all ${
+                                        className={`mono flex flex-col items-center justify-center py-1 px-0.5 rounded-xl border-2 cursor-pointer transition-all ${
                                             r.isCalibrated ? 'bg-emerald-950/90 border-emerald-400 text-emerald-300 shadow-[0_0_8px_#10b981]'
                                             : isReady ? 'bg-gray-900/90 border-yellow-400 text-white animate-pulse shadow-[0_0_10px_#facc15]'
-                                            : 'bg-gray-950/90 border-gray-800'}`}>
-                                        <span className="leading-none" style={{ fontSize: 18 }}>{r.isCalibrated ? '✅' : r.conceptEmoji}</span>
+                                            : 'bg-gray-950/90 border-gray-700'}`}>
+                                        <span className="leading-none" style={{ fontSize: 28 }}>{r.isCalibrated ? '✅' : r.conceptEmoji}</span>
                                         {r.isCalibrated ? (
-                                            <span className="font-black text-emerald-300 uppercase" style={{ fontSize: 10 }}>DONE</span>
+                                            <span className="font-black text-emerald-300 uppercase" style={{ fontSize: 12 }}>DONE</span>
                                         ) : (
-                                            <div className="flex flex-col items-center font-black leading-tight w-full whitespace-nowrap overflow-hidden" style={{ fontSize: 10 }}>
+                                            <div className="flex flex-col items-center font-black leading-tight w-full whitespace-nowrap overflow-hidden" style={{ fontSize: 12 }}>
                                                 <span className={lvlMet ? "text-emerald-300" : "text-amber-300"}>🃏{Math.min(curXP, r.targetLvl)}/{r.targetLvl}</span>
                                                 {isReady ? (
                                                     <span className="text-amber-300 animate-bounce">⚡MATCH</span>
@@ -2144,10 +2231,20 @@
 
                     {/* ARCADE BOARD */}
                     <div className="flex-1 min-h-0 relative">
+                    {/* TOASTS: compact, two rows max, tucked into the top strip of the board */}
+                    <div className="absolute z-50 flex flex-col gap-1 pointer-events-none items-end" style={{ top: 4, right: 56, maxWidth: 'min(240px, calc(100% - 68px))' }}>
+                        {toasts.map(t => (
+                            <div key={t.id} className={`${t.color} border px-2 py-0.5 rounded-lg shadow-lg flex items-center gap-1.5 font-black toast-enter opacity-95 max-w-full`} style={{ fontSize: 'clamp(10px, 2.5vw, 12px)', lineHeight: 1.2 }}>
+                                <span className="shrink-0" style={{ fontSize: 'clamp(11px, 3vw, 13px)' }}>{t.icon}</span>
+                                <span className="tracking-wide text-shadow truncate">{t.msg}</span>
+                            </div>
+                        ))}
+                    </div>
+
                       <div ref={boardWrapRef} className="board-scroll absolute inset-0 overflow-auto">
-                        <div style={{ minWidth: '100%', minHeight: '100%', width: 'max-content', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 4, boxSizing: 'border-box' }}>
+                        <div style={{ minWidth: '100%', minHeight: '100%', width: 'max-content', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8, boxSizing: 'border-box' }}>
                         <div className="relative shrink-0 rounded-xl border border-emerald-900/50 bg-black/30 p-0"
-                            style={{ width: bW, height: bH }}>
+                            style={{ width: bW, height: bH, boxSizing: 'content-box' }}>
                                                     <div className="relative w-full h-full" style={{ '--k': shake.lvl === 2 ? 2.4 : 1, animation: shake.n ? `${shake.n % 2 ? 'shakeA' : 'shakeB'} ${shake.lvl === 2 ? 0.55 : 0.35}s ease-out` : 'none' }}>
                                 <div className="absolute top-0 left-0 right-0 h-5 bg-gradient-to-b from-red-600/30 to-transparent pointer-events-none border-t-2 border-red-500/70 z-20 flex items-center justify-center rounded-t-xl">
                                     <span className="mono font-black text-red-300 uppercase" style={{ fontSize: 12 }}>⚠ danger zone ⚠</span>
@@ -2430,7 +2527,7 @@
                                 </div>
                                 <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
                                     <div className="mono text-emerald-400 font-extrabold text-lg mb-1">5. Build the Evidence Chain</div>
-                                    <p className="text-sm text-gray-200 leading-relaxed">Each of the 6 core concepts needs a target number of collected cards (5 on Rookie, rising each level) and a matching Alignment roll to confirm its evidence link. Confirm all six and hit the Insight target to advance the hypothesis. Every level is one more step toward ideas worth testing in the lab!</p>
+                                    <p className="text-sm text-gray-200 leading-relaxed">Each of the {rooms.length} core concepts needs a target number of collected cards (5 on Rookie, rising each level) and a matching Alignment roll to confirm its evidence link. Confirm all {rooms.length} and hit the Insight target to advance the hypothesis. Every level is one more step toward ideas worth testing in the lab!</p>
                                 </div>
                                 <div className="p-4 rounded-2xl border border-gray-800 bg-black/60">
                                     <div className="mono text-amber-400 font-extrabold text-lg mb-1">6. Music & Controls</div>
@@ -2448,8 +2545,8 @@
                             <div className="hide-scroll overflow-y-auto flex-1 space-y-3 pb-3">
                                 <div className="bg-black/70 border border-emerald-900 rounded-2xl p-4">
                                     <div className="mono text-[10px] text-emerald-500 font-black tracking-widest uppercase mb-1">Hypothesis In Play</div>
-                                    <div className="mono text-sm text-emerald-300 mb-1">{HYPOTHESIS_DATA.hypothesis_id}</div>
-                                    <div className="text-xs text-white italic">"{HYPOTHESIS_DATA.title}"</div>
+                                    <div className="mono text-sm text-emerald-300 mb-1">{hypLoading ? 'Loading a new hypothesis…' : HYPOTHESIS_DATA.hypothesis_id}</div>
+                                    {!hypLoading && <div className="text-xs text-white italic">"{HYPOTHESIS_DATA.title}"</div>}
                                 </div>
                                 <div className="text-[11px] text-emerald-200/80 leading-relaxed bg-emerald-950/40 border border-emerald-900 rounded-2xl p-3">🎯 <b className="text-emerald-300">Mission:</b> turn connected literature into testable hypotheses, faster. Every evidence chain you build is one more idea worth trying in the lab. The goal is accelerating cures, together. Hypotheses here are exploratory, not established findings or medical advice.</div>
 
@@ -2466,8 +2563,8 @@
                                 <div className="mono text-xs text-emerald-400 font-extrabold uppercase tracking-widest pt-1">{started ? 'New Run' : 'Choose Difficulty'}</div>
                                 <div className="grid grid-cols-2 gap-2">
                                     {Object.keys(MODES).map(mKey => (
-                                        <button key={mKey} onClick={() => initGame(mKey)}
-                                            className="mono py-3 px-2 rounded-2xl bg-gradient-to-b from-emerald-500 to-emerald-700 text-white font-extrabold text-sm uppercase tracking-wider border-2 border-emerald-300 border-b-4 active:scale-95">
+                                        <button key={mKey} onClick={() => initGame(mKey)} disabled={hypLoading}
+                                            className="mono disabled:opacity-40 py-3 px-2 rounded-2xl bg-gradient-to-b from-emerald-500 to-emerald-700 text-white font-extrabold text-sm uppercase tracking-wider border-2 border-emerald-300 border-b-4 active:scale-95">
                                             {MODES[mKey].name}
                                             <div className="text-[10px] font-bold text-emerald-100/80 normal-case tracking-normal">{MODES[mKey].extraCards} noise distractions{bests[mKey] ? ` • Best: L${bests[mKey].level}` : ''}</div>
                                         </button>
@@ -2645,7 +2742,7 @@
                                     </div>
                                 </div>
 
-                                <button onClick={nextLevel} className="w-full py-4 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-600 text-black font-black text-xl uppercase tracking-widest shadow-[0_0_30px_#f59e0b] border-2 border-amber-200 border-b-[6px] active:scale-95">Next Hypothesis ➔</button>
+                                <button onClick={nextLevel} disabled={loadingNext} className="w-full py-4 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-600 text-black font-black text-xl uppercase tracking-widest shadow-[0_0_30px_#f59e0b] border-2 border-amber-200 border-b-[6px] active:scale-95">{loadingNext ? 'Loading new hypothesis…' : 'Next Hypothesis ➔'}</button>
                             </div>
                         </div>
                         );
@@ -2656,6 +2753,9 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+    
+    
+    
     
     
     </script>
