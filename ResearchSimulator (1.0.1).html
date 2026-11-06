@@ -1994,7 +1994,7 @@
             const progressPct = Math.min(100, (score / currentTarget) * 100);
 
             const digHyp = String(HYPOTHESIS_DATA.main_claim || '').slice(0, 500);
-            const digPrompt = "I am using PathMap Alchemy and it made this literature based hypothesis discovery. Is it a plausible/scientifically-valuable hypothesis? Is it new and unpublished? What impact on the world would occur if true. Explain it to me.\n\nHypothesis: " + digHyp;
+            const digPrompt = "I am playing ResearchSimulator.com and it made this literature based hypothesis discovery. Is it a plausible/scientifically-valuable hypothesis? Is it new and unpublished? What impact on the world would occur if true. Explain it to me.\n\nHypothesis: " + digHyp;
             const googleSearchUrl = "https://www.google.com/search?q=" + encodeURIComponent(digPrompt);
             const chatGptUrl = "https://chatgpt.com/?q=" + encodeURIComponent(digPrompt);
 
